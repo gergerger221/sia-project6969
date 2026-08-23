@@ -1,0 +1,350 @@
+<template>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-950 text-amber-400 border border-amber-500/30 text-xs font-bold uppercase tracking-wider mb-2">
+          <span>Super Admin Control Center</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-white">System Administration & School Year Control</h1>
+        <p class="text-xs text-slate-400 mt-1">Manage user roles, toggle enrollment lock status, and monitor system metrics.</p>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <button 
+          @click="activeTab = 'stats'"
+          :class="activeTab === 'stats' ? 'bg-amber-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
+          class="px-4 py-2 rounded-xl text-xs transition"
+        >
+          Overview & Logs
+        </button>
+        <button 
+          @click="activeTab = 'users'"
+          :class="activeTab === 'users' ? 'bg-amber-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
+          class="px-4 py-2 rounded-xl text-xs transition"
+        >
+          Staff & User Management
+        </button>
+        <button 
+          @click="activeTab = 'school_years'"
+          :class="activeTab === 'school_years' ? 'bg-amber-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
+          class="px-4 py-2 rounded-xl text-xs transition"
+        >
+          School Year Lock
+        </button>
+      </div>
+    </div>
+
+    <!-- Alert -->
+    <div v-if="successMessage" class="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500 text-emerald-300 text-xs mb-6 flex items-center justify-between">
+      <span>{{ successMessage }}</span>
+      <button @click="successMessage = ''" class="font-bold">✕</button>
+    </div>
+
+    <!-- TAB 1: OVERVIEW & STATS -->
+    <div v-if="activeTab === 'stats'" class="space-y-6">
+      <!-- 4 Stat Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm">
+          <span class="text-xs font-bold uppercase text-slate-400">Total Applicants</span>
+          <div class="text-2xl font-extrabold text-slate-900 mt-1">{{ stats.total_applicants || 0 }}</div>
+          <span class="text-[11px] text-amber-600 font-semibold">{{ stats.pending_review || 0 }} Under Review</span>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm">
+          <span class="text-xs font-bold uppercase text-slate-400">Enrolled Students</span>
+          <div class="text-2xl font-extrabold text-emerald-700 mt-1">{{ (stats.enrolled_jhs || 0) + (stats.enrolled_shs || 0) }}</div>
+          <span class="text-[11px] text-slate-500 font-medium">JHS: {{ stats.enrolled_jhs || 0 }} • SHS: {{ stats.enrolled_shs || 0 }}</span>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm">
+          <span class="text-xs font-bold uppercase text-slate-400">Tuition Collections</span>
+          <div class="text-2xl font-extrabold text-slate-900 mt-1">
+            ₱{{ Number(stats.total_revenue || 0).toLocaleString('en-US', {minimumFractionDigits: 2}) }}
+          </div>
+          <span class="text-[11px] text-emerald-600 font-semibold">Treasury Verified</span>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm">
+          <span class="text-xs font-bold uppercase text-slate-400">Active Staff</span>
+          <div class="text-2xl font-extrabold text-purple-700 mt-1">{{ stats.total_staff || 0 }}</div>
+          <span class="text-[11px] text-slate-500 font-medium">Registrar, Treasury, Coordinator</span>
+        </div>
+      </div>
+
+      <!-- Audit Logs Trail -->
+      <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+        <h2 class="text-base font-bold text-slate-800 mb-4">System Audit Trail & Security Logs</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
+                <th class="p-3">Timestamp</th>
+                <th class="p-3">User</th>
+                <th class="p-3">Action</th>
+                <th class="p-3">Activity Details</th>
+                <th class="p-3 font-mono">IP Address</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr v-for="log in stats.recent_logs" :key="log.id" class="hover:bg-slate-50">
+                <td class="p-3 text-slate-500 font-mono text-[11px]">{{ log.created_at }}</td>
+                <td class="p-3 font-bold text-slate-800">{{ log.username || 'System' }}</td>
+                <td class="p-3 font-bold text-amber-700">{{ log.action }}</td>
+                <td class="p-3 text-slate-600">{{ log.details }}</td>
+                <td class="p-3 font-mono text-slate-400">{{ log.ip_address }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: STAFF & USER MANAGEMENT -->
+    <div v-if="activeTab === 'users'" class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-base font-bold text-slate-800">Staff & System Accounts</h2>
+          <p class="text-xs text-slate-500">Manage credentials and roles for Administrator, Coordinator, Registrar, Treasury, and Records.</p>
+        </div>
+        <button @click="openUserModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-md transition flex items-center space-x-1.5">
+          <Plus class="w-4 h-4" />
+          <span>Create User Account</span>
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
+              <th class="p-3.5">Name / Username</th>
+              <th class="p-3.5">Email</th>
+              <th class="p-3.5">Role</th>
+              <th class="p-3.5">Status</th>
+              <th class="p-3.5 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr v-for="u in usersList.users" :key="u.id" class="hover:bg-slate-50 transition">
+              <td class="p-3.5">
+                <div class="font-bold text-slate-900">{{ u.first_name }} {{ u.last_name }}</div>
+                <div class="text-[11px] font-mono text-slate-400">@{{ u.username }}</div>
+              </td>
+              <td class="p-3.5 text-slate-600">{{ u.email }}</td>
+              <td class="p-3.5">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase" :class="getRoleClass(u.role_slug)">
+                  {{ u.role_name }}
+                </span>
+              </td>
+              <td class="p-3.5">
+                <span :class="u.status === 'Active' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase">
+                  {{ u.status }}
+                </span>
+              </td>
+              <td class="p-3.5 text-right">
+                <button @click="openUserModal(u)" class="px-2.5 py-1 rounded text-xs font-semibold text-amber-600 hover:bg-amber-50">
+                  Edit
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: SCHOOL YEAR LOCK / UNLOCK -->
+    <div v-if="activeTab === 'school_years'" class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+      <div class="mb-6">
+        <h2 class="text-base font-bold text-slate-800">School Year Academic Locks</h2>
+        <p class="text-xs text-slate-500">Locking a School Year closes all incoming admissions and enrollment assessment submissions.</p>
+      </div>
+
+      <div class="space-y-4">
+        <div v-for="sy in schoolYears" :key="sy.id" class="p-5 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <h3 class="font-extrabold text-base text-slate-900">{{ sy.name }} ({{ sy.code }})</h3>
+              <span v-if="sy.is_active" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                ACTIVE
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Duration: {{ sy.start_date }} to {{ sy.end_date }} • Term: {{ sy.active_semester }}</p>
+          </div>
+
+          <div class="flex items-center space-x-3">
+            <span :class="sy.is_locked ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'" class="px-3 py-1 rounded-full text-xs font-bold uppercase">
+              {{ sy.is_locked ? '🔒 LOCKED' : '🔓 OPEN FOR ENROLLMENT' }}
+            </span>
+            <button 
+              @click="toggleLock(sy.id)"
+              :class="sy.is_locked ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-rose-600 hover:bg-rose-500'"
+              class="px-4 py-2 rounded-xl text-xs font-bold text-white shadow-md transition"
+            >
+              {{ sy.is_locked ? 'Unlock Enrollment' : 'Lock Enrollment' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USER CREATE / EDIT MODAL -->
+    <div v-if="showUserModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 text-xs">
+        <h3 class="text-base font-bold text-slate-900 mb-4">{{ userForm.id ? 'Edit User Account' : 'Create User Account' }}</h3>
+        <form @submit.prevent="saveUser" class="space-y-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">First Name *</label>
+              <input v-model="userForm.first_name" type="text" required class="w-full px-3 py-2 rounded-xl border border-slate-300" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Last Name *</label>
+              <input v-model="userForm.last_name" type="text" required class="w-full px-3 py-2 rounded-xl border border-slate-300" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Username *</label>
+              <input v-model="userForm.username" type="text" required class="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Role *</label>
+              <select v-model="userForm.role_id" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white">
+                <option v-for="r in usersList.roles" :key="r.id" :value="r.id">{{ r.name }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Email Address *</label>
+            <input v-model="userForm.email" type="email" required class="w-full px-3 py-2 rounded-xl border border-slate-300" />
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Password {{ userForm.id ? '(Leave blank to keep unchanged)' : '*' }}</label>
+            <input v-model="userForm.password" type="password" :required="!userForm.id" class="w-full px-3 py-2 rounded-xl border border-slate-300" />
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-3">
+            <button type="button" @click="showUserModal = false" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100">Cancel</button>
+            <button type="submit" class="px-5 py-2 rounded-xl font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-md">Save Account</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import { Plus } from 'lucide-vue-next';
+import api from '../../services/api';
+
+const activeTab = ref('stats');
+const stats = ref({ recent_logs: [] });
+const usersList = ref({ users: [], roles: [] });
+const schoolYears = ref([]);
+const successMessage = ref('');
+
+const showUserModal = ref(false);
+const userForm = ref({
+  id: null,
+  role_id: 2,
+  username: '',
+  email: '',
+  password: '',
+  first_name: '',
+  last_name: '',
+  status: 'Active'
+});
+
+const getRoleClass = (slug) => {
+  if (slug === 'admin') return 'bg-amber-100 text-amber-800';
+  if (slug === 'coordinator') return 'bg-purple-100 text-purple-800';
+  if (slug === 'registrar') return 'bg-blue-100 text-blue-800';
+  if (slug === 'treasury') return 'bg-emerald-100 text-emerald-800';
+  if (slug === 'records') return 'bg-cyan-100 text-cyan-800';
+  return 'bg-slate-100 text-slate-800';
+};
+
+const loadStats = async () => {
+  try {
+    const res = await api.getDashboardStats();
+    stats.value = res.data;
+  } catch (err) {
+    console.error('Failed to load stats:', err);
+  }
+};
+
+const loadUsers = async () => {
+  try {
+    const res = await api.getUsers();
+    usersList.value = res.data;
+  } catch (err) {
+    console.error('Failed to load users:', err);
+  }
+};
+
+const loadSchoolYears = async () => {
+  try {
+    const res = await api.getSchoolYears();
+    schoolYears.value = res.data;
+  } catch (err) {
+    console.error('Failed to load school years:', err);
+  }
+};
+
+const toggleLock = async (syId) => {
+  try {
+    const res = await api.toggleSchoolYearLock(syId);
+    successMessage.value = res.message;
+    await loadSchoolYears();
+  } catch (err) {
+    alert(err.message || 'Failed to toggle school year lock.');
+  }
+};
+
+const openUserModal = (u = null) => {
+  if (u) {
+    userForm.value = {
+      id: u.id,
+      role_id: u.role_id,
+      username: u.username,
+      email: u.email,
+      password: '',
+      first_name: u.first_name,
+      last_name: u.last_name,
+      status: u.status
+    };
+  } else {
+    userForm.value = {
+      id: null,
+      role_id: 2,
+      username: '',
+      email: '',
+      password: 'password123',
+      first_name: '',
+      last_name: '',
+      status: 'Active'
+    };
+  }
+  showUserModal.value = true;
+};
+
+const saveUser = async () => {
+  try {
+    await api.saveUser(userForm.value);
+    successMessage.value = 'User account saved successfully!';
+    showUserModal.value = false;
+    await loadUsers();
+  } catch (err) {
+    alert(err.message || 'Failed to save user.');
+  }
+};
+
+onMounted(() => {
+  loadStats();
+  loadUsers();
+  loadSchoolYears();
+});
+</script>

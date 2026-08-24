@@ -295,6 +295,38 @@
 
     <!-- TAB 2: ACADEMIC STRANDS & TRACKS MANAGEMENT -->
     <div v-if="activeTab === 'strands'" class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+      <!-- CURRICULUM DECLARATION & LOCK STATUS BANNER (FOR STRANDS) -->
+      <div 
+        v-if="curriculumData.curriculum_locked"
+        class="p-5 rounded-2xl bg-emerald-950 border border-emerald-500/40 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-lg"
+      >
+        <div class="flex items-start space-x-3.5">
+          <div class="p-2.5 rounded-xl bg-emerald-900/80 text-emerald-400 border border-emerald-500/40 shrink-0 mt-0.5">
+            <Lock class="w-5 h-5" />
+          </div>
+          <div>
+            <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+              <h3 class="font-extrabold text-sm text-emerald-200">Academic Strands Locked & Active for School Year 2026-2027</h3>
+              <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-500/40">
+                🔒 View Only Mode
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-300 mt-1 leading-relaxed max-w-3xl">
+              All <strong>{{ curriculumData.strands?.length || 0 }} Senior High strands</strong> and their linked curriculum subjects are locked to protect student transcripts, sections, and ongoing class schedules. Click any strand below to view its complete 4-semester learning area roadmap.
+            </p>
+          </div>
+        </div>
+
+        <button 
+          @click="toggleCurriculumDeclaration()" 
+          class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition shrink-0 flex items-center space-x-1.5"
+          title="Unlock curriculum to enable drafting modifications"
+        >
+          <Unlock class="w-3.5 h-3.5 text-amber-400" />
+          <span>Unlock Setup Mode</span>
+        </button>
+      </div>
+
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-5">
         <div>
           <div class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-900 font-bold text-[10px] uppercase tracking-wider mb-1">
@@ -305,13 +337,24 @@
           <p class="text-xs text-slate-500">Manage specialized Senior High strands, admission intake availability, and historical program archival.</p>
         </div>
 
-        <button 
-          @click="openStrandModal()" 
-          class="px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-md transition flex items-center space-x-1.5 shrink-0"
-        >
-          <Plus class="w-4 h-4" />
-          <span>Add New Strand</span>
-        </button>
+        <template v-if="curriculumData.curriculum_locked">
+          <div 
+            class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200 flex items-center space-x-1.5 cursor-not-allowed select-none shrink-0"
+            title="Curriculum is officially declared and locked. Adding new strands is disabled during the active school year."
+          >
+            <Lock class="w-3.5 h-3.5 text-slate-400" />
+            <span>Strands Locked (View Only)</span>
+          </div>
+        </template>
+        <template v-else>
+          <button 
+            @click="openStrandModal()" 
+            class="px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-md transition flex items-center space-x-1.5 shrink-0"
+          >
+            <Plus class="w-4 h-4" />
+            <span>Add New Strand</span>
+          </button>
+        </template>
       </div>
 
       <!-- Strands Filter Bar & Quick Status Pills -->
@@ -437,47 +480,56 @@
             </div>
           </div>
 
-          <!-- Card Actions Footer: Two-Stage Lifecycle -->
-          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2 text-xs">
-            <!-- ACTIVE & DEACTIVATED ACTIONS -->
-            <template v-if="st.status !== 'Archived'">
+          <!-- Card Actions Footer: View-Only when Locked / Full Management when Unlocked -->
+          <div class="mt-4 pt-3 border-t border-slate-100 text-xs">
+            <!-- 1. VIEW ONLY MODE (WHEN CURRICULUM IS LOCKED) -->
+            <template v-if="curriculumData.curriculum_locked">
               <button 
-                @click="editStrand(st)" 
-                class="px-3 py-1.5 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] transition"
+                @click="openStrandDetailsModal(st)"
+                class="w-full py-2 px-3.5 rounded-xl font-bold bg-purple-50/80 hover:bg-purple-100/80 text-purple-700 hover:text-purple-900 border border-purple-200 transition flex items-center justify-between group/btn shadow-xs"
+                title="View complete strand curriculum, learning areas, and section assignments"
               >
-                Edit
+                <span class="inline-flex items-center space-x-1.5 font-bold">
+                  <BookOpen class="w-3.5 h-3.5 text-purple-600" />
+                  <span>View Strand Blueprint & Roadmap</span>
+                </span>
+                <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-white border border-purple-200 text-purple-800 font-mono text-[10px] font-bold">
+                  <Lock class="w-3 h-3 text-purple-600" />
+                  <span>View Only</span>
+                </span>
               </button>
+            </template>
 
-              <div class="flex items-center space-x-1.5">
+            <!-- 2. ACTIVE & DEACTIVATED STRAND ACTIONS (WHEN UNLOCKED) -->
+            <template v-else-if="st.status !== 'Archived'">
+              <div class="flex items-center justify-between gap-2">
                 <button 
-                  v-if="st.status === 'Active'" 
-                  @click="updateStrandStatus(st, 'Deactivated')"
-                  class="px-2.5 py-1.5 rounded-xl font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 text-[10px] border border-amber-200 transition"
-                  title="Temporarily close new admissions for this strand"
+                  @click="editStrand(st)" 
+                  class="px-3 py-1.5 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] transition"
                 >
-                  Pause Intake
+                  Edit
                 </button>
 
-                <button 
-                  v-if="st.status === 'Deactivated'" 
-                  @click="updateStrandStatus(st, 'Active')"
-                  class="px-2.5 py-1.5 rounded-xl font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[10px] border border-emerald-200 transition"
-                  title="Reopen admissions for this strand"
-                >
-                  Reopen Intake
-                </button>
-
-                <!-- REMOVE STRAND (SOFT-ARCHIVE) -->
-                <template v-if="curriculumData.curriculum_locked">
-                  <span 
-                    class="px-2.5 py-1.5 rounded-xl font-semibold bg-slate-100 text-slate-400 text-[10px] border border-slate-200 cursor-not-allowed flex items-center space-x-1"
-                    title="Locked: Active curriculum freeze prevents removing strands during running SY"
+                <div class="flex items-center space-x-1.5">
+                  <button 
+                    v-if="st.status === 'Active'" 
+                    @click="updateStrandStatus(st, 'Deactivated')"
+                    class="px-2.5 py-1.5 rounded-xl font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 text-[10px] border border-amber-200 transition"
+                    title="Temporarily close new admissions for this strand"
                   >
-                    <Lock class="w-3 h-3 text-slate-400" />
-                    <span>Locked</span>
-                  </span>
-                </template>
-                <template v-else>
+                    Pause Intake
+                  </button>
+
+                  <button 
+                    v-if="st.status === 'Deactivated'" 
+                    @click="updateStrandStatus(st, 'Active')"
+                    class="px-2.5 py-1.5 rounded-xl font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[10px] border border-emerald-200 transition"
+                    title="Reopen admissions for this strand"
+                  >
+                    Reopen Intake
+                  </button>
+
+                  <!-- REMOVE STRAND (SOFT-ARCHIVE) -->
                   <button 
                     @click="openRemoveStrandModal(st)"
                     class="px-3 py-1.5 rounded-xl font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] border border-rose-200 transition flex items-center space-x-1"
@@ -486,32 +538,23 @@
                     <Trash2 class="w-3 h-3 text-rose-600" />
                     <span>Remove Strand</span>
                   </button>
-                </template>
+                </div>
               </div>
             </template>
 
-            <!-- ARCHIVED STRAND ACTIONS -->
+            <!-- 3. ARCHIVED STRAND ACTIONS (WHEN UNLOCKED) -->
             <template v-else>
-              <button 
-                @click="updateStrandStatus(st, 'Active')" 
-                class="px-3 py-1.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] transition flex items-center space-x-1 shadow-sm"
-                title="Restore strand to active offerings"
-              >
-                <CheckCircle class="w-3 h-3" />
-                <span>Restore to Active</span>
-              </button>
-
-              <!-- PERMANENT HARD DELETE -->
-              <template v-if="curriculumData.curriculum_locked">
-                <span 
-                  class="px-2.5 py-1.5 rounded-xl font-semibold bg-slate-100 text-slate-400 text-[10px] border border-slate-200 cursor-not-allowed flex items-center space-x-1"
-                  title="Locked: Permanent deletion disabled while SY curriculum is locked"
+              <div class="flex items-center justify-between gap-2">
+                <button 
+                  @click="updateStrandStatus(st, 'Active')" 
+                  class="px-3 py-1.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] transition flex items-center space-x-1 shadow-sm"
+                  title="Restore strand to active offerings"
                 >
-                  <Lock class="w-3 h-3 text-slate-400" />
-                  <span>Locked</span>
-                </span>
-              </template>
-              <template v-else>
+                  <CheckCircle class="w-3 h-3" />
+                  <span>Restore to Active</span>
+                </button>
+
+                <!-- PERMANENT HARD DELETE -->
                 <button 
                   @click="confirmDeleteStrand(st)" 
                   class="px-2.5 py-1.5 rounded-xl font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] border border-rose-200 transition flex items-center space-x-1"
@@ -520,7 +563,7 @@
                   <Trash2 class="w-3 h-3 text-rose-600" />
                   <span>Permanently Delete</span>
                 </button>
-              </template>
+              </div>
             </template>
           </div>
         </div>
@@ -2528,6 +2571,15 @@ const executeDeleteSubject = async () => {
 };
 
 const openStrandModal = (st = null) => {
+  if (curriculumData.value.curriculum_locked) {
+    if (st) {
+      openStrandDetailsModal(st);
+    } else {
+      alert('The school year curriculum is officially declared and locked. New strands cannot be created while in lock mode.');
+    }
+    return;
+  }
+
   if (st) {
     strandForm.value = {
       id: st.id,

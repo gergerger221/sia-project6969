@@ -248,6 +248,11 @@ class CoordinatorController {
 
         $db = Database::getConnection();
 
+        $activeSy = $db->query("SELECT * FROM school_years WHERE is_active = 1 LIMIT 1")->fetch();
+        if (!empty($activeSy['curriculum_locked'])) {
+            Response::error("Cannot create or modify strands while {$activeSy['name']} curriculum is officially declared and locked. Mid-year DepEd revisions will take effect in the next school year.");
+        }
+
         if ($id) {
             $stmt = $db->prepare("
                 UPDATE strands SET
@@ -301,6 +306,12 @@ class CoordinatorController {
         }
 
         $db = Database::getConnection();
+
+        $activeSy = $db->query("SELECT * FROM school_years WHERE is_active = 1 LIMIT 1")->fetch();
+        if (!empty($activeSy['curriculum_locked'])) {
+            Response::error("Cannot create or modify strands while {$activeSy['name']} curriculum is officially declared and locked. Mid-year DepEd revisions will take effect in the next school year.");
+        }
+
         $isActive = ($status === 'Active') ? 1 : 0;
         $archivedAt = ($status === 'Archived') ? date('Y-m-d H:i:s') : null;
 

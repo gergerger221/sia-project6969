@@ -197,19 +197,13 @@
     <!-- ========================================================================= -->
     <div v-if="showLogoutConfirm" class="no-print fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-200 text-slate-900">
-        <div class="w-12 h-12 rounded-2xl bg-rose-100 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto mb-3 shadow-sm">
+        <div class="w-12 h-12 rounded-2xl bg-rose-100 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto mb-4 shadow-sm">
           <LogOut class="w-6 h-6" />
         </div>
         <div class="text-center">
           <h3 class="text-base font-extrabold text-slate-900">Confirm Sign Out</h3>
-          <div v-if="currentUser" class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-700 mt-2">
-            <span>Signed in as:</span>
-            <span class="text-blue-900">{{ currentUser.first_name || currentUser.username }}</span>
-            <span class="text-amber-700 uppercase">({{ currentUser.role_name || currentUser.role_slug }})</span>
-          </div>
-          <p class="text-xs text-slate-500 mt-2.5 leading-relaxed">
-            Are you sure you want to end your session? You will be redirected to the 
-            <strong class="text-slate-800">{{ isStaffUser ? 'Faculty & Staff Portal' : 'Student Portal' }}</strong>.
+          <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
+            Are you sure you want to end your current session? Any unsaved form progress will be lost.
           </p>
         </div>
 
@@ -367,11 +361,6 @@ const userInitials = computed(() => {
   return (f + l).toUpperCase();
 });
 
-const isStaffUser = computed(() => {
-  if (!currentUser.value) return false;
-  return ['admin', 'registrar', 'treasury', 'coordinator', 'records'].includes(currentUser.value.role_slug);
-});
-
 const loadCurrentUser = () => {
   const userJson = localStorage.getItem('sia_auth_user');
   if (userJson) {
@@ -385,13 +374,8 @@ const loadCurrentUser = () => {
   }
 };
 
-// Immediate route change watcher to sync topnav synchronously
-watch(() => route.path, () => {
-  loadCurrentUser();
-}, { immediate: true });
-
 const confirmLogout = async () => {
-  const isStaff = isStaffUser.value;
+  const isStaff = currentUser.value && ['admin', 'registrar', 'treasury', 'coordinator', 'records'].includes(currentUser.value.role_slug);
   showLogoutConfirm.value = false;
   try {
     await api.logout();
@@ -402,13 +386,17 @@ const confirmLogout = async () => {
   localStorage.removeItem('sia_auth_user');
   currentUser.value = null;
   window.dispatchEvent(new Event('auth-changed'));
-
+  
   if (isStaff) {
     router.push('/staff-login');
   } else {
     router.push('/login');
   }
 };
+
+watch(() => route.fullPath, () => {
+  loadCurrentUser();
+}, { immediate: true });
 
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -438,16 +426,22 @@ const navigateToHomeTab = (tabId) => {
   }
 };
 
+const handleTriggerLogout = () => {
+  showLogoutConfirm.value = true;
+};
+
 onMounted(() => {
   loadCurrentUser();
   window.addEventListener('storage', loadCurrentUser);
   window.addEventListener('auth-changed', loadCurrentUser);
   window.addEventListener('switch-home-tab', handleHomeTabSwitched);
+  window.addEventListener('trigger-logout', handleTriggerLogout);
 });
 
 onUnmounted(() => {
   window.removeEventListener('storage', loadCurrentUser);
   window.removeEventListener('auth-changed', loadCurrentUser);
   window.removeEventListener('switch-home-tab', handleHomeTabSwitched);
+  window.removeEventListener('trigger-logout', handleTriggerLogout);
 });
 </script>

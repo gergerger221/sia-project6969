@@ -329,20 +329,42 @@ class TreasuryController {
                     'id'           => $ass['enrollment_id']
                 ]);
 
-                // 7. Initialize DepEd SF9/SF10 Scholastic Record for official student
-                $insRec = $db->prepare("
-                    INSERT INTO scholastic_records (student_id, school_year_id, grade_level_id, strand_id, section_id, status)
-                    VALUES (:student_id, :sy_id, :gl_id, :strand_id, :sec_id, 'Promoted')
-                    ON DUPLICATE KEY UPDATE section_id = :sec_id2
-                ");
-                $insRec->execute([
-                    'student_id' => $studentUserId,
-                    'sy_id'      => $ass['school_year_id'],
-                    'gl_id'      => $ass['grade_level_id'],
-                    'strand_id'  => $ass['strand_id'],
-                    'sec_id'     => $ass['section_id'],
-                    'sec_id2'    => $ass['section_id']
-                ]);
+                // 7. Initialize DepEd SF9/SF10 Student Record for official student
+                $chkRec = $db->prepare("SELECT id FROM student_records WHERE student_id = :sid AND school_year_id = :sy_id LIMIT 1");
+                $chkRec->execute(['sid' => $studentUserId, 'sy_id' => $ass['school_year_id']]);
+                $existingRec = $chkRec->fetch();
+
+                if ($existingRec) {
+                    $db->prepare("
+                        UPDATE student_records SET
+                            lrn = :lrn,
+                            grade_level_id = :gl_id,
+                            strand_id = :strand_id,
+                            section_id = :sec_id
+                        WHERE id = :id
+                    ")->execute([
+                        'lrn'       => $ass['lrn'] ?? null,
+                        'gl_id'     => $ass['grade_level_id'],
+                        'strand_id' => $ass['strand_id'],
+                        'sec_id'    => $ass['section_id'],
+                        'id'        => $existingRec['id']
+                    ]);
+                } else {
+                    $db->prepare("
+                        INSERT INTO student_records (
+                            student_id, lrn, school_year_id, grade_level_id, strand_id, section_id, promotion_status
+                        ) VALUES (
+                            :sid, :lrn, :sy_id, :gl_id, :strand_id, :sec_id, 'Pending'
+                        )
+                    ")->execute([
+                        'sid'       => $studentUserId,
+                        'lrn'       => $ass['lrn'] ?? null,
+                        'sy_id'     => $ass['school_year_id'],
+                        'gl_id'     => $ass['grade_level_id'],
+                        'strand_id' => $ass['strand_id'],
+                        'sec_id'    => $ass['section_id']
+                    ]);
+                }
             }
 
             $db->commit();
@@ -471,7 +493,7 @@ class TreasuryController {
                 SELECT ops.*, 
                        sa.net_payable, sa.total_paid, sa.remaining_balance, sa.minimum_downpayment,
                        e.id as enr_id, e.student_no, e.section_id, e.grade_level_id, e.strand_id, e.school_year_id,
-                       a.id as app_id, a.first_name, a.middle_name, a.last_name, a.application_no, a.student_no as app_student_no,
+                       a.id as app_id, a.first_name, a.middle_name, a.last_name, a.application_no, a.student_no as app_student_no, a.lrn,
                        gl.category as grade_category
                 FROM online_payment_submissions ops
                 JOIN student_assessments sa ON ops.assessment_id = sa.id
@@ -704,20 +726,42 @@ class TreasuryController {
                 'id'           => $sub['enr_id']
             ]);
 
-            // 7. Initialize DepEd SF9/SF10 Scholastic Record for official student
-            $insRec = $db->prepare("
-                INSERT INTO scholastic_records (student_id, school_year_id, grade_level_id, strand_id, section_id, status)
-                VALUES (:student_id, :sy_id, :gl_id, :strand_id, :sec_id, 'Promoted')
-                ON DUPLICATE KEY UPDATE section_id = :sec_id2
-            ");
-            $insRec->execute([
-                'student_id' => $studentUserId,
-                'sy_id'      => $sub['school_year_id'],
-                'gl_id'      => $sub['grade_level_id'],
-                'strand_id'  => $sub['strand_id'],
-                'sec_id'     => $sub['section_id'],
-                'sec_id2'    => $sub['section_id']
-            ]);
+            // 7. Initialize DepEd SF9/SF10 Student Record for official student
+            $chkRec = $db->prepare("SELECT id FROM student_records WHERE student_id = :sid AND school_year_id = :sy_id LIMIT 1");
+            $chkRec->execute(['sid' => $studentUserId, 'sy_id' => $sub['school_year_id']]);
+            $existingRec = $chkRec->fetch();
+
+            if ($existingRec) {
+                $db->prepare("
+                    UPDATE student_records SET
+                        lrn = :lrn,
+                        grade_level_id = :gl_id,
+                        strand_id = :strand_id,
+                        section_id = :sec_id
+                    WHERE id = :id
+                ")->execute([
+                    'lrn'       => $sub['lrn'] ?? null,
+                    'gl_id'     => $sub['grade_level_id'],
+                    'strand_id' => $sub['strand_id'],
+                    'sec_id'    => $sub['section_id'],
+                    'id'        => $existingRec['id']
+                ]);
+            } else {
+                $db->prepare("
+                    INSERT INTO student_records (
+                        student_id, lrn, school_year_id, grade_level_id, strand_id, section_id, promotion_status
+                    ) VALUES (
+                        :sid, :lrn, :sy_id, :gl_id, :strand_id, :sec_id, 'Pending'
+                    )
+                ")->execute([
+                    'sid'       => $studentUserId,
+                    'lrn'       => $sub['lrn'] ?? null,
+                    'sy_id'     => $sub['school_year_id'],
+                    'gl_id'     => $sub['grade_level_id'],
+                    'strand_id' => $sub['strand_id'],
+                    'sec_id'    => $sub['section_id']
+                ]);
+            }
 
             $db->commit();
             Auth::logAudit('ONLINE_PAYMENT_VERIFIED', "Verified OR {$orNumber} (Ref: {$sub['reference_no']}) for {$sub['first_name']} {$sub['last_name']}, Student No: {$studentNo}", $staff['id']);

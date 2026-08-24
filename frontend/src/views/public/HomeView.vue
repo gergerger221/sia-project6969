@@ -961,24 +961,14 @@ onMounted(() => {
   };
   window.addEventListener('switch-home-tab', onSwitchTabEvent);
 
-  const savedTab = sessionStorage.getItem('sia_active_home_tab');
-  const targetTab = route.query.tab || savedTab;
-  if (targetTab && ['academics', 'pathway', 'vouchers', 'requirements', 'facilities', 'faqs'].includes(targetTab)) {
-    activeHubTab.value = targetTab;
-    setTimeout(() => {
-      const el = document.getElementById('academic-hub');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 150);
+  if (route.query.tab && ['academics', 'pathway', 'vouchers', 'requirements', 'facilities', 'faqs'].includes(route.query.tab)) {
+    activeHubTab.value = route.query.tab;
   }
 });
 
 watch(() => route.query.tab, (newTab) => {
   if (newTab && ['academics', 'pathway', 'vouchers', 'requirements', 'facilities', 'faqs'].includes(newTab)) {
     activeHubTab.value = newTab;
-    setTimeout(() => {
-      const el = document.getElementById('academic-hub');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 150);
   }
 });
 

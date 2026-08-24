@@ -73,6 +73,7 @@
           <template v-if="!currentUser">
             <router-link 
               to="/" 
+              @click="scrollToTop"
               class="px-3.5 py-2 rounded-xl text-xs font-extrabold text-slate-700 hover:text-[#0c2340] hover:bg-slate-100 transition"
               active-class="text-blue-900 bg-blue-50 font-black border-b-2 border-blue-900 rounded-b-none"
             >
@@ -387,6 +388,10 @@ const confirmLogout = async () => {
   router.push('/login');
 };
 
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
 const currentActiveHomeTab = ref('academics');
 
 const handleHomeTabSwitched = (e) => {
@@ -395,11 +400,10 @@ const handleHomeTabSwitched = (e) => {
 
 const navigateToHomeTab = (tabId) => {
   currentActiveHomeTab.value = tabId;
-  sessionStorage.setItem('sia_active_home_tab', tabId);
   window.dispatchEvent(new CustomEvent('switch-home-tab', { detail: tabId }));
 
   if (route.name !== 'Home') {
-    router.push({ path: '/', query: { tab: tabId } }).then(() => {
+    router.push({ path: '/' }).then(() => {
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('switch-home-tab', { detail: tabId }));
         const el = document.getElementById('academic-hub');
@@ -407,7 +411,6 @@ const navigateToHomeTab = (tabId) => {
       }, 100);
     });
   } else {
-    router.replace({ path: '/', query: { tab: tabId } }).catch(() => {});
     const el = document.getElementById('academic-hub');
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }

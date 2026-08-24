@@ -1,11 +1,20 @@
 // frontend/src/services/api.js
 
-// Determine base API URL: supports both direct Vite dev proxy and XAMPP production paths
-const API_BASE = window.location.hostname === 'localhost' && window.location.port === '5173'
-  ? 'http://localhost/sia-project/backend/api/index.php'
-  : '/sia-project/backend/api/index.php';
+// Determine base API URL: dynamically detect project root folder (e.g. sia-project, sia-project2, etc.)
+const getRootFolder = () => {
+  const match = window.location.pathname.match(/^\/([^/]+)/);
+  return match ? match[1] : 'sia-project';
+};
 
-export const BASE_URL = window.location.origin + '/sia-project/backend/';
+const rootFolder = getRootFolder();
+const isDev = window.location.hostname === 'localhost' && window.location.port === '5173';
+
+const API_BASE = isDev
+  ? `http://localhost/${rootFolder}/backend/api/index.php`
+  : `/${rootFolder}/backend/api/index.php`;
+
+export const BASE_URL = `${window.location.origin}/${rootFolder}/backend/`;
+
 
 export async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('sia_auth_token');

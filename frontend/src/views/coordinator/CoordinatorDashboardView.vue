@@ -2064,6 +2064,90 @@
         </form>
       </div>
     </div>
+
+    <!-- CURRICULUM DECLARATION & LOCK CONFIRMATION POPUP MODAL -->
+    <div v-if="curriculumLockModal.isOpen" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 text-xs space-y-4 animate-in fade-in zoom-in duration-150">
+        
+        <!-- Header with Dynamic Icon and Alert Styling -->
+        <div class="flex items-start space-x-3.5 border-b border-slate-100 pb-4">
+          <div 
+            class="p-3 rounded-2xl shrink-0"
+            :class="curriculumData.curriculum_locked ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'"
+          >
+            <Unlock v-if="curriculumData.curriculum_locked" class="w-6 h-6 text-amber-700" />
+            <Lock v-else class="w-6 h-6 text-emerald-700" />
+          </div>
+          <div>
+            <div 
+              class="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase font-mono tracking-wider mb-1"
+              :class="curriculumData.curriculum_locked ? 'bg-amber-100 text-amber-900 border border-amber-200' : 'bg-emerald-100 text-emerald-900 border border-emerald-200'"
+            >
+              <span>{{ curriculumData.curriculum_locked ? 'Unlock for Drafting' : 'Official DepEd Academic Freeze' }}</span>
+            </div>
+            <h3 class="text-base font-extrabold text-slate-900 leading-snug">
+              {{ curriculumData.curriculum_locked ? 'Switch Curriculum to Draft / Setup Mode?' : 'Officially Declare & Lock SY Curriculum?' }}
+            </h3>
+            <p class="text-[11px] text-slate-500 mt-0.5">
+              School Year: <strong>{{ curriculumData.active_school_year?.name || 'School Year 2026-2027' }}</strong>
+            </p>
+          </div>
+        </div>
+
+        <!-- Explanatory Box -->
+        <div 
+          class="p-4 rounded-2xl border text-xs space-y-2 leading-relaxed"
+          :class="curriculumData.curriculum_locked ? 'bg-amber-50/80 border-amber-200 text-amber-950' : 'bg-emerald-50/80 border-emerald-200 text-emerald-950'"
+        >
+          <div class="font-bold text-slate-900 flex items-center space-x-1.5">
+            <AlertCircle class="w-4 h-4" :class="curriculumData.curriculum_locked ? 'text-amber-700' : 'text-emerald-700'" />
+            <span>{{ curriculumData.curriculum_locked ? 'Important Safeguard Information:' : 'Curriculum Lock Consequences:' }}</span>
+          </div>
+
+          <template v-if="curriculumData.curriculum_locked">
+            <ul class="list-disc list-inside space-y-1.5 text-[11px] text-slate-700">
+              <li>Re-enables adding, editing, and deleting learning area subjects and strands.</li>
+              <li><strong class="text-amber-900">Caution:</strong> Do not alter course codes or units if students are already actively enrolled or graded for this school year.</li>
+              <li>Once your modifications are done, re-lock the curriculum to freeze student transcripts.</li>
+            </ul>
+          </template>
+
+          <template v-else>
+            <ul class="list-disc list-inside space-y-1.5 text-[11px] text-slate-700">
+              <li>Freezes all <strong>{{ curriculumData.subjects?.length || 119 }} subjects</strong> and <strong>{{ curriculumData.strands?.length || 8 }} strands</strong> from accidental modifications or deletion.</li>
+              <li>Safeguards ongoing class schedule timetables, teacher loads, and official Form 137 / Form 138 transcripts.</li>
+              <li>Per DepEd policy, mid-year curriculum revisions will be staged for the subsequent school year.</li>
+            </ul>
+          </template>
+        </div>
+
+        <!-- Footer Action Buttons -->
+        <div class="flex items-center justify-end space-x-2.5 pt-3 border-t border-slate-100">
+          <button 
+            type="button" 
+            @click="curriculumLockModal.isOpen = false" 
+            :disabled="curriculumLockModal.isProcessing"
+            class="px-4 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition text-xs"
+          >
+            Cancel
+          </button>
+          
+          <button 
+            type="button" 
+            @click="executeCurriculumLockToggle()" 
+            :disabled="curriculumLockModal.isProcessing"
+            class="px-5 py-2.5 rounded-xl font-bold text-white shadow-md transition flex items-center space-x-2 text-xs"
+            :class="curriculumData.curriculum_locked ? 'bg-amber-600 hover:bg-amber-500' : 'bg-emerald-600 hover:bg-emerald-500'"
+          >
+            <span v-if="curriculumLockModal.isProcessing" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <Unlock v-else-if="curriculumData.curriculum_locked" class="w-3.5 h-3.5 text-white" />
+            <Lock v-else class="w-3.5 h-3.5 text-white" />
+            <span>{{ curriculumLockModal.isProcessing ? 'Updating Status...' : (curriculumData.curriculum_locked ? 'Confirm Switch to Draft Mode' : 'Confirm Declare & Lock') }}</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
   </div>
 </template>
 
@@ -2530,20 +2614,29 @@ const saveSubject = async () => {
   }
 };
 
-const toggleCurriculumDeclaration = async () => {
-  const isLocked = curriculumData.value.curriculum_locked;
-  const promptMsg = isLocked
-    ? 'Are you sure you want to UNLOCK the curriculum (Enter Setup Mode)?\n\nThis will allow modifying and deleting subjects. Ensure that no active grading or permanent records are corrupted.'
-    : 'Are you sure you want to OFFICIALLY DECLARE & LOCK the School Year Curriculum?\n\nThis will freeze all subjects, units, and strands from accidental editing or deletion, protecting enrolled students, schedules, and DepEd SF9/SF10 permanent records.';
+const curriculumLockModal = ref({
+  isOpen: false,
+  isProcessing: false
+});
 
-  if (!confirm(promptMsg)) return;
+const toggleCurriculumDeclaration = () => {
+  curriculumLockModal.value = {
+    isOpen: true,
+    isProcessing: false
+  };
+};
 
+const executeCurriculumLockToggle = async () => {
+  curriculumLockModal.value.isProcessing = true;
   try {
     const res = await api.toggleCurriculumLock();
-    successMessage.value = res.message || 'Curriculum lock status updated.';
+    successMessage.value = res.message || 'Curriculum lock status updated successfully!';
+    curriculumLockModal.value.isOpen = false;
     await loadData();
   } catch (err) {
     alert(err.message || 'Failed to update curriculum lock status.');
+  } finally {
+    curriculumLockModal.value.isProcessing = false;
   }
 };
 

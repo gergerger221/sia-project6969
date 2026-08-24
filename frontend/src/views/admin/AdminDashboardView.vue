@@ -212,7 +212,7 @@
               </div>
 
               <button 
-                @click="toggleCurriculumLock(sy.id)"
+                @click="openCurriculumLockModal(sy)"
                 :class="sy.curriculum_locked ? 'bg-slate-800 hover:bg-slate-700 text-slate-200' : 'bg-emerald-600 hover:bg-emerald-500 text-white'"
                 class="px-3.5 py-2 rounded-xl text-xs font-bold shadow-xs transition shrink-0"
               >
@@ -270,12 +270,96 @@
         </form>
       </div>
     </div>
+
+    <!-- ADMIN CURRICULUM DECLARATION & LOCK CONFIRMATION POPUP MODAL -->
+    <div v-if="curriculumLockModal.isOpen" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 text-xs space-y-4 animate-in fade-in zoom-in duration-150">
+        
+        <!-- Header with Dynamic Icon and Alert Styling -->
+        <div class="flex items-start space-x-3.5 border-b border-slate-100 pb-4">
+          <div 
+            class="p-3 rounded-2xl shrink-0"
+            :class="curriculumLockModal.sy?.curriculum_locked ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'"
+          >
+            <Unlock v-if="curriculumLockModal.sy?.curriculum_locked" class="w-6 h-6 text-amber-700" />
+            <Lock v-else class="w-6 h-6 text-emerald-700" />
+          </div>
+          <div>
+            <div 
+              class="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase font-mono tracking-wider mb-1"
+              :class="curriculumLockModal.sy?.curriculum_locked ? 'bg-amber-100 text-amber-900 border border-amber-200' : 'bg-emerald-100 text-emerald-900 border border-emerald-200'"
+            >
+              <span>{{ curriculumLockModal.sy?.curriculum_locked ? 'Unlock for Drafting' : 'Official DepEd Academic Freeze' }}</span>
+            </div>
+            <h3 class="text-base font-extrabold text-slate-900 leading-snug">
+              {{ curriculumLockModal.sy?.curriculum_locked ? 'Switch Curriculum to Draft / Setup Mode?' : 'Officially Declare & Lock SY Curriculum?' }}
+            </h3>
+            <p class="text-[11px] text-slate-500 mt-0.5">
+              School Year: <strong>{{ curriculumLockModal.sy?.name }} ({{ curriculumLockModal.sy?.code }})</strong>
+            </p>
+          </div>
+        </div>
+
+        <!-- Explanatory Box -->
+        <div 
+          class="p-4 rounded-2xl border text-xs space-y-2 leading-relaxed"
+          :class="curriculumLockModal.sy?.curriculum_locked ? 'bg-amber-50/80 border-amber-200 text-amber-950' : 'bg-emerald-50/80 border-emerald-200 text-emerald-950'"
+        >
+          <div class="font-bold text-slate-900 flex items-center space-x-1.5">
+            <AlertCircle class="w-4 h-4" :class="curriculumLockModal.sy?.curriculum_locked ? 'text-amber-700' : 'text-emerald-700'" />
+            <span>{{ curriculumLockModal.sy?.curriculum_locked ? 'Administrator Safeguard Notice:' : 'Curriculum Lock Consequences:' }}</span>
+          </div>
+
+          <template v-if="curriculumLockModal.sy?.curriculum_locked">
+            <ul class="list-disc list-inside space-y-1.5 text-[11px] text-slate-700">
+              <li>Re-enables editing, adding, and deleting learning area subjects and strands in Coordinator dashboard.</li>
+              <li><strong class="text-amber-900">Warning:</strong> Only unlock if academic adjustments are genuinely required prior to student enrollment processing.</li>
+              <li>Re-lock once edits are complete to protect permanent student records.</li>
+            </ul>
+          </template>
+
+          <template v-else>
+            <ul class="list-disc list-inside space-y-1.5 text-[11px] text-slate-700">
+              <li>Freezes all 119 subjects and 8 strands from modification or deletion across all dashboards.</li>
+              <li>Protects student permanent records (SF10), quarterly report cards (SF9), and section timetables.</li>
+              <li>Any DepEd updates will take effect in subsequent school year cycles.</li>
+            </ul>
+          </template>
+        </div>
+
+        <!-- Footer Action Buttons -->
+        <div class="flex items-center justify-end space-x-2.5 pt-3 border-t border-slate-100">
+          <button 
+            type="button" 
+            @click="curriculumLockModal.isOpen = false" 
+            :disabled="curriculumLockModal.isProcessing"
+            class="px-4 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition text-xs"
+          >
+            Cancel
+          </button>
+          
+          <button 
+            type="button" 
+            @click="executeAdminCurriculumLock()" 
+            :disabled="curriculumLockModal.isProcessing"
+            class="px-5 py-2.5 rounded-xl font-bold text-white shadow-md transition flex items-center space-x-2 text-xs"
+            :class="curriculumLockModal.sy?.curriculum_locked ? 'bg-amber-600 hover:bg-amber-500' : 'bg-emerald-600 hover:bg-emerald-500'"
+          >
+            <span v-if="curriculumLockModal.isProcessing" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <Unlock v-else-if="curriculumLockModal.sy?.curriculum_locked" class="w-3.5 h-3.5 text-white" />
+            <Lock v-else class="w-3.5 h-3.5 text-white" />
+            <span>{{ curriculumLockModal.isProcessing ? 'Updating Status...' : (curriculumLockModal.sy?.curriculum_locked ? 'Confirm Switch to Draft Mode' : 'Confirm Declare & Lock') }}</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { Plus } from 'lucide-vue-next';
+import { Plus, Lock, Unlock, AlertCircle } from 'lucide-vue-next';
 import api from '../../services/api';
 
 const activeTab = ref('stats');
@@ -342,21 +426,32 @@ const toggleLock = async (syId) => {
   }
 };
 
-const toggleCurriculumLock = async (syId) => {
-  const targetSy = schoolYears.value.find(s => s.id === syId);
-  const isLocked = targetSy?.curriculum_locked;
-  const promptMsg = isLocked
-    ? `Are you sure you want to UNLOCK the curriculum for ${targetSy?.name || 'this School Year'}?\n\nThis will allow editing and deleting subjects/strands in the Coordinator dashboard.`
-    : `Are you sure you want to OFFICIALLY DECLARE & LOCK the curriculum for ${targetSy?.name || 'this School Year'}?\n\nThis will freeze all 119 subjects and strands from accidental editing or deletion, protecting ongoing student records, class schedules, and DepEd SF9/SF10 permanent records.`;
+const curriculumLockModal = ref({
+  isOpen: false,
+  sy: null,
+  isProcessing: false
+});
 
-  if (!confirm(promptMsg)) return;
+const openCurriculumLockModal = (sy) => {
+  curriculumLockModal.value = {
+    isOpen: true,
+    sy: sy,
+    isProcessing: false
+  };
+};
 
+const executeAdminCurriculumLock = async () => {
+  if (!curriculumLockModal.value.sy) return;
+  curriculumLockModal.value.isProcessing = true;
   try {
-    const res = await api.toggleAdminCurriculumLock(syId);
+    const res = await api.toggleAdminCurriculumLock(curriculumLockModal.value.sy.id);
     successMessage.value = res.message;
+    curriculumLockModal.value.isOpen = false;
     await loadSchoolYears();
   } catch (err) {
     alert(err.message || 'Failed to toggle curriculum lock.');
+  } finally {
+    curriculumLockModal.value.isProcessing = false;
   }
 };
 

@@ -83,6 +83,50 @@ class AdminController {
         Response::success("School year is now {$actionText}", ['is_locked' => $newLock]);
     }
 
+    public function toggleCurriculumLock(): void {
+        $user = Auth::requireRole(['admin']);
+        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        $id = (int)($input['school_year_id'] ?? 0);
+
+        if (!$id) {
+            Response::error('School year ID is required.');
+        }
+
+        $db = Database::getConnection();
+        $sy = $db->prepare("SELECT curriculum_locked, name FROM school_years WHERE id = :id");
+        $sy->execute(['id' => $id]);
+        $row = $sy->fetch();
+
+        if (!$row) {
+            Response::error('School year not found.');
+        }
+
+        $newLock = !empty($row['curriculum_locked']) ? 0 : 1;
+        $declAt = $newLock ? date('Y-m-d H:i:s') : null;
+
+        $stmt = $db->prepare("
+            UPDATE school_years 
+            SET curriculum_locked = :lock, 
+                curriculum_declared_at = :decl_at, 
+                curriculum_declared_by = :uid 
+            WHERE id = :id
+        ");
+        $stmt->execute([
+            'lock'    => $newLock,
+            'decl_at' => $declAt,
+            'uid'     => $user['id'],
+            'id'      => $id
+        ]);
+
+        $actionText = $newLock ? "OFFICIALLY DECLARED & LOCKED" : "UNLOCKED (DRAFT SETUP MODE)";
+        Auth::logAudit('CURRICULUM_LOCK_TOGGLED', "School Year {$row['name']} curriculum was {$actionText} by {$user['username']}", $user['id']);
+
+        Response::success("School year curriculum is now {$actionText}", [
+            'curriculum_locked'      => $newLock,
+            'curriculum_declared_at' => $declAt
+        ]);
+    }
+
     /**
      * Get list of users / staff accounts.
      */

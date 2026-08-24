@@ -15,6 +15,8 @@ class CoordinatorController {
         Auth::requireRole(['coordinator', 'admin', 'registrar']);
         $db = Database::getConnection();
 
+        $activeSy = $db->query("SELECT * FROM school_years WHERE is_active = 1 LIMIT 1")->fetch();
+
         $tracks = $db->query("SELECT * FROM tracks ORDER BY id ASC")->fetchAll();
         $strands = $db->query("
             SELECT s.*, t.name as track_name, t.code as track_code,
@@ -40,10 +42,58 @@ class CoordinatorController {
         ")->fetchAll();
 
         Response::success('Curriculum details loaded', [
-            'tracks'       => $tracks,
-            'strands'      => $strands,
-            'grade_levels' => $gradeLevels,
-            'subjects'     => $subjects
+            'tracks'              => $tracks,
+            'strands'             => $strands,
+            'grade_levels'        => $gradeLevels,
+            'subjects'            => $subjects,
+            'active_school_year'  => $activeSy ?: null,
+            'curriculum_locked'   => !empty($activeSy['curriculum_locked']) ? 1 : 0
+        ]);
+    }
+
+    /**
+     * Declare & Lock / Unlock School Year Curriculum.
+     */
+    public function toggleCurriculumLock(): void {
+        $user = Auth::requireRole(['coordinator', 'admin']);
+        $db = Database::getConnection();
+        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        
+        $activeSy = $db->query("SELECT * FROM school_years WHERE is_active = 1 LIMIT 1")->fetch();
+        if (!$activeSy) {
+            Response::error('No active school year found.');
+        }
+
+        $syId = !empty($input['school_year_id']) ? (int)$input['school_year_id'] : (int)$activeSy['id'];
+        $sy = $db->query("SELECT * FROM school_years WHERE id = {$syId}")->fetch();
+        if (!$sy) {
+            Response::error('School year not found.');
+        }
+
+        $newLock = !empty($sy['curriculum_locked']) ? 0 : 1;
+        $declaredAt = $newLock ? date('Y-m-d H:i:s') : null;
+
+        $stmt = $db->prepare("
+            UPDATE school_years 
+            SET curriculum_locked = :lock, 
+                curriculum_declared_at = :decl_at, 
+                curriculum_declared_by = :user_id 
+            WHERE id = :id
+        ");
+        $stmt->execute([
+            'lock'    => $newLock,
+            'decl_at' => $declaredAt,
+            'user_id' => $user['id'],
+            'id'      => $syId
+        ]);
+
+        $statusText = $newLock ? "OFFICIALLY DECLARED & LOCKED" : "UNLOCKED (DRAFT SETUP MODE)";
+        Auth::logAudit('CURRICULUM_LOCK_TOGGLED', "School Year {$sy['name']} curriculum was {$statusText} by {$user['username']}", $user['id']);
+
+        Response::success("Curriculum for {$sy['name']} is now {$statusText}.", [
+            'curriculum_locked'      => $newLock,
+            'curriculum_declared_at' => $declaredAt,
+            'school_year'            => $sy['name']
         ]);
     }
 
@@ -73,7 +123,13 @@ class CoordinatorController {
 
         $db = Database::getConnection();
 
+        // 1. Guard against editing existing subjects when curriculum is locked
         if ($id) {
+            $activeSy = $db->query("SELECT * FROM school_years WHERE is_active = 1 LIMIT 1")->fetch();
+            if (!empty($activeSy['curriculum_locked'])) {
+                Response::error("Cannot modify subject '{$code}' while {$activeSy['name']} curriculum is officially declared and locked. Mid-year DepEd revisions will take effect in the next school year.");
+            }
+
             $stmt = $db->prepare("
                 UPDATE subjects SET
                     code = :code, title = :title, description = :description, category = :category,
@@ -134,7 +190,13 @@ class CoordinatorController {
 
         $db = Database::getConnection();
 
-        // 1. Check if subject is referenced in enrollment_subjects or student_grades
+        // 1. Guard against deleting subjects when curriculum is locked
+        $activeSy = $db->query("SELECT * FROM school_years WHERE is_active = 1 LIMIT 1")->fetch();
+        if (!empty($activeSy['curriculum_locked'])) {
+            Response::error("Cannot delete subjects while {$activeSy['name']} curriculum is officially declared and locked. Deleting subjects would corrupt active student records and class schedules.");
+        }
+
+        // 2. Check if subject is referenced in enrollment_subjects or student_grades
         $chk1 = $db->prepare("SELECT COUNT(*) FROM enrollment_subjects WHERE subject_id = :id");
         $chk1->execute(['id' => $id]);
         $enrolledCount = (int)$chk1->fetchColumn();
@@ -277,7 +339,13 @@ class CoordinatorController {
 
         $db = Database::getConnection();
 
-        // 1. Check references across applications, enrollments, sections, and subjects
+        // 1. Guard against deleting strands when curriculum is locked
+        $activeSy = $db->query("SELECT * FROM school_years WHERE is_active = 1 LIMIT 1")->fetch();
+        if (!empty($activeSy['curriculum_locked'])) {
+            Response::error("Cannot delete strands while {$activeSy['name']} curriculum is officially declared and locked. If this strand is being phased out by DepEd, mark it as 'Archived/Phased Out' so current students can complete their requirements.", 400);
+        }
+
+        // 2. Check references across applications, enrollments, sections, and subjects
         $chkApp = $db->prepare("SELECT COUNT(*) FROM admission_applications WHERE strand_id = :id");
         $chkApp->execute(['id' => $id]);
         $appCount = (int)$chkApp->fetchColumn();

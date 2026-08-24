@@ -96,6 +96,7 @@ export default {
 
   // Coordinator & Sectioning
   getCurriculum: () => apiRequest('coordinator/curriculum'),
+  toggleCurriculumLock: (syId) => apiRequest('coordinator/toggle-curriculum-lock', { method: 'POST', body: { school_year_id: syId } }),
   saveSubject: (data) => apiRequest('coordinator/save-subject', { method: 'POST', body: data }),
   deleteSubject: (id) => apiRequest('coordinator/delete-subject', { method: 'POST', body: { id } }),
   saveStrand: (data) => apiRequest('coordinator/save-strand', { method: 'POST', body: data }),
@@ -132,6 +133,7 @@ export default {
   getDashboardStats: () => apiRequest('admin/stats'),
   getSchoolYears: () => apiRequest('admin/school-years'),
   toggleSchoolYearLock: (syId) => apiRequest('admin/toggle-school-year-lock', { method: 'POST', body: { school_year_id: syId } }),
+  toggleAdminCurriculumLock: (syId) => apiRequest('admin/toggle-curriculum-lock', { method: 'POST', body: { school_year_id: syId } }),
   getUsers: (role = '') => apiRequest(`admin/users${role ? '&role=' + role : ''}`),
   saveUser: (data) => apiRequest('admin/save-user', { method: 'POST', body: data })
 };

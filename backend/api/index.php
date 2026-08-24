@@ -145,6 +145,9 @@ try {
         case 'coordinator/curriculum':
             (new CoordinatorController())->getCurriculum();
             break;
+        case 'coordinator/toggle-curriculum-lock':
+            (new CoordinatorController())->toggleCurriculumLock();
+            break;
         case 'coordinator/save-subject':
             (new CoordinatorController())->saveSubject();
             break;
@@ -238,6 +241,9 @@ try {
             break;
         case 'admin/toggle-school-year-lock':
             (new AdminController())->toggleSchoolYearLock();
+            break;
+        case 'admin/toggle-curriculum-lock':
+            (new AdminController())->toggleCurriculumLock();
             break;
         case 'admin/users':
             (new AdminController())->getUsers();

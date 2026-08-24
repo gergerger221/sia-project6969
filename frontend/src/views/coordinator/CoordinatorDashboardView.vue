@@ -58,6 +58,69 @@
 
     <!-- TAB 1: CURRICULUM MANAGEMENT & SUBJECTS CATALOG -->
     <div v-if="activeTab === 'curriculum'" class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+      <!-- CURRICULUM DECLARATION & LOCK STATUS BANNER -->
+      <div 
+        v-if="curriculumData.curriculum_locked"
+        class="mb-6 p-5 rounded-2xl bg-emerald-950 border border-emerald-500/40 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-lg"
+      >
+        <div class="flex items-start space-x-3.5">
+          <div class="p-2.5 rounded-xl bg-emerald-900/80 text-emerald-400 border border-emerald-500/40 shrink-0 mt-0.5">
+            <Lock class="w-5 h-5" />
+          </div>
+          <div>
+            <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+              <h3 class="font-extrabold text-sm text-emerald-200">School Year Curriculum Officially Declared & Locked</h3>
+              <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-500/40">
+                🔒 DepEd Integrity Freeze Active
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-300 mt-1 leading-relaxed max-w-3xl">
+              All <strong>{{ curriculumData.subjects?.length || 0 }} subjects</strong> and <strong>{{ curriculumData.strands?.length || 0 }} strands</strong> are officially locked from editing or deletion to protect active student permanent records (SF10 / Form 137), quarterly report cards (SF9), and section timetables. Any mid-year DepEd curriculum adjustments will apply to the next school year.
+            </p>
+          </div>
+        </div>
+
+        <button 
+          @click="toggleCurriculumDeclaration()" 
+          class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition shrink-0 flex items-center space-x-1.5"
+          title="Unlock curriculum to enable drafting modifications"
+        >
+          <Unlock class="w-3.5 h-3.5 text-amber-400" />
+          <span>Unlock Curriculum (Setup Mode)</span>
+        </button>
+      </div>
+
+      <div 
+        v-else
+        class="mb-6 p-5 rounded-2xl bg-amber-950 border border-amber-500/40 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-lg"
+      >
+        <div class="flex items-start space-x-3.5">
+          <div class="p-2.5 rounded-xl bg-amber-900/80 text-amber-400 border border-amber-500/40 shrink-0 mt-0.5">
+            <AlertCircle class="w-5 h-5" />
+          </div>
+          <div>
+            <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+              <h3 class="font-extrabold text-sm text-amber-200">Curriculum in Draft / Setup Mode</h3>
+              <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-500/40">
+                🟡 Open for Editing
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-300 mt-1 leading-relaxed max-w-3xl">
+              Curriculum learning areas, units, and strands are currently open for modifications. Once the academic year starts or official enrollments are generated, click <strong>"Declare & Lock SY Curriculum"</strong> to freeze the curriculum.
+            </p>
+          </div>
+        </div>
+
+        <button 
+          @click="toggleCurriculumDeclaration()" 
+          class="px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md transition shrink-0 flex items-center space-x-1.5"
+          title="Declare and freeze curriculum for active school year"
+        >
+          <Lock class="w-3.5 h-3.5 text-white" />
+          <span>Declare & Lock SY Curriculum</span>
+        </button>
+      </div>
+
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 border-b border-slate-100 pb-5">
         <div>
           <div class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-900 font-bold text-[10px] uppercase tracking-wider mb-1">
@@ -193,20 +256,31 @@
               </td>
               <td class="p-3.5 text-center font-mono font-bold">{{ sub.lecture_hours }}h / {{ sub.units }}u</td>
               <td class="p-3.5 text-right space-x-1 whitespace-nowrap">
-                <button 
-                  @click="openSubjectModal(sub)" 
-                  class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-purple-700 hover:bg-purple-50 transition"
-                  title="Edit curriculum subject"
-                >
-                  Edit
-                </button>
-                <button 
-                  @click="confirmDeleteSubject(sub)" 
-                  class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-rose-600 hover:bg-rose-50 transition"
-                  title="Delete or archive subject"
-                >
-                  Delete
-                </button>
+                <template v-if="curriculumData.curriculum_locked">
+                  <span 
+                    class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-500 font-semibold text-[11px] border border-slate-200 cursor-not-allowed select-none"
+                    title="Locked: Classes, grades, and transcripts are actively linked to this subject for SY 2026-2027"
+                  >
+                    <Lock class="w-3 h-3 text-slate-400" />
+                    <span>Locked</span>
+                  </span>
+                </template>
+                <template v-else>
+                  <button 
+                    @click="openSubjectModal(sub)" 
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-purple-700 hover:bg-purple-50 transition"
+                    title="Edit curriculum subject"
+                  >
+                    Edit
+                  </button>
+                  <button 
+                    @click="confirmDeleteSubject(sub)" 
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-rose-600 hover:bg-rose-50 transition"
+                    title="Delete or archive subject"
+                  >
+                    Delete
+                  </button>
+                </template>
               </td>
             </tr>
             <tr v-if="filteredSubjects.length === 0">
@@ -394,14 +468,25 @@
                 </button>
 
                 <!-- REMOVE STRAND (SOFT-ARCHIVE) -->
-                <button 
-                  @click="openRemoveStrandModal(st)"
-                  class="px-3 py-1.5 rounded-xl font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] border border-rose-200 transition flex items-center space-x-1"
-                  title="Remove strand from active offerings (moves to archived)"
-                >
-                  <Trash2 class="w-3 h-3 text-rose-600" />
-                  <span>Remove Strand</span>
-                </button>
+                <template v-if="curriculumData.curriculum_locked">
+                  <span 
+                    class="px-2.5 py-1.5 rounded-xl font-semibold bg-slate-100 text-slate-400 text-[10px] border border-slate-200 cursor-not-allowed flex items-center space-x-1"
+                    title="Locked: Active curriculum freeze prevents removing strands during running SY"
+                  >
+                    <Lock class="w-3 h-3 text-slate-400" />
+                    <span>Locked</span>
+                  </span>
+                </template>
+                <template v-else>
+                  <button 
+                    @click="openRemoveStrandModal(st)"
+                    class="px-3 py-1.5 rounded-xl font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] border border-rose-200 transition flex items-center space-x-1"
+                    title="Remove strand from active offerings (moves to archived)"
+                  >
+                    <Trash2 class="w-3 h-3 text-rose-600" />
+                    <span>Remove Strand</span>
+                  </button>
+                </template>
               </div>
             </template>
 
@@ -417,14 +502,25 @@
               </button>
 
               <!-- PERMANENT HARD DELETE -->
-              <button 
-                @click="confirmDeleteStrand(st)" 
-                class="px-2.5 py-1.5 rounded-xl font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] border border-rose-200 transition flex items-center space-x-1"
-                title="Permanently remove strand from database"
-              >
-                <Trash2 class="w-3 h-3 text-rose-600" />
-                <span>Permanently Delete</span>
-              </button>
+              <template v-if="curriculumData.curriculum_locked">
+                <span 
+                  class="px-2.5 py-1.5 rounded-xl font-semibold bg-slate-100 text-slate-400 text-[10px] border border-slate-200 cursor-not-allowed flex items-center space-x-1"
+                  title="Locked: Permanent deletion disabled while SY curriculum is locked"
+                >
+                  <Lock class="w-3 h-3 text-slate-400" />
+                  <span>Locked</span>
+                </span>
+              </template>
+              <template v-else>
+                <button 
+                  @click="confirmDeleteStrand(st)" 
+                  class="px-2.5 py-1.5 rounded-xl font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] border border-rose-200 transition flex items-center space-x-1"
+                  title="Permanently remove strand from database"
+                >
+                  <Trash2 class="w-3 h-3 text-rose-600" />
+                  <span>Permanently Delete</span>
+                </button>
+              </template>
             </template>
           </div>
         </div>
@@ -1930,7 +2026,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { Plus, Users, ArrowRightLeft, AlertCircle, CheckCircle, Search, Trash2, BookOpen, Layers, Clock, Calendar, MapPin, Sparkles, Pencil, User, ChevronDown, Check } from 'lucide-vue-next';
+import { Plus, Users, ArrowRightLeft, AlertCircle, CheckCircle, Search, Trash2, BookOpen, Layers, Clock, Calendar, MapPin, Sparkles, Pencil, User, ChevronDown, Check, Lock, Unlock } from 'lucide-vue-next';
 import api from '../../services/api';
 
 const activeTab = ref('curriculum');
@@ -2388,6 +2484,23 @@ const saveSubject = async () => {
     await loadData();
   } catch (err) {
     alert(err.message || 'Failed to save subject.');
+  }
+};
+
+const toggleCurriculumDeclaration = async () => {
+  const isLocked = curriculumData.value.curriculum_locked;
+  const promptMsg = isLocked
+    ? 'Are you sure you want to UNLOCK the curriculum (Enter Setup Mode)?\n\nThis will allow modifying and deleting subjects. Ensure that no active grading or permanent records are corrupted.'
+    : 'Are you sure you want to OFFICIALLY DECLARE & LOCK the School Year Curriculum?\n\nThis will freeze all subjects, units, and strands from accidental editing or deletion, protecting enrolled students, schedules, and DepEd SF9/SF10 permanent records.';
+
+  if (!confirm(promptMsg)) return;
+
+  try {
+    const res = await api.toggleCurriculumLock();
+    successMessage.value = res.message || 'Curriculum lock status updated.';
+    await loadData();
+  } catch (err) {
+    alert(err.message || 'Failed to update curriculum lock status.');
   }
 };
 

@@ -152,35 +152,73 @@
     </div>
 
     <!-- TAB 3: SCHOOL YEAR LOCK / UNLOCK -->
-    <div v-if="activeTab === 'school_years'" class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
-      <div class="mb-6">
-        <h2 class="text-base font-bold text-slate-800">School Year Academic Locks</h2>
-        <p class="text-xs text-slate-500">Locking a School Year closes all incoming admissions and enrollment assessment submissions.</p>
+    <div v-if="activeTab === 'school_years'" class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+      <div class="border-b border-slate-100 pb-4">
+        <h2 class="text-base font-bold text-slate-900">School Year Academic & Curriculum Governance</h2>
+        <p class="text-xs text-slate-500">Manage enrollment admission intake gates and DepEd curriculum blueprint freezes for each academic cycle.</p>
       </div>
 
       <div class="space-y-4">
-        <div v-for="sy in schoolYears" :key="sy.id" class="p-5 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center space-x-2">
-              <h3 class="font-extrabold text-base text-slate-900">{{ sy.name }} ({{ sy.code }})</h3>
-              <span v-if="sy.is_active" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                ACTIVE
-              </span>
+        <div v-for="sy in schoolYears" :key="sy.id" class="p-6 rounded-3xl border border-slate-200 bg-slate-50/60 space-y-4 shadow-2xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/70 pb-3">
+            <div>
+              <div class="flex items-center space-x-2">
+                <h3 class="font-extrabold text-base text-slate-900">{{ sy.name }} ({{ sy.code }})</h3>
+                <span v-if="sy.is_active" class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  ACTIVE SCHOOL YEAR
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">Duration: {{ sy.start_date }} to {{ sy.end_date }} • Active Term: {{ sy.active_semester }}</p>
             </div>
-            <p class="text-xs text-slate-500 mt-1">Duration: {{ sy.start_date }} to {{ sy.end_date }} • Term: {{ sy.active_semester }}</p>
           </div>
 
-          <div class="flex items-center space-x-3">
-            <span :class="sy.is_locked ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'" class="px-3 py-1 rounded-full text-xs font-bold uppercase">
-              {{ sy.is_locked ? '🔒 LOCKED' : '🔓 OPEN FOR ENROLLMENT' }}
-            </span>
-            <button 
-              @click="toggleLock(sy.id)"
-              :class="sy.is_locked ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-rose-600 hover:bg-rose-500'"
-              class="px-4 py-2 rounded-xl text-xs font-bold text-white shadow-md transition"
-            >
-              {{ sy.is_locked ? 'Unlock Enrollment' : 'Lock Enrollment' }}
-            </button>
+          <!-- DUAL CONTROLS GRID: ENROLLMENT GATE & CURRICULUM BLUEPRINT -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- 1. ENROLLMENT INTAKE LOCK -->
+            <div class="p-4 rounded-2xl bg-white border border-slate-200 flex items-center justify-between gap-3">
+              <div>
+                <div class="text-[10px] font-extrabold uppercase text-slate-400">Admission & Enrollment Gate</div>
+                <div class="font-bold text-xs text-slate-800 mt-0.5">
+                  <span :class="sy.is_locked ? 'text-rose-700 font-extrabold' : 'text-emerald-700 font-extrabold'">
+                    {{ sy.is_locked ? '🔒 INTAKE CLOSED' : '🔓 OPEN FOR ADMISSION' }}
+                  </span>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-0.5">
+                  {{ sy.is_locked ? 'New applications & payment assessments closed' : 'Accepting new admission & enrollment entries' }}
+                </div>
+              </div>
+
+              <button 
+                @click="toggleLock(sy.id)"
+                :class="sy.is_locked ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-rose-600 hover:bg-rose-500'"
+                class="px-3.5 py-2 rounded-xl text-xs font-bold text-white shadow-xs transition shrink-0"
+              >
+                {{ sy.is_locked ? 'Unlock Intake' : 'Lock Intake' }}
+              </button>
+            </div>
+
+            <!-- 2. CURRICULUM BLUEPRINT LOCK -->
+            <div class="p-4 rounded-2xl bg-white border border-slate-200 flex items-center justify-between gap-3">
+              <div>
+                <div class="text-[10px] font-extrabold uppercase text-slate-400">DepEd Curriculum Blueprint</div>
+                <div class="font-bold text-xs text-slate-800 mt-0.5">
+                  <span :class="sy.curriculum_locked ? 'text-emerald-700 font-extrabold' : 'text-amber-700 font-extrabold'">
+                    {{ sy.curriculum_locked ? '🔒 DECLARED & LOCKED' : '🟡 DRAFT / SETUP MODE' }}
+                  </span>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-0.5">
+                  {{ sy.curriculum_locked ? 'Subjects & Strands frozen (records protected)' : 'Subjects & Strands editable' }}
+                </div>
+              </div>
+
+              <button 
+                @click="toggleCurriculumLock(sy.id)"
+                :class="sy.curriculum_locked ? 'bg-slate-800 hover:bg-slate-700 text-slate-200' : 'bg-emerald-600 hover:bg-emerald-500 text-white'"
+                class="px-3.5 py-2 rounded-xl text-xs font-bold shadow-xs transition shrink-0"
+              >
+                {{ sy.curriculum_locked ? 'Unlock Setup' : 'Declare & Lock' }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -301,6 +339,24 @@ const toggleLock = async (syId) => {
     await loadSchoolYears();
   } catch (err) {
     alert(err.message || 'Failed to toggle school year lock.');
+  }
+};
+
+const toggleCurriculumLock = async (syId) => {
+  const targetSy = schoolYears.value.find(s => s.id === syId);
+  const isLocked = targetSy?.curriculum_locked;
+  const promptMsg = isLocked
+    ? `Are you sure you want to UNLOCK the curriculum for ${targetSy?.name || 'this School Year'}?\n\nThis will allow editing and deleting subjects/strands in the Coordinator dashboard.`
+    : `Are you sure you want to OFFICIALLY DECLARE & LOCK the curriculum for ${targetSy?.name || 'this School Year'}?\n\nThis will freeze all 119 subjects and strands from accidental editing or deletion, protecting ongoing student records, class schedules, and DepEd SF9/SF10 permanent records.`;
+
+  if (!confirm(promptMsg)) return;
+
+  try {
+    const res = await api.toggleAdminCurriculumLock(syId);
+    successMessage.value = res.message;
+    await loadSchoolYears();
+  } catch (err) {
+    alert(err.message || 'Failed to toggle curriculum lock.');
   }
 };
 

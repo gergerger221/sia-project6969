@@ -3,6 +3,7 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 // Public Views
 import HomeView from '../views/public/HomeView.vue';
 import LoginView from '../views/public/LoginView.vue';
+import StaffLoginView from '../views/public/StaffLoginView.vue';
 import RegisterView from '../views/public/RegisterView.vue';
 
 // Role Portals
@@ -17,6 +18,8 @@ import AdminDashboardView from '../views/admin/AdminDashboardView.vue';
 const routes = [
   { path: '/', name: 'Home', component: HomeView },
   { path: '/login', name: 'Login', component: LoginView },
+  { path: '/staff-login', name: 'StaffLogin', component: StaffLoginView },
+  { path: '/staff', redirect: '/staff-login' },
   { path: '/register', name: 'Register', component: RegisterView },
 
   // Portals with Role Guards
@@ -71,8 +74,8 @@ router.beforeEach((to, from, next) => {
   const userJson = localStorage.getItem('sia_auth_user');
   const user = userJson ? JSON.parse(userJson) : null;
 
-  // 1. If logged in and trying to access public landing / auth pages (Home, Login, Register)
-  if (token && user && (['Home', 'Login', 'Register'].includes(to.name) || to.path === '/')) {
+  // 1. If logged in and trying to access public landing / auth pages (Home, Login, StaffLogin, Register)
+  if (token && user && (['Home', 'Login', 'StaffLogin', 'Register'].includes(to.name) || to.path === '/')) {
     const targetRoute = getRoleRouteName(user.role_slug);
     if (targetRoute !== 'Home') {
       next({ name: targetRoute });

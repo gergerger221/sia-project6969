@@ -1296,10 +1296,15 @@
               v-model.number="paymongoForm.amount" 
               type="number" 
               step="any" 
+              :min="Math.min(estimatedAssessment.downpayment, estimatedAssessment.netPayable)"
+              :max="estimatedAssessment.netPayable"
               required 
               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-mono font-black text-emerald-800 text-sm focus:ring-2 focus:ring-emerald-500" 
             />
-            <div class="text-[10px] text-slate-500 mt-1">Minimum Downpayment: ₱{{ estimatedAssessment.downpayment.toLocaleString('en-US', {minimumFractionDigits: 2}) }}</div>
+            <div class="flex items-center justify-between text-[10px] mt-1">
+              <span class="text-slate-500">Min: ₱{{ Math.min(estimatedAssessment.downpayment, estimatedAssessment.netPayable).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</span>
+              <span class="text-emerald-700 font-bold">Max (Full Balance): ₱{{ estimatedAssessment.netPayable.toLocaleString('en-US', {minimumFractionDigits: 2}) }}</span>
+            </div>
           </div>
 
           <!-- Proof of Payment / Receipt File Upload -->
@@ -2088,6 +2093,18 @@ const submitOnlinePayment = async () => {
   }
   if (!paymongoForm.value.amount || paymongoForm.value.amount <= 0) {
     paymongoError.value = 'Please enter a valid payment amount.';
+    return;
+  }
+  const minRequired = Math.min(estimatedAssessment.value.downpayment || 3000, estimatedAssessment.value.netPayable || 0);
+  const maxAllowed = estimatedAssessment.value.netPayable || 0;
+
+  if (paymongoForm.value.amount < minRequired) {
+    paymongoError.value = `Payment amount (₱${Number(paymongoForm.value.amount).toLocaleString('en-US', {minimumFractionDigits: 2})}) is below the required minimum of ₱${Number(minRequired).toLocaleString('en-US', {minimumFractionDigits: 2})}.`;
+    return;
+  }
+
+  if (maxAllowed > 0 && paymongoForm.value.amount > maxAllowed) {
+    paymongoError.value = `Payment amount (₱${Number(paymongoForm.value.amount).toLocaleString('en-US', {minimumFractionDigits: 2})}) exceeds the maximum settle limit / remaining balance of ₱${Number(maxAllowed).toLocaleString('en-US', {minimumFractionDigits: 2})}.`;
     return;
   }
   if (!paymongoForm.value.receipt_file && !onlineSubmission.value?.receipt_file_path) {

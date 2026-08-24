@@ -599,6 +599,20 @@ class AdmissionController {
                 Response::error('Please specify a valid payment amount.', 422);
             }
 
+            // Payment Amount Limiter Validation (Minimum Downpayment & Maximum Outstanding Balance)
+            $maxPayable = (float)($enr['remaining_balance'] > 0 ? $enr['remaining_balance'] : $enr['net_payable']);
+            $minRequired = min((float)($enr['minimum_downpayment'] ?? 3000.00), $maxPayable);
+
+            if ($amountSubmitted < $minRequired) {
+                $db->rollBack();
+                Response::error("Payment amount (₱" . number_format($amountSubmitted, 2) . ") is below the minimum required amount of ₱" . number_format($minRequired, 2) . ".", 422);
+            }
+
+            if ($maxPayable > 0 && $amountSubmitted > $maxPayable) {
+                $db->rollBack();
+                Response::error("Payment amount (₱" . number_format($amountSubmitted, 2) . ") exceeds the maximum settle limit / remaining balance of ₱" . number_format($maxPayable, 2) . ". You cannot overpay your assessment.", 422);
+            }
+
             // Prevent duplicate reference numbers across existing verified payments and active submissions
             $chkDupPay = $db->prepare("SELECT id FROM payments WHERE reference_no = :ref LIMIT 1");
             $chkDupPay->execute(['ref' => $referenceNo]);
@@ -646,7 +660,9 @@ class AdmissionController {
                         assessment_id = :ass_id,
                         enrollment_id = :enr_id,
                         payment_channel = :channel,
-                        amount_submitted = :amount,
+                        amount_paid = :amount,
+                        amount_submitted = :amount2,
+                        payment_date = CURRENT_DATE,
                         reference_no = :ref,
                         account_name = :acc_name,
                         account_number = :acc_no,
@@ -662,6 +678,7 @@ class AdmissionController {
                     'enr_id'   => $enr['id'],
                     'channel'  => $paymentChannel,
                     'amount'   => $amountSubmitted,
+                    'amount2'  => $amountSubmitted,
                     'ref'      => $referenceNo,
                     'acc_name' => $accountName,
                     'acc_no'   => $accountNumber,
@@ -675,11 +692,11 @@ class AdmissionController {
                 $insSub = $db->prepare("
                     INSERT INTO online_payment_submissions (
                         assessment_id, enrollment_id, application_id, payment_channel,
-                        amount_submitted, reference_no, account_name, account_number,
+                        amount_paid, amount_submitted, payment_date, reference_no, account_name, account_number,
                         receipt_file_path, receipt_original_name, status
                     ) VALUES (
                         :ass_id, :enr_id, :app_id, :channel,
-                        :amount, :ref, :acc_name, :acc_no,
+                        :amount, :amount2, CURRENT_DATE, :ref, :acc_name, :acc_no,
                         :rec_path, :rec_name, 'Pending Verification'
                     )
                 ");
@@ -689,6 +706,7 @@ class AdmissionController {
                     'app_id'   => $app['id'],
                     'channel'  => $paymentChannel,
                     'amount'   => $amountSubmitted,
+                    'amount2'  => $amountSubmitted,
                     'ref'      => $referenceNo,
                     'acc_name' => $accountName,
                     'acc_no'   => $accountNumber,

@@ -89,6 +89,12 @@ try {
         case 'auth/logout':
             (new AuthController())->logout();
             break;
+        case 'auth/smtp-config':
+            (new AuthController())->getSmtpConfig();
+            break;
+        case 'auth/test-smtp':
+            (new AuthController())->testSmtp();
+            break;
 
         // --- ADMISSION PORTAL ---
         case 'admission/my-application':

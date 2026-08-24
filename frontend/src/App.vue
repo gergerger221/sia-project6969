@@ -26,6 +26,11 @@
             <span>Admissions: <strong>(055) 888-7766</strong> / <strong>0917-111-0001</strong></span>
           </div>
           <span class="text-slate-700 hidden sm:inline">|</span>
+          <router-link to="/smtp-simulator" class="text-amber-400 hover:text-amber-300 transition flex items-center space-x-1 font-bold">
+            <Mail class="w-3 h-3 text-amber-400" />
+            <span>SMTP Simulator</span>
+          </router-link>
+          <span class="text-slate-700">|</span>
           <router-link to="/staff-login" class="text-slate-400 hover:text-amber-300 transition flex items-center space-x-1">
             <ShieldCheck class="w-3 h-3 text-amber-400" />
             <span>Faculty & Staff</span>

@@ -141,5 +141,9 @@ export default {
   saveSchoolYear: (data) => apiRequest('admin/save-school-year', { method: 'POST', body: data }),
   setActiveSchoolYear: (syId) => apiRequest('admin/set-active-school-year', { method: 'POST', body: { school_year_id: syId } }),
   getUsers: (role = '') => apiRequest(`admin/users${role ? '&role=' + role : ''}`),
-  saveUser: (data) => apiRequest('admin/save-user', { method: 'POST', body: data })
+  saveUser: (data) => apiRequest('admin/save-user', { method: 'POST', body: data }),
+
+  // SMTP Testing Simulator
+  getSmtpConfig: () => apiRequest('auth/smtp-config'),
+  testSmtp: (data) => apiRequest('auth/test-smtp', { method: 'POST', body: data })
 };

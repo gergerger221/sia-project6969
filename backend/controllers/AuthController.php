@@ -291,4 +291,90 @@ class AuthController {
         }
         Response::success('Logged out successfully');
     }
+
+    /**
+     * Get Current SMTP Configuration & Status for Testing Simulator
+     */
+    public function getSmtpConfig(): void {
+        $config = \App\Config\MailConfig::get();
+        // Mask password for security
+        $config['password_set'] = !empty($config['password']);
+        $config['password'] = !empty($config['password']) ? '••••••••••••••••' : '(Not configured)';
+
+        // Fetch recent mail audit logs
+        $db = Database::getConnection();
+        $logs = $db->query("
+            SELECT * FROM audit_logs 
+            WHERE action = 'EMAIL_DISPATCH' 
+            ORDER BY id DESC LIMIT 15
+        ")->fetchAll();
+
+        Response::success('SMTP configuration loaded', [
+            'config' => $config,
+            'recent_logs' => $logs
+        ]);
+    }
+
+    /**
+     * Test SMTP Email Dispatch Simulation
+     */
+    public function testSmtp(): void {
+        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        $type = $input['type'] ?? 'registration'; // registration, approval, enrollment, custom
+        $recipientEmail = trim($input['recipient_email'] ?? '');
+        $recipientName = trim($input['recipient_name'] ?? 'Test Recipient');
+
+        if (!$recipientEmail || !filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
+            Response::error('Please provide a valid recipient email address.');
+        }
+
+        $result = [];
+
+        switch ($type) {
+            case 'registration':
+                $result = Mailer::sendApplicantRegistration([
+                    'first_name'     => $input['first_name'] ?? 'Juan',
+                    'last_name'      => $input['last_name'] ?? 'Dela Cruz',
+                    'email'          => $recipientEmail,
+                    'username'       => $input['username'] ?? 'juandelacruz123',
+                    'application_no' => $input['application_no'] ?? ('ADM-' . date('Y') . '-9999')
+                ]);
+                break;
+
+            case 'approval':
+                $result = Mailer::sendRegistrarApproval([
+                    'first_name'   => $input['first_name'] ?? 'Juan',
+                    'last_name'    => $input['last_name'] ?? 'Dela Cruz',
+                    'email'        => $recipientEmail,
+                    'student_no'   => $input['student_no'] ?? (date('Y') . '-SHS-0099'),
+                    'section_name' => $input['section_name'] ?? '11 - STEM Einstein'
+                ], [
+                    'assessment_no'   => $input['assessment_no'] ?? ('ASS-' . date('Y') . '-0099'),
+                    'net_amount'      => (float)($input['net_amount'] ?? 12500.00),
+                    'min_downpayment' => 3000.00
+                ]);
+                break;
+
+            case 'enrollment':
+                $result = Mailer::sendOfficialEnrollment([
+                    'first_name' => $input['first_name'] ?? 'Juan',
+                    'last_name'  => $input['last_name'] ?? 'Dela Cruz',
+                    'email'      => $recipientEmail,
+                    'student_id' => $input['student_id'] ?? (date('Y') . '-SHS-0099')
+                ], [
+                    'or_number'   => $input['or_number'] ?? ('OR-' . date('Y') . '-0099'),
+                    'amount_paid' => (float)($input['amount_paid'] ?? 3000.00)
+                ]);
+                break;
+
+            case 'custom':
+            default:
+                $subject = $input['subject'] ?? 'SMTP Test Ping - JJKINGS Biringan School';
+                $body = $input['body'] ?? '<p>This is an automated SMTP test email from the SIA Enrollment System.</p>';
+                $result = Mailer::send($recipientEmail, $recipientName, $subject, $body);
+                break;
+        }
+
+        Response::success('SMTP Test Triggered Successfully', $result);
+    }
 }

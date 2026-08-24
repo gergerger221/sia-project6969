@@ -5,6 +5,7 @@ import HomeView from '../views/public/HomeView.vue';
 import LoginView from '../views/public/LoginView.vue';
 import StaffLoginView from '../views/public/StaffLoginView.vue';
 import RegisterView from '../views/public/RegisterView.vue';
+import SmtpSimulatorView from '../views/public/SmtpSimulatorView.vue';
 
 // Role Portals
 import AdmissionProcedureView from '../views/applicant/AdmissionProcedureView.vue';
@@ -21,6 +22,8 @@ const routes = [
   { path: '/staff-login', name: 'StaffLogin', component: StaffLoginView },
   { path: '/staff', redirect: '/staff-login' },
   { path: '/register', name: 'Register', component: RegisterView },
+  { path: '/smtp-simulator', name: 'SmtpSimulator', component: SmtpSimulatorView },
+  { path: '/smtp-test', redirect: '/smtp-simulator' },
 
   // Portals with Role Guards
   { path: '/admission', name: 'AdmissionProcedure', component: AdmissionProcedureView, meta: { requiresAuth: true, roles: ['applicant'] } },

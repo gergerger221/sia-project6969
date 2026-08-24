@@ -539,27 +539,7 @@ class AdmissionController {
             if ($paymentType === 'walkin') {
                 $location = 'Main Cashier Office, Bldg A, 123 Education Blvd, U-Belt, Manila';
                 $amountDue = (float)($input['amount'] ?? $_POST['amount'] ?? $enr['minimum_downpayment'] ?? 3000.00);
-
-                // Generate Walk-in Payment Ticket
-                $payCount = $db->query("SELECT COUNT(*) FROM student_assessments WHERE walkin_ticket_no IS NOT NULL OR payment_ticket IS NOT NULL")->fetchColumn();
-                $ticketNo = 'PAY-' . date('Y') . '-' . str_pad((string)((int)$payCount + 101), 4, '0', STR_PAD_LEFT);
-
-                $upAss = $db->prepare("
-                    UPDATE student_assessments SET 
-                        payment_ticket = :ticket,
-                        walkin_ticket_no = :ticket2,
-                        walkin_location = :loc,
-                        payment_mode = 'Walk-in Cashier',
-                        payment_verification_status = 'Awaiting Payment',
-                        status = 'Walk-in Payment Scheduled'
-                    WHERE id = :id
-                ");
-                $upAss->execute([
-                    'ticket'  => $ticketNo,
-                    'ticket2' => $ticketNo,
-                    'loc'     => $location,
-                    'id'      => $enr['assessment_id']
-                ]);
+                $ticketNo = 'PAY-' . date('Y') . '-' . str_pad((string)((int)$app['id'] + 101), 4, '0', STR_PAD_LEFT);
 
                 // Update application status
                 $db->prepare("UPDATE admission_applications SET status = 'Walk-in Payment Scheduled' WHERE id = :id")->execute(['id' => $app['id']]);
@@ -716,16 +696,7 @@ class AdmissionController {
                 $submissionId = $db->lastInsertId();
             }
 
-            // Update Assessment and Application status to Awaiting Verification
-            $upAss = $db->prepare("
-                UPDATE student_assessments SET
-                    payment_mode = 'Online PayMongo',
-                    payment_verification_status = 'Pending Verification',
-                    status = 'Payment Submitted – Awaiting Verification'
-                WHERE id = :id
-            ");
-            $upAss->execute(['id' => $enr['assessment_id']]);
-
+            // Update Application status to Awaiting Verification
             $db->prepare("UPDATE admission_applications SET status = 'Payment Submitted – Awaiting Verification' WHERE id = :id")->execute(['id' => $app['id']]);
 
             $db->commit();

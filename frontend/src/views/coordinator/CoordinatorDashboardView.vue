@@ -912,7 +912,8 @@
               <div 
                 v-for="item in getSchedulesForDay(day)" 
                 :key="item.id"
-                class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm hover:border-purple-300 transition text-xs space-y-1.5 group"
+                @click="openScheduleModal(item)"
+                class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm hover:border-purple-400 hover:shadow-md transition text-xs space-y-1.5 group cursor-pointer"
               >
                 <div class="flex items-center justify-between">
                   <span class="font-mono font-extrabold text-[10px] text-purple-700">{{ item.subject_code }}</span>
@@ -935,23 +936,13 @@
                   <span class="truncate">{{ item.room || 'Room Unassigned' }}</span>
                 </div>
 
-                <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                <div class="pt-2 border-t border-slate-100 flex items-center justify-center">
                   <button 
                     type="button"
-                    @click.stop="openScheduleModal(item)" 
-                    class="px-2.5 py-1 rounded-lg font-bold text-[10px] bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 transition flex items-center space-x-1 shadow-2xs"
+                    class="w-full py-1.5 rounded-lg font-bold text-[10px] bg-purple-50 group-hover:bg-purple-600 group-hover:text-white text-purple-700 border border-purple-200 group-hover:border-purple-600 transition flex items-center justify-center space-x-1 shadow-2xs"
                   >
                     <Pencil class="w-2.5 h-2.5" />
                     <span>Edit Period</span>
-                  </button>
-
-                  <button 
-                    type="button"
-                    @click.stop="openDeleteScheduleModal(item)" 
-                    class="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition"
-                    title="Remove period from section timetable"
-                  >
-                    <Trash2 class="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
@@ -996,9 +987,8 @@
                     {{ sch.teacher_first ? sch.teacher_first + ' ' + sch.teacher_last : 'None Assigned' }}
                   </td>
                   <td class="p-3 font-mono text-slate-600">{{ sch.room || 'Unassigned' }}</td>
-                  <td class="p-3 text-right space-x-1.5">
-                    <button @click="openScheduleModal(sch)" class="text-purple-600 font-bold hover:underline">Edit</button>
-                    <button @click="openDeleteScheduleModal(sch)" class="text-rose-600 font-bold hover:underline">Delete</button>
+                  <td class="p-3 text-right">
+                    <button @click="openScheduleModal(sch)" class="px-2.5 py-1 rounded-lg text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 font-bold transition">Edit Period</button>
                   </td>
                 </tr>
                 <tr v-if="!activeSectionSchedule?.schedules || activeSectionSchedule.schedules.length === 0">

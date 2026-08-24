@@ -181,6 +181,7 @@ const handleLogin = async () => {
     if (res.data && res.data.token) {
       localStorage.setItem('sia_auth_token', res.data.token);
       localStorage.setItem('sia_auth_user', JSON.stringify(res.data));
+      window.dispatchEvent(new Event('auth-changed'));
 
       const targetRoute = getRoleRouteName(res.data.role_slug);
       router.push({ name: targetRoute });

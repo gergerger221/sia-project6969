@@ -470,7 +470,7 @@ class TreasuryController {
             $stmt = $db->prepare("
                 SELECT ops.*, 
                        sa.net_payable, sa.total_paid, sa.remaining_balance, sa.minimum_downpayment,
-                       e.id as enr_id, e.student_no, e.section_id, e.grade_level_id, e.strand_id,
+                       e.id as enr_id, e.student_no, e.section_id, e.grade_level_id, e.strand_id, e.school_year_id,
                        a.id as app_id, a.first_name, a.middle_name, a.last_name, a.application_no, a.student_no as app_student_no,
                        gl.category as grade_category
                 FROM online_payment_submissions ops
@@ -694,8 +694,7 @@ class TreasuryController {
                     status = 'Officially Enrolled',
                     student_id = :stud_user_id,
                     student_no = :stud_no,
-                    approved_by = :app_by,
-                    enrolled_at = CURRENT_TIMESTAMP
+                    approved_by = :app_by
                 WHERE id = :id
             ");
             $upEnr->execute([
@@ -703,6 +702,21 @@ class TreasuryController {
                 'stud_no'      => $studentNo,
                 'app_by'       => $staff['id'],
                 'id'           => $sub['enr_id']
+            ]);
+
+            // 7. Initialize DepEd SF9/SF10 Scholastic Record for official student
+            $insRec = $db->prepare("
+                INSERT INTO scholastic_records (student_id, school_year_id, grade_level_id, strand_id, section_id, status)
+                VALUES (:student_id, :sy_id, :gl_id, :strand_id, :sec_id, 'Promoted')
+                ON DUPLICATE KEY UPDATE section_id = :sec_id2
+            ");
+            $insRec->execute([
+                'student_id' => $studentUserId,
+                'sy_id'      => $sub['school_year_id'],
+                'gl_id'      => $sub['grade_level_id'],
+                'strand_id'  => $sub['strand_id'],
+                'sec_id'     => $sub['section_id'],
+                'sec_id2'    => $sub['section_id']
             ]);
 
             $db->commit();

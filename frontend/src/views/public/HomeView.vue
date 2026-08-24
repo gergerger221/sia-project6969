@@ -2,224 +2,304 @@
   <div class="min-h-screen bg-slate-100 text-slate-900 font-sans selection:bg-amber-500 selection:text-white pb-12">
     
     <!-- ========================================================================= -->
-    <!-- 1. HERO CAMPUS SLIDER (Centerpiece - Dynamic Autoplay Carousel)           -->
+    <!-- 1. HERO SECTION: JUNIOR & SENIOR HIGH SCHOOL ENROLLMENT SYSTEM            -->
     <!-- ========================================================================= -->
     <section 
-      class="relative overflow-hidden bg-[#08182b] text-white select-none shadow-xl border-b-4 border-amber-500"
-      @mouseenter="pauseSlider"
-      @mouseleave="resumeSlider"
-      @keydown.left="prevSlide"
-      @keydown.right="nextSlide"
-      tabindex="0"
-      aria-label="JJKINGS Biringan School Hero Slider"
+      class="relative overflow-hidden bg-gradient-to-br from-[#061322] via-[#0c2340] to-[#0a1b2f] text-white border-b-4 border-amber-500 shadow-2xl"
     >
-      <div class="relative h-[480px] sm:h-[540px] lg:h-[580px] w-full overflow-hidden">
-        <transition-group name="slide-fade">
-          <div 
-            v-for="(slide, index) in slides" 
-            :key="slide.id"
-            v-show="currentSlide === index"
-            class="absolute inset-0 w-full h-full"
-          >
-            <!-- Background Image with Academic Contrast Gradient -->
-            <div class="absolute inset-0 bg-[#08182b]">
-              <img 
-                :src="slide.image" 
-                :alt="slide.titleHighlight" 
-                class="w-full h-full object-cover object-center transform scale-105 animate-kenburns transition-all duration-1000"
-              />
-              <div class="absolute inset-0 bg-gradient-to-r from-[#08182b] via-[#08182b]/85 to-[#08182b]/35"></div>
-              <div class="absolute inset-0 bg-gradient-to-t from-[#08182b] via-transparent to-[#08182b]/60"></div>
+      <!-- Academic Background Elements & Contrast Overlay -->
+      <div class="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] [background-size:28px_28px] opacity-20 pointer-events-none"></div>
+      <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-blue-500/15 blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-amber-500/15 blur-3xl pointer-events-none"></div>
+
+      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 flex flex-col lg:flex-row items-center justify-between gap-10">
+        
+        <!-- Left: Hero Headline & Clear Primary Call-to-Actions -->
+        <div class="max-w-2xl space-y-5 text-center lg:text-left z-10">
+          
+          <!-- Official Institutional Badge -->
+          <div class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-amber-500/15 backdrop-blur-md border border-amber-400/40 text-amber-300 text-xs font-black uppercase tracking-wider shadow-sm">
+            <Sparkles class="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span>DepEd School ID: 405621 • S.Y. 2026-2027 ENROLLMENT OPEN</span>
+          </div>
+
+          <!-- Main Title -->
+          <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12] font-serif">
+            Junior & Senior High School
+            <span class="block bg-gradient-to-r from-amber-300 via-amber-200 to-yellow-400 bg-clip-text text-transparent mt-1">
+              Enrollment System
+            </span>
+          </h1>
+
+          <!-- Short Description -->
+          <p class="text-sm sm:text-base text-slate-200 leading-relaxed font-normal max-w-xl mx-auto lg:mx-0 drop-shadow-xs">
+            Enroll, submit requirements, track your application, and access your student records online for <strong>Junior High School (Grades 7–10)</strong> and <strong>Senior High School (Grades 11–12)</strong>.
+          </p>
+
+          <!-- Core Feature Badges -->
+          <div class="flex flex-wrap items-center justify-center lg:justify-start gap-2 pt-1">
+            <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-slate-900/80 backdrop-blur-md border border-slate-700 text-xs font-bold text-slate-200 shadow-xs">
+              <CheckCircle class="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span>Grades 7 to 10 (JHS)</span>
+            </div>
+            <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-slate-900/80 backdrop-blur-md border border-slate-700 text-xs font-bold text-slate-200 shadow-xs">
+              <CheckCircle class="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span>Grades 11 & 12 (SHS Strands)</span>
+            </div>
+            <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-slate-900/80 backdrop-blur-md border border-slate-700 text-xs font-bold text-slate-200 shadow-xs">
+              <CheckCircle class="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              <span>100% DepEd Voucher Subsidy</span>
+            </div>
+          </div>
+
+          <!-- Primary Call-to-Action Buttons -->
+          <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-3">
+            
+            <!-- 1. Apply for Enrollment -->
+            <router-link 
+              to="/register" 
+              class="px-6 py-3.5 rounded-xl text-xs sm:text-sm font-black bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-xl shadow-amber-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center space-x-2 cursor-pointer border-2 border-amber-300"
+            >
+              <UserPlus class="w-4 h-4 text-slate-950" />
+              <span>Apply for Enrollment</span>
+              <ArrowRight class="w-4 h-4 text-slate-950" />
+            </router-link>
+
+            <!-- 2. Student Login -->
+            <router-link 
+              to="/login" 
+              class="px-5 py-3.5 rounded-xl text-xs sm:text-sm font-extrabold bg-blue-900/90 hover:bg-blue-800 text-white border-2 border-blue-400/50 hover:border-amber-400 backdrop-blur-md shadow-lg transition-all flex items-center space-x-2 cursor-pointer"
+            >
+              <GraduationCap class="w-4 h-4 text-amber-300" />
+              <span>Student Login</span>
+            </router-link>
+
+            <!-- 3. Staff Login -->
+            <router-link 
+              to="/staff-login" 
+              class="px-5 py-3.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-amber-400 backdrop-blur-md transition-all flex items-center space-x-2 cursor-pointer"
+            >
+              <ShieldCheck class="w-4 h-4 text-amber-400" />
+              <span>Staff Login</span>
+            </router-link>
+
+          </div>
+
+        </div>
+
+        <!-- Right: Educational Visual Showcase Card (Representing both JHS & SHS) -->
+        <div class="w-full lg:max-w-md z-10">
+          <div class="p-6 rounded-3xl bg-slate-900/90 backdrop-blur-xl border-2 border-amber-400/50 shadow-2xl space-y-4 text-slate-100">
+            
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/50 text-amber-400 flex items-center justify-center">
+                  <GraduationCap class="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 class="text-sm font-black font-serif text-white">Academic Pathways</h2>
+                  <p class="text-[10px] text-slate-400">JHS & SHS Programs Available</p>
+                </div>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                Active S.Y.
+              </span>
             </div>
 
-            <!-- Slide Content Overlay -->
-            <div class="relative z-10 max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
-              <div class="max-w-3xl space-y-3 sm:space-y-4 pt-2">
-                
-                <!-- Ribbon Badge -->
-                <div class="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-amber-500/20 backdrop-blur-md border border-amber-400/50 text-amber-300 text-xs font-black uppercase tracking-wider shadow-sm">
-                  <Sparkles class="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                  <span>{{ slide.badge }}</span>
-                </div>
-
-                <!-- Main Title -->
-                <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.15] font-serif">
-                  {{ slide.titlePrefix }}
-                  <span class="block bg-gradient-to-r from-amber-300 via-amber-200 to-yellow-400 bg-clip-text text-transparent mt-0.5">
-                    {{ slide.titleHighlight }}
-                  </span>
-                </h1>
-
-                <!-- Subtitle / Mission Statement -->
-                <p class="text-xs sm:text-sm lg:text-base text-slate-200 leading-relaxed max-w-2xl font-normal drop-shadow-xs">
-                  {{ slide.description }}
-                </p>
-
-                <!-- Core Highlights Tags -->
-                <div class="flex flex-wrap items-center gap-2 pt-1">
-                  <div 
-                    v-for="(feat, fIdx) in slide.features" 
-                    :key="fIdx"
-                    class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-slate-900/80 backdrop-blur-md border border-slate-700 text-[11px] font-bold text-slate-200 shadow-xs"
-                  >
-                    <CheckCircle class="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                    <span>{{ feat }}</span>
+            <!-- Quick Program Highlights -->
+            <div class="space-y-2.5 text-xs">
+              <div class="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-between hover:border-blue-400 transition">
+                <div class="flex items-center space-x-3">
+                  <div class="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 flex items-center justify-center font-black text-xs font-mono">
+                    JHS
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-white text-xs">Junior High School</h3>
+                    <p class="text-[10px] text-slate-400">Grades 7, 8, 9, 10 • MATATAG</p>
                   </div>
                 </div>
+                <span class="text-[10px] text-amber-300 font-bold">ESC Subsidy</span>
+              </div>
 
-                <!-- Call to Action Buttons -->
-                <div class="flex flex-wrap items-center gap-3 pt-2">
-                  <router-link 
-                    :to="slide.primaryCtaLink" 
-                    class="px-6 py-3 rounded-xl text-xs sm:text-sm font-black bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center space-x-2 cursor-pointer border border-amber-400"
-                  >
-                    <component :is="slide.primaryCtaIcon" class="w-4 h-4 text-slate-950" />
-                    <span>{{ slide.primaryCtaText }}</span>
-                  </router-link>
-
-                  <button 
-                    @click="activeHubTab = slide.hubTab" 
-                    class="px-5 py-3 rounded-xl text-xs sm:text-sm font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-600 hover:border-amber-400 backdrop-blur-md transition-all flex items-center space-x-1.5 cursor-pointer"
-                  >
-                    <span>{{ slide.secondaryCtaText }}</span>
-                    <ArrowRight class="w-3.5 h-3.5 text-amber-400" />
-                  </button>
+              <div class="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-between hover:border-amber-400 transition">
+                <div class="flex items-center space-x-3">
+                  <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-xs font-mono">
+                    SHS
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-white text-xs">SHS Academic Track</h3>
+                    <p class="text-[10px] text-slate-400">STEM, ABM, HUMSS, GAS</p>
+                  </div>
                 </div>
+                <span class="text-[10px] text-emerald-400 font-bold">100% Voucher</span>
+              </div>
 
+              <div class="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-between hover:border-purple-400 transition">
+                <div class="flex items-center space-x-3">
+                  <div class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center font-black text-xs font-mono">
+                    TVL
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-white text-xs">SHS TVL Track</h3>
+                    <p class="text-[10px] text-slate-400">ICT (Programming) & HE (Culinary)</p>
+                  </div>
+                </div>
+                <span class="text-[10px] text-purple-300 font-bold">TESDA NC II</span>
               </div>
             </div>
+
+            <!-- Quick Action in Card -->
+            <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-xs">
+              <span class="text-slate-400 text-[11px]">Ready to enroll?</span>
+              <button 
+                type="button"
+                @click="activeHubTab = 'academics'" 
+                class="text-amber-400 hover:text-amber-300 font-bold inline-flex items-center space-x-1 cursor-pointer"
+              >
+                <span>Explore All Programs</span>
+                <ArrowRight class="w-3.5 h-3.5" />
+              </button>
+            </div>
+
           </div>
-        </transition-group>
-
-        <!-- Slider Arrow Navigation Controls -->
-        <button 
-          @click="prevSlide" 
-          class="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-slate-900/80 hover:bg-amber-500 text-slate-200 hover:text-slate-950 border border-slate-700 hover:border-amber-400 backdrop-blur-md flex items-center justify-center shadow-xl transition-all hover:scale-105 active:scale-95 cursor-pointer"
-          aria-label="Previous Slide"
-        >
-          <ChevronLeft class="w-5 h-5" />
-        </button>
-
-        <button 
-          @click="nextSlide" 
-          class="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-slate-900/80 hover:bg-amber-500 text-slate-200 hover:text-slate-950 border border-slate-700 hover:border-amber-400 backdrop-blur-md flex items-center justify-center shadow-xl transition-all hover:scale-105 active:scale-95 cursor-pointer"
-          aria-label="Next Slide"
-        >
-          <ChevronRight class="w-5 h-5" />
-        </button>
-
-        <!-- Slider Bottom Bar: Slide Selector Tabs & Timer Controls -->
-        <div class="absolute bottom-5 sm:bottom-6 inset-x-0 z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2.5">
-          
-          <!-- Slide Preview Buttons -->
-          <div class="flex items-center space-x-2 overflow-x-auto max-w-full pb-1 sm:pb-0 scrollbar-none">
-            <button 
-              v-for="(slide, index) in slides" 
-              :key="slide.id"
-              @click="goToSlide(index)"
-              :class="[
-                'group px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer',
-                currentSlide === index 
-                  ? 'bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20' 
-                  : 'bg-slate-900/80 text-slate-400 hover:text-slate-200 border border-slate-800'
-              ]"
-            >
-              <span>{{ slide.shortTitle }}</span>
-            </button>
-          </div>
-
-          <!-- Slide Controls: Autoplay Pause/Play & Counter -->
-          <div class="flex items-center space-x-2.5 text-xs text-slate-400 bg-slate-900/90 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-slate-800">
-            <button 
-              @click="toggleAutoplay" 
-              class="hover:text-white transition flex items-center space-x-1 cursor-pointer" 
-              :title="isAutoplayPaused ? 'Resume Autoplay' : 'Pause Autoplay'"
-            >
-              <Play v-if="isAutoplayPaused" class="w-3.5 h-3.5 text-amber-400" />
-              <Pause v-else class="w-3.5 h-3.5 text-slate-400 hover:text-white" />
-              <span class="text-[10px] font-mono">{{ isAutoplayPaused ? 'Paused' : 'Auto' }}</span>
-            </button>
-            <span class="text-slate-600">•</span>
-            <span class="font-mono font-bold text-amber-300 text-[11px]">
-              0{{ currentSlide + 1 }}/0{{ slides.length }}
-            </span>
-          </div>
-
         </div>
 
-        <!-- Animated Slide Timer Progress Bar -->
-        <div class="absolute bottom-0 inset-x-0 h-1 bg-slate-800 z-30">
-          <div 
-            class="h-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 transition-all duration-300"
-            :style="{ width: `${progressPercent}%` }"
-          ></div>
-        </div>
       </div>
     </section>
 
     <!-- ========================================================================= -->
-    <!-- 2. QUICK SHORTCUT CARDS (Compact 4-Col Grid - No Overlap)                  -->
+    <!-- 2. ENROLLMENT LEVELS & PROGRAMS (Clear JHS & SHS Separation)               -->
     <!-- ========================================================================= -->
-    <section class="mt-6 sm:mt-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        
-        <!-- Action 1: Online Admission -->
-        <router-link 
-          to="/register" 
-          class="p-4 rounded-2xl bg-white hover:bg-slate-50 border-2 border-slate-200 hover:border-amber-500 shadow-md transition-all duration-200 hover:-translate-y-0.5 group flex items-center space-x-3.5 cursor-pointer"
-        >
-          <div class="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center shrink-0 group-hover:scale-105 transition">
-            <UserPlus class="w-5 h-5" />
-          </div>
-          <div class="min-w-0 flex-1">
-            <div class="text-[10px] font-extrabold uppercase text-emerald-700">S.Y. 2026-2027 Open</div>
-            <h3 class="text-sm font-bold text-[#0c2340] group-hover:text-blue-900 font-serif leading-tight">Online Admission</h3>
-            <p class="text-[11px] text-slate-500 truncate">Register & submit credentials</p>
-          </div>
-        </router-link>
+    <section class="mt-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-2xl mx-auto mb-6">
+        <div class="inline-block px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-900 border border-blue-200 mb-1.5">
+          Academic Levels Supported
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-black text-[#0c2340] font-serif tracking-tight">
+          Comprehensive Secondary Education
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">
+          Offering complete DepEd-recognized curriculums from Grade 7 through Grade 12 with full government tuition subsidy programs.
+        </p>
+      </div>
 
-        <!-- Action 2: Student Portal -->
-        <router-link 
-          to="/login" 
-          class="p-4 rounded-2xl bg-white hover:bg-slate-50 border-2 border-slate-200 hover:border-blue-600 shadow-md transition-all duration-200 hover:-translate-y-0.5 group flex items-center space-x-3.5 cursor-pointer"
-        >
-          <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 flex items-center justify-center shrink-0 group-hover:scale-105 transition">
-            <GraduationCap class="w-5 h-5" />
-          </div>
-          <div class="min-w-0 flex-1">
-            <div class="text-[10px] font-extrabold uppercase text-blue-700">Enrolled Students</div>
-            <h3 class="text-sm font-bold text-[#0c2340] group-hover:text-blue-900 font-serif leading-tight">Student Portal</h3>
-            <p class="text-[11px] text-slate-500 truncate">Schedules, sections & SOA</p>
-          </div>
-        </router-link>
+      <!-- Side-by-Side Dual Program Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <!-- Action 3: SHS Voucher Subsidy -->
-        <div 
-          @click="activeHubTab = 'vouchers'"
-          class="p-4 rounded-2xl bg-white hover:bg-slate-50 border-2 border-slate-200 hover:border-amber-500 shadow-md transition-all duration-200 hover:-translate-y-0.5 group flex items-center space-x-3.5 cursor-pointer"
-        >
-          <div class="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center shrink-0 group-hover:scale-105 transition">
-            <Award class="w-5 h-5" />
+        <!-- CARD 1: JUNIOR HIGH SCHOOL (GRADES 7 TO 10) -->
+        <div class="p-6 sm:p-7 rounded-3xl bg-white border-2 border-slate-200 hover:border-blue-600 shadow-md hover:shadow-xl transition-all duration-200 flex flex-col justify-between space-y-4">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 text-blue-800 flex items-center justify-center shadow-xs">
+                <BookOpen class="w-6 h-6" />
+              </div>
+              <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-blue-100 text-blue-900 border border-blue-300">
+                Grades 7, 8, 9, 10
+              </span>
+            </div>
+
+            <div>
+              <h3 class="text-xl font-black text-[#0c2340] font-serif">Junior High School (JHS)</h3>
+              <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                Foundational secondary education aligned with DepEd K-12 and MATATAG curriculum guidelines.
+              </p>
+            </div>
+
+            <!-- JHS Feature List -->
+            <ul class="space-y-2 text-xs text-slate-700 pt-1">
+              <li class="flex items-center space-x-2">
+                <CheckCircle class="w-4 h-4 text-emerald-600 shrink-0" />
+                <span><strong>Grade Levels:</strong> Grade 7, Grade 8, Grade 9, Grade 10</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <CheckCircle class="w-4 h-4 text-emerald-600 shrink-0" />
+                <span><strong>Core Disciplines:</strong> Integrated Science, Mathematics, English, TLE, AP, MAPEH</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <CheckCircle class="w-4 h-4 text-emerald-600 shrink-0" />
+                <span><strong>Tuition Support:</strong> PEAC Educational Service Contracting (ESC) Subsidy</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <CheckCircle class="w-4 h-4 text-emerald-600 shrink-0" />
+                <span><strong>Modern Learning:</strong> Interactive PC Hubs & Junior Science Laboratories</span>
+              </li>
+            </ul>
           </div>
-          <div class="min-w-0 flex-1">
-            <div class="text-[10px] font-extrabold uppercase text-amber-700">100% Subsidy</div>
-            <h3 class="text-sm font-bold text-[#0c2340] group-hover:text-blue-900 font-serif leading-tight">SHS Voucher Guide</h3>
-            <p class="text-[11px] text-slate-500 truncate">Public JHS & ESC Grants</p>
+
+          <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+            <button 
+              type="button" 
+              @click="openStrandModal(academicPrograms[0])" 
+              class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+            >
+              View JHS Details
+            </button>
+            <router-link 
+              to="/register" 
+              class="px-5 py-2.5 rounded-xl text-xs font-black bg-blue-900 hover:bg-blue-800 text-white shadow-md transition flex items-center space-x-1.5 cursor-pointer"
+            >
+              <span>Enroll for JHS</span>
+              <ArrowRight class="w-3.5 h-3.5" />
+            </router-link>
           </div>
         </div>
 
-        <!-- Action 4: Track Explorer -->
-        <div 
-          @click="activeHubTab = 'academics'"
-          class="p-4 rounded-2xl bg-white hover:bg-slate-50 border-2 border-slate-200 hover:border-purple-500 shadow-md transition-all duration-200 hover:-translate-y-0.5 group flex items-center space-x-3.5 cursor-pointer"
-        >
-          <div class="w-11 h-11 rounded-xl bg-purple-50 border border-purple-200 text-purple-700 flex items-center justify-center shrink-0 group-hover:scale-105 transition">
-            <BookOpen class="w-5 h-5" />
+        <!-- CARD 2: SENIOR HIGH SCHOOL (GRADES 11 & 12) -->
+        <div class="p-6 sm:p-7 rounded-3xl bg-white border-2 border-slate-200 hover:border-amber-500 shadow-md hover:shadow-xl transition-all duration-200 flex flex-col justify-between space-y-4">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center shadow-xs">
+                <Award class="w-6 h-6" />
+              </div>
+              <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-amber-100 text-amber-900 border border-amber-300">
+                Grades 11 & 12
+              </span>
+            </div>
+
+            <div>
+              <h3 class="text-xl font-black text-[#0c2340] font-serif">Senior High School (SHS)</h3>
+              <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                Specialized Academic and TVL tracks preparing learners for college, research, or industry certification.
+              </p>
+            </div>
+
+            <!-- SHS Feature List -->
+            <ul class="space-y-2 text-xs text-slate-700 pt-1">
+              <li class="flex items-center space-x-2">
+                <CheckCircle class="w-4 h-4 text-emerald-600 shrink-0" />
+                <span><strong>Academic Tracks:</strong> STEM, ABM, HUMSS, General Academic (GAS)</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <CheckCircle class="w-4 h-4 text-emerald-600 shrink-0" />
+                <span><strong>TVL Tracks:</strong> ICT (Programming/CSS) & Home Economics (Culinary/Cookery)</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <CheckCircle class="w-4 h-4 text-emerald-600 shrink-0" />
+                <span><strong>100% DepEd Voucher:</strong> Zero tuition top-up for Public JHS Completers</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <CheckCircle class="w-4 h-4 text-emerald-600 shrink-0" />
+                <span><strong>Certifications:</strong> TESDA NC II Assessment & Capstone Research Labs</span>
+              </li>
+            </ul>
           </div>
-          <div class="min-w-0 flex-1">
-            <div class="text-[10px] font-extrabold uppercase text-purple-700">JHS & SHS Only</div>
-            <h3 class="text-sm font-bold text-[#0c2340] group-hover:text-blue-900 font-serif leading-tight">Academic Strands</h3>
-            <p class="text-[11px] text-slate-500 truncate">JHS, STEM, ABM, TVL</p>
+
+          <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+            <button 
+              type="button" 
+              @click="activeHubTab = 'academics'" 
+              class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+            >
+              Explore SHS Strands
+            </button>
+            <router-link 
+              to="/register" 
+              class="px-5 py-2.5 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md transition flex items-center space-x-1.5 cursor-pointer border border-amber-400"
+            >
+              <span>Enroll for SHS</span>
+              <ArrowRight class="w-3.5 h-3.5" />
+            </router-link>
           </div>
         </div>
 
@@ -241,7 +321,7 @@
               class="px-4 py-2 rounded-xl text-xs transition flex items-center space-x-1.5 cursor-pointer"
             >
               <BookOpen class="w-3.5 h-3.5" />
-              <span>1. Academics (JHS & SHS)</span>
+              <span>1. Curriculums & Strands</span>
             </button>
 
             <button 
@@ -250,7 +330,7 @@
               class="px-4 py-2 rounded-xl text-xs transition flex items-center space-x-1.5 cursor-pointer"
             >
               <Layers class="w-3.5 h-3.5" />
-              <span>2. Admission Pathway</span>
+              <span>2. Admission Steps</span>
             </button>
 
             <button 
@@ -361,26 +441,61 @@
         <!-- TAB 2: ADMISSION PATHWAY -->
         <div v-show="activeHubTab === 'pathway'" class="space-y-5 animate-in fade-in duration-200">
           <div>
-            <h3 class="text-lg font-black text-[#0c2340] font-serif">Official 7-Stage Admission Pathway</h3>
-            <p class="text-xs text-slate-500">Step-by-step walkthrough from registration to official student ID creation</p>
+            <h3 class="text-lg font-black text-[#0c2340] font-serif">4-Stage Streamlined Admission Pathway</h3>
+            <p class="text-xs text-slate-500">Step-by-step walkthrough from online registration to official student ID creation</p>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div 
-              v-for="(step, idx) in workflowSteps" 
-              :key="idx" 
-              class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between"
-            >
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="p-5 rounded-2xl bg-slate-50 border-2 border-slate-200 flex flex-col justify-between space-y-2">
               <div>
-                <div class="flex items-center justify-between mb-2">
-                  <div class="w-7 h-7 rounded-lg bg-[#0c2340] text-amber-400 flex items-center justify-center text-xs font-black">
-                    {{ idx + 1 }}
-                  </div>
-                  <span class="text-[10px] uppercase font-bold text-slate-400">{{ step.tag }}</span>
+                <div class="w-8 h-8 rounded-xl bg-[#0c2340] text-amber-400 flex items-center justify-center text-xs font-black font-mono mb-2">
+                  01
                 </div>
-                <h4 class="font-bold text-xs text-[#0c2340] font-serif">{{ step.title }}</h4>
-                <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">{{ step.desc }}</p>
+                <h4 class="font-bold text-sm text-[#0c2340] font-serif">Online Registration</h4>
+                <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                  Create your applicant account, provide personal info, and enter your 12-digit DepEd LRN.
+                </p>
               </div>
+              <span class="text-[10px] font-bold text-blue-700 uppercase">Step 1: Account</span>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-slate-50 border-2 border-slate-200 flex flex-col justify-between space-y-2">
+              <div>
+                <div class="w-8 h-8 rounded-xl bg-[#0c2340] text-amber-400 flex items-center justify-center text-xs font-black font-mono mb-2">
+                  02
+                </div>
+                <h4 class="font-bold text-sm text-[#0c2340] font-serif">Upload Credentials</h4>
+                <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                  Upload clear digital scans or photos of PSA Birth Certificate, SF9 Report Card, Good Moral, & 2x2 photo.
+                </p>
+              </div>
+              <span class="text-[10px] font-bold text-amber-700 uppercase">Step 2: Documents</span>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-slate-50 border-2 border-slate-200 flex flex-col justify-between space-y-2">
+              <div>
+                <div class="w-8 h-8 rounded-xl bg-[#0c2340] text-amber-400 flex items-center justify-center text-xs font-black font-mono mb-2">
+                  03
+                </div>
+                <h4 class="font-bold text-sm text-[#0c2340] font-serif">Registrar Evaluation</h4>
+                <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                  Registrar authenticates requirements, assigns official section seating, and generates fee assessment.
+                </p>
+              </div>
+              <span class="text-[10px] font-bold text-emerald-700 uppercase">Step 3: Approval</span>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-slate-50 border-2 border-slate-200 flex flex-col justify-between space-y-2">
+              <div>
+                <div class="w-8 h-8 rounded-xl bg-[#0c2340] text-amber-400 flex items-center justify-center text-xs font-black font-mono mb-2">
+                  04
+                </div>
+                <h4 class="font-bold text-sm text-[#0c2340] font-serif">Downpayment & COR</h4>
+                <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                  Settle downpayment via PayMongo online or Walk-in Cashier to receive your official COR and Student ID.
+                </p>
+              </div>
+              <span class="text-[10px] font-bold text-purple-700 uppercase">Step 4: Enrollment</span>
             </div>
           </div>
         </div>
@@ -392,21 +507,21 @@
               <span class="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-amber-500 text-slate-950">Government Subsidy</span>
               <h3 class="text-xl font-black font-serif text-amber-300">Senior High School Voucher Program (SHS-VP)</h3>
               <p class="text-xs text-slate-300 leading-relaxed">
-                Public Junior High School Completers automatically qualify for a 100% DepEd voucher subsidy value (₱17,500 – ₱22,500/year). Zero tuition top-up options are available on selected strands.
+                Public Junior High School Completers automatically qualify for a 100% DepEd voucher subsidy value (₱17,500 – ₱22,500/year). Zero base tuition top-up options are available on selected strands.
               </p>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 pt-4 border-t border-slate-700">
-              <div class="p-3 rounded-xl bg-slate-900 border border-amber-400/40 text-center">
+              <div class="p-3.5 rounded-xl bg-slate-900 border border-amber-400/40 text-center">
                 <div class="text-xs text-amber-400 font-bold">Public JHS Completers</div>
                 <div class="text-2xl font-black font-mono mt-1">100% Grant</div>
                 <div class="text-[10px] text-slate-400 mt-0.5">No Voucher Code Needed</div>
               </div>
-              <div class="p-3 rounded-xl bg-slate-900 border border-slate-700 text-center">
+              <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-center">
                 <div class="text-xs text-blue-300 font-bold">Private ESC Grantees</div>
                 <div class="text-2xl font-black font-mono mt-1">80% Subsidy</div>
                 <div class="text-[10px] text-slate-400 mt-0.5">ESC Certificate Applied</div>
               </div>
-              <div class="p-3 rounded-xl bg-slate-900 border border-slate-700 text-center">
+              <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-700 text-center">
                 <div class="text-xs text-purple-300 font-bold">Private Non-ESC / QVR</div>
                 <div class="text-2xl font-black font-mono mt-1">50% Subsidy</div>
                 <div class="text-[10px] text-slate-400 mt-0.5">QVR Voucher Grant</div>
@@ -423,7 +538,7 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+            <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200">
               <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">Grade 7 (JHS)</span>
               <h4 class="font-bold text-sm text-[#0c2340] font-serif mt-2 mb-2">Junior High Requirements</h4>
               <ul class="text-xs text-slate-600 space-y-1.5">
@@ -434,7 +549,7 @@
               </ul>
             </div>
 
-            <div class="p-4 rounded-2xl bg-slate-50 border-2 border-amber-400">
+            <div class="p-5 rounded-2xl bg-slate-50 border-2 border-amber-400">
               <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900">Grade 11 (SHS)</span>
               <h4 class="font-bold text-sm text-[#0c2340] font-serif mt-2 mb-2">Senior High Requirements</h4>
               <ul class="text-xs text-slate-600 space-y-1.5">
@@ -446,7 +561,7 @@
               </ul>
             </div>
 
-            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+            <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200">
               <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800">Transferees</span>
               <h4 class="font-bold text-sm text-[#0c2340] font-serif mt-2 mb-2">Transferee Requirements</h4>
               <ul class="text-xs text-slate-600 space-y-1.5">
@@ -654,10 +769,6 @@ import {
   GraduationCap, 
   Award, 
   ArrowRight, 
-  ChevronLeft, 
-  ChevronRight, 
-  Play, 
-  Pause, 
   CheckCircle, 
   Check, 
   BookOpen, 
@@ -674,7 +785,8 @@ import {
   Sparkles,
   Eye,
   X,
-  Briefcase
+  Briefcase,
+  ShieldCheck
 } from 'lucide-vue-next';
 import { getRoleRouteName } from '../../router';
 import api from '../../services/api';
@@ -682,160 +794,16 @@ import api from '../../services/api';
 const router = useRouter();
 const route = useRoute();
 
-// ============================================================================
-// HERO SLIDER STATE & DATA
-// ============================================================================
-const currentSlide = ref(0);
-const autoplayInterval = ref(null);
-const isAutoplayPaused = ref(false);
-const progressPercent = ref(0);
-const progressTimer = ref(null);
-const SLIDE_DURATION = 5500;
-
 const activeHubTab = ref('academics'); // 'academics', 'pathway', 'vouchers', 'requirements', 'facilities', 'faqs'
 
 // Modal State
 const showStrandModal = ref(false);
 const selectedModalStrand = ref(null);
 
-const slides = [
-  {
-    id: 1,
-    shortTitle: '01 Campus',
-    badge: 'ENROLLMENT FOR S.Y. 2026-2027 IS OFFICIALLY OPEN',
-    titlePrefix: 'Welcome to JJKINGS Biringan School:',
-    titleHighlight: 'Where Academic Excellence Meets Character',
-    description: 'A distinguished DepEd-recognized Junior & Senior High School (JHS & SHS) committed to nurturing competitive students through modern science laboratories and values-centered formation in Biringan City.',
-    features: ['DepEd School ID: 405621', '100% DepEd Voucher Subsidy', 'Junior & Senior High School Only'],
-    image: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1600&auto=format&fit=crop',
-    primaryCtaText: 'Apply for Admission',
-    primaryCtaLink: '/register',
-    primaryCtaIcon: UserPlus,
-    secondaryCtaText: 'Academic Offerings',
-    hubTab: 'academics'
-  },
-  {
-    id: 2,
-    shortTitle: '02 STEM Labs',
-    badge: 'Senior High School Academic Track Specialization',
-    titlePrefix: 'STEM & Advanced Sciences:',
-    titleHighlight: 'Inspiring Future Engineers, Doctors & Scientists',
-    description: 'Equipped with dedicated physics, chemistry, biology, and robotics research laboratories empowering students with rigorous capstone scientific investigation.',
-    features: ['Robotics & Science Labs', 'Pre-Calculus & Physics', 'Senior High Academic Excellence'],
-    image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=1600&auto=format&fit=crop',
-    primaryCtaText: 'Explore STEM',
-    primaryCtaLink: '/register',
-    primaryCtaIcon: Compass,
-    secondaryCtaText: 'View All Strands',
-    hubTab: 'academics'
-  },
-  {
-    id: 3,
-    shortTitle: '03 Vouchers',
-    badge: '100% Government Tuition Subsidy Program',
-    titlePrefix: 'DepEd Senior High Voucher:',
-    titleHighlight: 'Quality Private Education with 100% Voucher Subsidy',
-    description: 'Public Junior High School Completers receive full 100% tuition subsidy. Zero base tuition top-up on selected strands. Private ESC and QVR grantees welcome.',
-    features: ['Up to ₱22,500 Yearly Grant', 'No Entrance Fees', 'Automatic Voucher Crediting'],
-    image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1600&auto=format&fit=crop',
-    primaryCtaText: 'Apply with Voucher',
-    primaryCtaLink: '/register',
-    primaryCtaIcon: Award,
-    secondaryCtaText: 'Voucher Guide',
-    hubTab: 'vouchers'
-  },
-  {
-    id: 4,
-    shortTitle: '04 TVL Hubs',
-    badge: 'Technical-Vocational-Livelihood Track',
-    titlePrefix: 'TVL-ICT & Culinary Arts:',
-    titleHighlight: 'Job-Ready TESDA National Certifications (NC II)',
-    description: 'Hands-on training in Computer Systems Servicing (CSS), Web Programming, Commercial Cookery, and Hotel Hospitality with high-tech PC/Mac hubs and culinary kitchens.',
-    features: ['TESDA NC II Assessment', 'Industry Immersion', 'Modern PC & Culinary Labs'],
-    image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=1600&auto=format&fit=crop',
-    primaryCtaText: 'Explore TVL',
-    primaryCtaLink: '/register',
-    primaryCtaIcon: Cpu,
-    secondaryCtaText: 'Admission Pathway',
-    hubTab: 'pathway'
-  },
-  {
-    id: 5,
-    shortTitle: '05 Campus Life',
-    badge: 'Holistic Student Formation & Athletics',
-    titlePrefix: 'Vibrant Campus Community:',
-    titleHighlight: 'Digital Library, Sports Complex & Leadership Guilds',
-    description: 'Nurturing well-rounded intellect, faith, and leadership through quiet research commons, varsity athletics, performing arts, and community service organizations.',
-    features: ['Academic Library Commons', 'Championship Varsity Sports', 'Christian Leadership Guilds'],
-    image: 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=1600&auto=format&fit=crop',
-    primaryCtaText: 'Join JJKINGS Biringan School',
-    primaryCtaLink: '/register',
-    primaryCtaIcon: UserPlus,
-    secondaryCtaText: 'Campus Facilities',
-    hubTab: 'facilities'
-  }
-];
-
-// Slider Methods
-const nextSlide = () => {
-  currentSlide.value = (currentSlide.value + 1) % slides.length;
-  resetProgress();
-};
-
-const prevSlide = () => {
-  currentSlide.value = (currentSlide.value - 1 + slides.length) % slides.length;
-  resetProgress();
-};
-
-const goToSlide = (index) => {
-  currentSlide.value = index;
-  resetProgress();
-};
-
-const pauseSlider = () => {
-  isAutoplayPaused.value = true;
-};
-
-const resumeSlider = () => {
-  isAutoplayPaused.value = false;
-};
-
-const toggleAutoplay = () => {
-  isAutoplayPaused.value = !isAutoplayPaused.value;
-};
-
-const resetProgress = () => {
-  progressPercent.value = 0;
-};
-
-const startSliderLoop = () => {
-  const stepMs = 50;
-  const increment = (stepMs / SLIDE_DURATION) * 100;
-
-  progressTimer.value = setInterval(() => {
-    if (!isAutoplayPaused.value) {
-      progressPercent.value += increment;
-      if (progressPercent.value >= 100) {
-        nextSlide();
-      }
-    }
-  }, stepMs);
-};
-
 // ============================================================================
 // ACADEMIC DATA (JHS & SHS ONLY - NO COLLEGE TOPICS)
 // ============================================================================
 const selectedTrackCategory = ref('all');
-
-const workflowSteps = [
-  { title: '1. Online Registration', desc: 'Create applicant account & receive reference code.', tag: 'Applicant' },
-  { title: '2. Program & Track', desc: 'Select JHS or SHS Track, LRN, and parent info.', tag: 'Applicant' },
-  { title: '3. Upload Credentials', desc: 'Upload scans of PSA Birth Cert, SF9, & Good Moral.', tag: 'Verification' },
-  { title: '4. Registrar Review', desc: 'Registrar validates credentials and checks status.', tag: 'Registrar' },
-  { title: '5. Section & Schedule', desc: 'Assign section seat, timetable schedule, and queue.', tag: 'Coordinator' },
-  { title: '6. Assessment & Fees', desc: 'DepEd Voucher applied. Pay downpayment online/walk-in.', tag: 'Treasury' },
-  { title: '7. Official Enrolled', desc: 'Permanent Student ID issued with portal access.', tag: 'Student' }
-];
 
 const academicPrograms = [
   {
@@ -1015,7 +983,6 @@ const closeStrandModal = () => {
 };
 
 const enrollInStrand = async (strand) => {
-  // Store chosen strand into storage so it automatically pre-populates
   const strandSelection = {
     id: strand.id,
     code: strand.code,
@@ -1037,7 +1004,6 @@ const enrollInStrand = async (strand) => {
   if (token && userJson) {
     try {
       const user = JSON.parse(userJson);
-      // If user is already logged in as applicant, automatically update their application with this strand!
       if (user.role_slug === 'applicant') {
         try {
           await api.updateApplication({
@@ -1056,7 +1022,6 @@ const enrollInStrand = async (strand) => {
     }
   }
 
-  // Not logged in: Route directly to registration with pre-selected strand
   router.push({
     path: '/register',
     query: {
@@ -1082,9 +1047,6 @@ onMounted(() => {
     }
   }
 
-  startSliderLoop();
-
-  // Handle direct tab switching event from header navigation
   const onSwitchTabEvent = (e) => {
     if (e.detail && ['academics', 'pathway', 'vouchers', 'requirements', 'facilities', 'faqs'].includes(e.detail)) {
       activeHubTab.value = e.detail;
@@ -1092,7 +1054,6 @@ onMounted(() => {
   };
   window.addEventListener('switch-home-tab', onSwitchTabEvent);
 
-  // Check if routed with query tab or sessionStorage
   const savedTab = sessionStorage.getItem('sia_active_home_tab');
   const targetTab = route.query.tab || savedTab;
   if (targetTab && ['academics', 'pathway', 'vouchers', 'requirements', 'facilities', 'faqs'].includes(targetTab)) {
@@ -1117,36 +1078,4 @@ watch(() => route.query.tab, (newTab) => {
 watch(activeHubTab, (newTab) => {
   window.dispatchEvent(new CustomEvent('switch-home-tab', { detail: newTab }));
 });
-
-onUnmounted(() => {
-  if (progressTimer.value) clearInterval(progressTimer.value);
-  if (autoplayInterval.value) clearInterval(autoplayInterval.value);
-});
 </script>
-
-<style scoped>
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: opacity 0.7s ease, transform 0.7s ease;
-}
-
-.slide-fade-enter-from {
-  opacity: 0;
-  transform: scale(1.02);
-}
-
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: scale(0.98);
-}
-
-@keyframes kenburns {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.04); }
-  100% { transform: scale(1); }
-}
-
-.animate-kenburns {
-  animation: kenburns 22s infinite ease-in-out;
-}
-</style>

@@ -45,6 +45,40 @@ class AuthController {
             Response::error('Your account is ' . strtolower($user['status']) . '. Please contact the registrar.', 403);
         }
 
+        // STRICT SERVER-SIDE PORTAL SEPARATION ENFORCEMENT
+        $portalType = trim($input['portal_type'] ?? '');
+        $staffRoles = ['admin', 'coordinator', 'registrar', 'treasury', 'records', 'teacher', 'scheduler'];
+
+        if ($portalType === 'student') {
+            if ($user['role_slug'] !== 'student') {
+                if (in_array($user['role_slug'], $staffRoles)) {
+                    Response::error('This login is for enrolled students only. Please use the Staff Login.', 403);
+                } elseif ($user['role_slug'] === 'applicant') {
+                    Response::error('This login is for officially enrolled students. If you are an applicant, please check your application status or continue your admission procedure.', 403);
+                } else {
+                    Response::error('This login is for enrolled students only. Please use the Staff Login.', 403);
+                }
+            }
+        } elseif ($portalType === 'staff') {
+            if (!in_array($user['role_slug'], $staffRoles)) {
+                if ($user['role_slug'] === 'student') {
+                    Response::error('This portal is for authorized faculty and staff personnel only. Students must log in via the Student Portal.', 403);
+                } elseif ($user['role_slug'] === 'applicant') {
+                    Response::error('This portal is for authorized faculty and staff personnel only. Applicants must log in via the Admission Portal.', 403);
+                } else {
+                    Response::error('This portal is for authorized faculty and staff personnel only.', 403);
+                }
+            }
+        } elseif ($portalType === 'applicant') {
+            if ($user['role_slug'] !== 'applicant') {
+                if ($user['role_slug'] === 'student') {
+                    Response::error('Your enrollment has already been approved! Please sign in using the Student Portal.', 403);
+                } elseif (in_array($user['role_slug'], $staffRoles)) {
+                    Response::error('This portal is for student applicants. Please use the Staff Login.', 403);
+                }
+            }
+        }
+
         $token = Auth::generateToken((int)$user['id']);
         Auth::logAudit('LOGIN', "User {$user['username']} logged in", (int)$user['id']);
 

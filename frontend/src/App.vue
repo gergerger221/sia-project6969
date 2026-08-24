@@ -4,8 +4,8 @@
     <!-- ========================================================================= -->
     <!-- 1. TOP INSTITUTIONAL BAR (School Hotlines, DepEd ID & Portals)             -->
     <!-- ========================================================================= -->
-    <div class="no-print bg-[#0a192f] text-slate-200 border-b border-[#1e293b] text-xs py-2 px-4 sm:px-6 lg:px-8">
-      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+    <div class="no-print bg-[#0a192f] text-slate-200 border-b border-[#1e293b] text-xs py-2 px-4 sm:px-8 lg:px-12 xl:px-16">
+      <div class="max-w-[1680px] 2xl:max-w-[1780px] w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
         
         <!-- Left: Official DepEd & School Accreditation Info -->
         <div class="flex items-center space-x-3 text-[11px]">
@@ -39,7 +39,7 @@
     <!-- 2. MAIN SCHOOL HEADER (Official School Crest, Typography & Navigation)    -->
     <!-- ========================================================================= -->
     <header class="no-print bg-white text-slate-900 border-b-2 border-slate-200 shadow-md sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div class="max-w-[1680px] 2xl:max-w-[1780px] w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 h-20 flex items-center justify-between">
         
         <!-- School Crest & Official Branding -->
         <router-link :to="dashboardRoute" class="flex items-center space-x-3.5 group cursor-pointer">
@@ -230,7 +230,7 @@
     <!-- 5. INSTITUTIONAL SCHOOL FOOTER (DepEd Aligned & Complete Contact)         -->
     <!-- ========================================================================= -->
     <footer class="no-print bg-[#08182b] text-slate-300 border-t-4 border-amber-500 py-12 text-xs">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-[1680px] 2xl:max-w-[1780px] w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
         
         <!-- 4-Column Academic Footer Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-10 border-b border-slate-800">

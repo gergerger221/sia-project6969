@@ -74,16 +74,6 @@
             <GraduationCap class="w-4 h-4 text-amber-300" />
             <span>Student Portal Login</span>
           </router-link>
-
-          <!-- 3. Faculty & Staff Portal -->
-          <router-link 
-            to="/staff-login" 
-            class="px-7 py-4 rounded-2xl text-xs sm:text-sm font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-amber-400 backdrop-blur-md transition-all flex items-center space-x-2 cursor-pointer"
-          >
-            <ShieldCheck class="w-4 h-4 text-amber-400" />
-            <span>Faculty & Staff Portal</span>
-          </router-link>
-
         </div>
 
       </div>

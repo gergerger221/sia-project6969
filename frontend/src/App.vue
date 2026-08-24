@@ -30,11 +30,6 @@
             <Mail class="w-3 h-3 text-amber-400" />
             <span>SMTP Simulator</span>
           </router-link>
-          <span class="text-slate-700">|</span>
-          <router-link to="/staff-login" class="text-slate-400 hover:text-amber-300 transition flex items-center space-x-1">
-            <ShieldCheck class="w-3 h-3 text-amber-400" />
-            <span>Faculty & Staff</span>
-          </router-link>
         </div>
 
       </div>

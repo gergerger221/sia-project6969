@@ -207,21 +207,34 @@
               <div>
                 <div class="text-[10px] font-extrabold uppercase text-slate-400">Admission & Enrollment Gate</div>
                 <div class="font-bold text-xs text-slate-800 mt-0.5">
-                  <span :class="sy.is_locked ? 'text-rose-700 font-extrabold' : 'text-emerald-700 font-extrabold'">
+                  <span v-if="!sy.is_active" class="text-slate-500 font-extrabold">
+                    🔒 INACTIVE CYCLE (INTAKE CLOSED)
+                  </span>
+                  <span v-else :class="sy.is_locked ? 'text-rose-700 font-extrabold' : 'text-emerald-700 font-extrabold'">
                     {{ sy.is_locked ? '🔒 INTAKE CLOSED' : '🔓 OPEN FOR ADMISSION' }}
                   </span>
                 </div>
                 <div class="text-[10px] text-slate-400 mt-0.5">
-                  {{ sy.is_locked ? 'New applications & payment assessments closed' : 'Accepting new admission & enrollment entries' }}
+                  {{ !sy.is_active ? 'Admission intake can only be opened when this cycle is Set as Active' : (sy.is_locked ? 'New applications & payment assessments closed' : 'Accepting new admission & enrollment entries') }}
                 </div>
               </div>
 
+              <!-- Active vs Inactive Intake Controls -->
               <button 
+                v-if="sy.is_active"
                 @click="toggleLock(sy.id)"
                 :class="sy.is_locked ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-rose-600 hover:bg-rose-500'"
                 class="px-3.5 py-2 rounded-xl text-xs font-bold text-white shadow-xs transition shrink-0"
               >
                 {{ sy.is_locked ? 'Unlock Intake' : 'Lock Intake' }}
+              </button>
+              <button 
+                v-else
+                disabled
+                class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none shrink-0"
+                title="Must be the Active School Year to unlock admission intake"
+              >
+                Intake Locked
               </button>
             </div>
 
@@ -235,16 +248,26 @@
                   </span>
                 </div>
                 <div class="text-[10px] text-slate-400 mt-0.5">
-                  {{ sy.curriculum_locked ? 'Subjects & Strands frozen (records protected)' : 'Subjects & Strands editable' }}
+                  {{ !sy.is_active ? 'Drafting permitted. Official DepEd freeze requires Active School Year status' : (sy.curriculum_locked ? 'Subjects & Strands frozen (records protected)' : 'Subjects & Strands editable') }}
                 </div>
               </div>
 
+              <!-- Active vs Inactive Curriculum Controls -->
               <button 
+                v-if="sy.is_active"
                 @click="openCurriculumLockModal(sy)"
                 :class="sy.curriculum_locked ? 'bg-slate-800 hover:bg-slate-700 text-slate-200' : 'bg-emerald-600 hover:bg-emerald-500 text-white'"
                 class="px-3.5 py-2 rounded-xl text-xs font-bold shadow-xs transition shrink-0"
               >
                 {{ sy.curriculum_locked ? 'Unlock Setup' : 'Declare & Lock' }}
+              </button>
+              <button 
+                v-else
+                disabled
+                class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none shrink-0"
+                title="Must be the Active School Year to declare and lock curriculum"
+              >
+                Draft Mode
               </button>
             </div>
           </div>

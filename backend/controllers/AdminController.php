@@ -65,12 +65,16 @@ class AdminController {
         }
 
         $db = Database::getConnection();
-        $sy = $db->prepare("SELECT is_locked, name FROM school_years WHERE id = :id");
+        $sy = $db->prepare("SELECT is_locked, is_active, name FROM school_years WHERE id = :id");
         $sy->execute(['id' => $id]);
         $row = $sy->fetch();
 
         if (!$row) {
             Response::error('School year not found.');
+        }
+
+        if (empty($row['is_active'])) {
+            Response::error("Cannot unlock admission intake for an inactive school year. Please set '{$row['name']}' as the active School Year first.");
         }
 
         $newLock = $row['is_locked'] ? 0 : 1;
@@ -93,12 +97,16 @@ class AdminController {
         }
 
         $db = Database::getConnection();
-        $sy = $db->prepare("SELECT curriculum_locked, name FROM school_years WHERE id = :id");
+        $sy = $db->prepare("SELECT curriculum_locked, is_active, name FROM school_years WHERE id = :id");
         $sy->execute(['id' => $id]);
         $row = $sy->fetch();
 
         if (!$row) {
             Response::error('School year not found.');
+        }
+
+        if (empty($row['is_active'])) {
+            Response::error("Cannot declare and lock curriculum for an inactive school year. Please set '{$row['name']}' as the active School Year first.");
         }
 
         $newLock = !empty($row['curriculum_locked']) ? 0 : 1;

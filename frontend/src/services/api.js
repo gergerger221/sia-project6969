@@ -134,6 +134,8 @@ export default {
   getSchoolYears: () => apiRequest('admin/school-years'),
   toggleSchoolYearLock: (syId) => apiRequest('admin/toggle-school-year-lock', { method: 'POST', body: { school_year_id: syId } }),
   toggleAdminCurriculumLock: (syId) => apiRequest('admin/toggle-curriculum-lock', { method: 'POST', body: { school_year_id: syId } }),
+  saveSchoolYear: (data) => apiRequest('admin/save-school-year', { method: 'POST', body: data }),
+  setActiveSchoolYear: (syId) => apiRequest('admin/set-active-school-year', { method: 'POST', body: { school_year_id: syId } }),
   getUsers: (role = '') => apiRequest(`admin/users${role ? '&role=' + role : ''}`),
   saveUser: (data) => apiRequest('admin/save-user', { method: 'POST', body: data })
 };

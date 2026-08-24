@@ -245,6 +245,12 @@ try {
         case 'admin/toggle-curriculum-lock':
             (new AdminController())->toggleCurriculumLock();
             break;
+        case 'admin/save-school-year':
+            (new AdminController())->saveSchoolYear();
+            break;
+        case 'admin/set-active-school-year':
+            (new AdminController())->setActiveSchoolYear();
+            break;
         case 'admin/users':
             (new AdminController())->getUsers();
             break;

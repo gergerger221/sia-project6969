@@ -127,6 +127,105 @@ class AdminController {
         ]);
     }
 
+    public function saveSchoolYear(): void {
+        $user = Auth::requireRole(['admin']);
+        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+
+        $id = !empty($input['id']) ? (int)$input['id'] : null;
+        $code = trim($input['code'] ?? '');
+        $name = trim($input['name'] ?? '');
+        $startDate = trim($input['start_date'] ?? '');
+        $endDate = trim($input['end_date'] ?? '');
+        $activeSemester = trim($input['active_semester'] ?? '1st Semester');
+        $isActive = !empty($input['is_active']) ? 1 : 0;
+        $isLocked = isset($input['is_locked']) ? (int)$input['is_locked'] : 1;
+        $curriculumLocked = isset($input['curriculum_locked']) ? (int)$input['curriculum_locked'] : 0;
+
+        if (!$code || !$name || !$startDate || !$endDate) {
+            Response::error('Code, Name, Start Date, and End Date are required.');
+        }
+
+        $db = Database::getConnection();
+
+        // Check duplicate code
+        if ($id) {
+            $dup = $db->prepare("SELECT id FROM school_years WHERE code = :code AND id != :id");
+            $dup->execute(['code' => $code, 'id' => $id]);
+        } else {
+            $dup = $db->prepare("SELECT id FROM school_years WHERE code = :code");
+            $dup->execute(['code' => $code]);
+        }
+        if ($dup->fetch()) {
+            Response::error("School Year code '{$code}' already exists.");
+        }
+
+        if ($isActive) {
+            $db->exec("UPDATE school_years SET is_active = 0");
+        }
+
+        if ($id) {
+            $stmt = $db->prepare("
+                UPDATE school_years 
+                SET code = :code, name = :name, start_date = :start_date, end_date = :end_date, 
+                    active_semester = :sem, is_active = :is_active
+                WHERE id = :id
+            ");
+            $stmt->execute([
+                'code'       => $code,
+                'name'       => $name,
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'sem'        => $activeSemester,
+                'is_active'  => $isActive,
+                'id'         => $id
+            ]);
+            Auth::logAudit('SCHOOL_YEAR_UPDATED', "School Year {$name} was updated", $user['id']);
+            Response::success("School Year '{$name}' updated successfully.");
+        } else {
+            $stmt = $db->prepare("
+                INSERT INTO school_years (code, name, start_date, end_date, active_semester, is_active, is_locked, curriculum_locked, created_at)
+                VALUES (:code, :name, :start_date, :end_date, :sem, :is_active, :is_locked, :curriculum_locked, NOW())
+            ");
+            $stmt->execute([
+                'code'              => $code,
+                'name'              => $name,
+                'start_date'        => $startDate,
+                'end_date'          => $endDate,
+                'sem'               => $activeSemester,
+                'is_active'         => $isActive,
+                'is_locked'         => $isLocked,
+                'curriculum_locked' => $curriculumLocked
+            ]);
+            Auth::logAudit('SCHOOL_YEAR_CREATED', "New School Year {$name} ({$code}) created", $user['id']);
+            Response::success("School Year '{$name}' created successfully.");
+        }
+    }
+
+    public function setActiveSchoolYear(): void {
+        $user = Auth::requireRole(['admin']);
+        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        $id = (int)($input['school_year_id'] ?? 0);
+
+        if (!$id) {
+            Response::error('School year ID is required.');
+        }
+
+        $db = Database::getConnection();
+        $sy = $db->prepare("SELECT id, name FROM school_years WHERE id = :id");
+        $sy->execute(['id' => $id]);
+        $row = $sy->fetch();
+        if (!$row) {
+            Response::error('School year not found.');
+        }
+
+        $db->exec("UPDATE school_years SET is_active = 0");
+        $stmt = $db->prepare("UPDATE school_years SET is_active = 1 WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+
+        Auth::logAudit('ACTIVE_SCHOOL_YEAR_CHANGED', "School Year {$row['name']} set as active", $user['id']);
+        Response::success("School Year '{$row['name']}' is now the active School Year.");
+    }
+
     /**
      * Get list of users / staff accounts.
      */

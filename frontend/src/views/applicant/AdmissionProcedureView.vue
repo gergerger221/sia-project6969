@@ -1034,6 +1034,68 @@
         </div>
       </div>
     </div>
+
+    <!-- REMOVE UPLOADED DOCUMENT CONFIRMATION POPUP MODAL -->
+    <div v-if="deleteDocModal.isOpen" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 text-xs space-y-4 animate-in fade-in zoom-in duration-150">
+        
+        <div class="flex items-start space-x-3.5 border-b border-slate-100 pb-3.5">
+          <div class="p-3 rounded-2xl bg-rose-100 text-rose-700 border border-rose-200 shrink-0">
+            <Trash2 class="w-6 h-6 text-rose-600" />
+          </div>
+          <div>
+            <div class="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase font-mono tracking-wider bg-rose-100 text-rose-900 border border-rose-200 mb-1">
+              <span>Requirement Removal</span>
+            </div>
+            <h3 class="text-base font-extrabold text-slate-900 leading-snug">
+              Remove Uploaded File?
+            </h3>
+            <p class="text-[11px] text-slate-500 mt-0.5">
+              Requirement: <strong>{{ deleteDocModal.doc?.document_type }}</strong>
+            </p>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500 font-medium">Filename:</span>
+            <span class="font-bold text-slate-900 truncate max-w-[200px]" :title="deleteDocModal.doc?.original_filename">{{ deleteDocModal.doc?.original_filename }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500 font-medium">Status:</span>
+            <span class="font-bold text-slate-800">{{ deleteDocModal.doc?.status || 'Pending Verification' }}</span>
+          </div>
+        </div>
+
+        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-900 flex items-start space-x-2">
+          <AlertCircle class="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+          <span>You can upload an updated or clearer copy of this document immediately afterward.</span>
+        </div>
+
+        <div class="flex items-center justify-end space-x-2.5 pt-2 border-t border-slate-100">
+          <button 
+            type="button" 
+            @click="deleteDocModal.isOpen = false" 
+            :disabled="deleteDocModal.isDeleting"
+            class="px-4 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition text-xs"
+          >
+            Cancel
+          </button>
+          
+          <button 
+            type="button" 
+            @click="executeDeleteDocument()" 
+            :disabled="deleteDocModal.isDeleting"
+            class="px-5 py-2.5 rounded-xl font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-md transition flex items-center space-x-2 text-xs"
+          >
+            <span v-if="deleteDocModal.isDeleting" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <Trash2 v-else class="w-3.5 h-3.5 text-white" />
+            <span>{{ deleteDocModal.isDeleting ? 'Removing...' : 'Confirm Remove File' }}</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
   </div>
 </template>
 
@@ -1583,19 +1645,34 @@ const isPdf = (filePath) => {
   return filePath.toLowerCase().endsWith('.pdf');
 };
 
-const handleDeleteDocument = async (doc) => {
-  if (!doc || !doc.id) return;
-  
-  const confirmed = window.confirm(`Are you sure you want to remove "${doc.original_filename}"? You can upload a new file afterward.`);
-  if (!confirmed) return;
+const deleteDocModal = ref({
+  isOpen: false,
+  doc: null,
+  isDeleting: false
+});
 
+const handleDeleteDocument = (doc) => {
+  if (!doc || !doc.id) return;
+  deleteDocModal.value = {
+    isOpen: true,
+    doc: doc,
+    isDeleting: false
+  };
+};
+
+const executeDeleteDocument = async () => {
+  if (!deleteDocModal.value.doc) return;
+  deleteDocModal.value.isDeleting = true;
   errorMessage.value = '';
   try {
-    const res = await api.deleteDocument(doc.id);
-    successMessage.value = res.message || `${doc.document_type} removed successfully.`;
+    const res = await api.deleteDocument(deleteDocModal.value.doc.id);
+    successMessage.value = res.message || `${deleteDocModal.value.doc.document_type} removed successfully.`;
+    deleteDocModal.value.isOpen = false;
     await loadData();
   } catch (err) {
     errorMessage.value = err.message || 'Failed to remove document.';
+  } finally {
+    deleteDocModal.value.isDeleting = false;
   }
 };
 

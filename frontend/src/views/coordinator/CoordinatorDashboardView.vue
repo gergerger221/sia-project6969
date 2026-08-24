@@ -935,22 +935,23 @@
                   <span class="truncate">{{ item.room || 'Room Unassigned' }}</span>
                 </div>
 
-                <div class="pt-2 border-t border-slate-100 flex items-center justify-end space-x-1.5">
+                <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
                   <button 
                     type="button"
                     @click.stop="openScheduleModal(item)" 
-                    class="px-2 py-1 rounded-md font-bold text-[10px] bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 transition flex items-center space-x-1 shadow-2xs"
+                    class="px-2.5 py-1 rounded-lg font-bold text-[10px] bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 transition flex items-center space-x-1 shadow-2xs"
                   >
                     <Pencil class="w-2.5 h-2.5" />
-                    <span>Edit</span>
+                    <span>Edit Period</span>
                   </button>
+
                   <button 
                     type="button"
-                    @click.stop="confirmDeleteSchedule(item)" 
-                    class="px-2 py-1 rounded-md font-bold text-[10px] bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition flex items-center space-x-1 shadow-2xs"
+                    @click.stop="openDeleteScheduleModal(item)" 
+                    class="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition"
+                    title="Remove period from section timetable"
                   >
-                    <Trash2 class="w-2.5 h-2.5" />
-                    <span>Remove</span>
+                    <Trash2 class="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
@@ -997,7 +998,7 @@
                   <td class="p-3 font-mono text-slate-600">{{ sch.room || 'Unassigned' }}</td>
                   <td class="p-3 text-right space-x-1.5">
                     <button @click="openScheduleModal(sch)" class="text-purple-600 font-bold hover:underline">Edit</button>
-                    <button @click="confirmDeleteSchedule(sch)" class="text-rose-600 font-bold hover:underline">Delete</button>
+                    <button @click="openDeleteScheduleModal(sch)" class="text-rose-600 font-bold hover:underline">Delete</button>
                   </td>
                 </tr>
                 <tr v-if="!activeSectionSchedule?.schedules || activeSectionSchedule.schedules.length === 0">
@@ -1170,7 +1171,7 @@
             <button @click="openEventModal(ev)" class="px-3 py-1.5 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] transition">
               Edit
             </button>
-            <button @click="confirmDeleteEvent(ev)" class="px-3 py-1.5 rounded-xl font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] transition">
+            <button @click="openDeleteEventModal(ev)" class="px-3 py-1.5 rounded-xl font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] transition">
               Delete
             </button>
           </div>
@@ -1968,14 +1969,27 @@
             </div>
           </div>
 
-          <div class="flex items-center justify-end space-x-2 pt-4 border-t border-slate-100">
-            <button type="button" @click="showScheduleModal = false" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold">
-              Cancel
-            </button>
-            <button type="submit" :disabled="isSavingSchedule" class="px-5 py-2.5 rounded-xl font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-md transition flex items-center space-x-1.5">
-              <span v-if="isSavingSchedule" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              <span>{{ isSavingSchedule ? 'Checking Conflicts...' : 'Save Schedule Period' }}</span>
-            </button>
+          <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+            <div>
+              <button 
+                v-if="scheduleForm.id" 
+                type="button" 
+                @click="handleModalDeleteSchedule()" 
+                class="px-3 py-2 rounded-xl text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 font-bold transition flex items-center space-x-1 text-xs"
+              >
+                <Trash2 class="w-3.5 h-3.5" />
+                <span>Remove Period</span>
+              </button>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button type="button" @click="showScheduleModal = false" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold text-xs">
+                Cancel
+              </button>
+              <button type="submit" :disabled="isSavingSchedule" class="px-5 py-2.5 rounded-xl font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-md transition flex items-center space-x-1.5 text-xs">
+                <span v-if="isSavingSchedule" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <span>{{ isSavingSchedule ? 'Checking Conflicts...' : 'Save Schedule Period' }}</span>
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -2143,6 +2157,140 @@
             <Unlock v-else-if="curriculumData.curriculum_locked" class="w-3.5 h-3.5 text-white" />
             <Lock v-else class="w-3.5 h-3.5 text-white" />
             <span>{{ curriculumLockModal.isProcessing ? 'Updating Status...' : (curriculumData.curriculum_locked ? 'Confirm Switch to Draft Mode' : 'Confirm Declare & Lock') }}</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- REMOVE SCHEDULE PERIOD CONFIRMATION POPUP MODAL -->
+    <div v-if="deleteScheduleModal.isOpen" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 text-xs space-y-4 animate-in fade-in zoom-in duration-150">
+        
+        <div class="flex items-start space-x-3.5 border-b border-slate-100 pb-3.5">
+          <div class="p-3 rounded-2xl bg-rose-100 text-rose-700 border border-rose-200 shrink-0">
+            <Trash2 class="w-6 h-6 text-rose-600" />
+          </div>
+          <div>
+            <div class="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase font-mono tracking-wider bg-rose-100 text-rose-900 border border-rose-200 mb-1">
+              <span>Timetable Period Removal</span>
+            </div>
+            <h3 class="text-base font-extrabold text-slate-900 leading-snug">
+              Remove Subject Period from Schedule?
+            </h3>
+            <p class="text-[11px] text-slate-500 mt-0.5">
+              Section: <strong>{{ activeSectionSchedule?.section?.name || 'Current Section' }}</strong>
+            </p>
+          </div>
+        </div>
+
+        <!-- Details Summary Card -->
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-200/70">
+            <span class="text-slate-500 font-medium">Subject:</span>
+            <span class="font-bold text-slate-900 font-mono">[{{ deleteScheduleModal.schedule?.subject_code }}] {{ deleteScheduleModal.schedule?.subject_title }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500 font-medium">Day & Time:</span>
+            <span class="font-bold text-purple-800">{{ deleteScheduleModal.schedule?.day_of_week }} • {{ formatTime(deleteScheduleModal.schedule?.time_start) }} - {{ formatTime(deleteScheduleModal.schedule?.time_end) }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500 font-medium">Faculty:</span>
+            <span class="font-bold text-slate-800">{{ deleteScheduleModal.schedule?.teacher_first ? deleteScheduleModal.schedule.teacher_first + ' ' + deleteScheduleModal.schedule.teacher_last : 'Unassigned' }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500 font-medium">Room / Venue:</span>
+            <span class="font-bold text-slate-800">{{ deleteScheduleModal.schedule?.room || 'Room Unassigned' }}</span>
+          </div>
+        </div>
+
+        <!-- Safe Note -->
+        <div class="p-3 bg-rose-50/70 rounded-xl border border-rose-200 text-[11px] text-rose-900 flex items-start space-x-2">
+          <AlertCircle class="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+          <span>This will remove this specific class time slot from the section's weekly schedule. It does <strong>NOT</strong> delete the subject from the master curriculum.</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-end space-x-2.5 pt-2 border-t border-slate-100">
+          <button 
+            type="button" 
+            @click="deleteScheduleModal.isOpen = false" 
+            :disabled="deleteScheduleModal.isDeleting"
+            class="px-4 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition text-xs"
+          >
+            Cancel (Keep in Schedule)
+          </button>
+          
+          <button 
+            type="button" 
+            @click="executeDeleteSchedule()" 
+            :disabled="deleteScheduleModal.isDeleting"
+            class="px-5 py-2.5 rounded-xl font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-md transition flex items-center space-x-2 text-xs"
+          >
+            <span v-if="deleteScheduleModal.isDeleting" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <Trash2 v-else class="w-3.5 h-3.5 text-white" />
+            <span>{{ deleteScheduleModal.isDeleting ? 'Removing...' : 'Confirm Remove Period' }}</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DELETE SCHOOL EVENT CONFIRMATION POPUP MODAL -->
+    <div v-if="deleteEventModal.isOpen" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 text-xs space-y-4 animate-in fade-in zoom-in duration-150">
+        
+        <div class="flex items-start space-x-3.5 border-b border-slate-100 pb-3.5">
+          <div class="p-3 rounded-2xl bg-rose-100 text-rose-700 border border-rose-200 shrink-0">
+            <Trash2 class="w-6 h-6 text-rose-600" />
+          </div>
+          <div>
+            <div class="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase font-mono tracking-wider bg-rose-100 text-rose-900 border border-rose-200 mb-1">
+              <span>Event Deletion</span>
+            </div>
+            <h3 class="text-base font-extrabold text-slate-900 leading-snug">
+              Delete School Event & Broadcast?
+            </h3>
+            <p class="text-[11px] text-slate-500 mt-0.5">
+              Event: <strong>{{ deleteEventModal.event?.title }}</strong>
+            </p>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500 font-medium">Category:</span>
+            <span class="font-bold text-slate-900">{{ deleteEventModal.event?.event_category }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500 font-medium">Date:</span>
+            <span class="font-bold text-purple-800">{{ formatEventDate(deleteEventModal.event?.start_date) }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500 font-medium">Venue:</span>
+            <span class="font-bold text-slate-800">{{ deleteEventModal.event?.location || 'Campus Grounds' }}</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end space-x-2.5 pt-2 border-t border-slate-100">
+          <button 
+            type="button" 
+            @click="deleteEventModal.isOpen = false" 
+            :disabled="deleteEventModal.isDeleting"
+            class="px-4 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition text-xs"
+          >
+            Cancel
+          </button>
+          
+          <button 
+            type="button" 
+            @click="executeDeleteEvent()" 
+            :disabled="deleteEventModal.isDeleting"
+            class="px-5 py-2.5 rounded-xl font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-md transition flex items-center space-x-2 text-xs"
+          >
+            <span v-if="deleteEventModal.isDeleting" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <Trash2 v-else class="w-3.5 h-3.5 text-white" />
+            <span>{{ deleteEventModal.isDeleting ? 'Deleting...' : 'Delete Event' }}</span>
           </button>
         </div>
 
@@ -3019,14 +3167,47 @@ const saveScheduleItem = async () => {
   }
 };
 
-const confirmDeleteSchedule = async (sch) => {
-  if (!confirm(`Are you sure you want to remove [${sch.subject_code}] ${sch.subject_title} from this schedule?`)) return;
+const deleteScheduleModal = ref({
+  isOpen: false,
+  schedule: null,
+  isDeleting: false
+});
+
+const openDeleteScheduleModal = (sch) => {
+  deleteScheduleModal.value = {
+    isOpen: true,
+    schedule: sch,
+    isDeleting: false
+  };
+};
+
+const handleModalDeleteSchedule = () => {
+  if (!scheduleForm.value.id) return;
+  const sch = activeSectionSchedule.value?.schedules?.find(s => s.id === scheduleForm.value.id) || {
+    id: scheduleForm.value.id,
+    subject_code: activeSectionSchedule.value?.available_subjects?.find(s => s.id === scheduleForm.value.subject_id)?.code || '',
+    subject_title: activeSectionSchedule.value?.available_subjects?.find(s => s.id === scheduleForm.value.subject_id)?.title || '',
+    day_of_week: scheduleForm.value.day_of_week,
+    time_start: scheduleForm.value.time_start,
+    time_end: scheduleForm.value.time_end,
+    room: scheduleForm.value.room
+  };
+  showScheduleModal.value = false;
+  openDeleteScheduleModal(sch);
+};
+
+const executeDeleteSchedule = async () => {
+  if (!deleteScheduleModal.value.schedule) return;
+  deleteScheduleModal.value.isDeleting = true;
   try {
-    await api.deleteSchedule(sch.id);
-    successMessage.value = 'Schedule period removed.';
+    await api.deleteSchedule(deleteScheduleModal.value.schedule.id);
+    successMessage.value = 'Schedule period removed successfully.';
+    deleteScheduleModal.value.isOpen = false;
     await loadSectionScheduleData();
   } catch (err) {
-    alert(err.message || 'Failed to remove schedule.');
+    scheduleError.value = err.message || 'Failed to remove schedule.';
+  } finally {
+    deleteScheduleModal.value.isDeleting = false;
   }
 };
 
@@ -3095,14 +3276,32 @@ const saveSchoolEvent = async () => {
   }
 };
 
-const confirmDeleteEvent = async (ev) => {
-  if (!confirm(`Are you sure you want to delete '${ev.title}'?`)) return;
+const deleteEventModal = ref({
+  isOpen: false,
+  event: null,
+  isDeleting: false
+});
+
+const openDeleteEventModal = (ev) => {
+  deleteEventModal.value = {
+    isOpen: true,
+    event: ev,
+    isDeleting: false
+  };
+};
+
+const executeDeleteEvent = async () => {
+  if (!deleteEventModal.value.event) return;
+  deleteEventModal.value.isDeleting = true;
   try {
-    await api.deleteEvent(ev.id);
-    successMessage.value = 'Event deleted.';
+    await api.deleteEvent(deleteEventModal.value.event.id);
+    successMessage.value = 'Event deleted successfully.';
+    deleteEventModal.value.isOpen = false;
     await loadEventsData();
   } catch (err) {
     alert(err.message || 'Failed to delete event.');
+  } finally {
+    deleteEventModal.value.isDeleting = false;
   }
 };
 

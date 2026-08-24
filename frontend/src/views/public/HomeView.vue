@@ -7,199 +7,82 @@
     <section 
       class="relative overflow-hidden bg-gradient-to-br from-[#061322] via-[#0c2340] to-[#0a1b2f] text-white border-b-4 border-amber-500 shadow-2xl"
     >
-      <!-- Academic Background Elements & Contrast Overlay -->
-      <div class="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] [background-size:32px_32px] opacity-25 pointer-events-none"></div>
-      <div class="absolute -top-40 -left-40 w-[32rem] h-[32rem] rounded-full bg-blue-600/15 blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-40 -right-40 w-[32rem] h-[32rem] rounded-full bg-amber-500/15 blur-3xl pointer-events-none"></div>
+      <!-- Academic Background Elements & Subtle Pattern -->
+      <div class="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] [background-size:28px_28px] opacity-25 pointer-events-none"></div>
+      <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-blue-600/15 blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-amber-500/15 blur-3xl pointer-events-none"></div>
 
-      <div class="relative max-w-[1680px] 2xl:max-w-[1780px] w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 py-12 sm:py-16 lg:py-20 xl:py-24">
+      <div class="relative max-w-[1600px] 2xl:max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-12 py-14 sm:py-20 lg:py-24 text-center">
         
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-14 items-center">
+        <!-- Official Institutional Badge -->
+        <div class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-amber-500/15 backdrop-blur-md border border-amber-400/40 text-amber-300 text-xs font-black uppercase tracking-wider mb-5 shadow-sm">
+          <Sparkles class="w-3.5 h-3.5 text-amber-400 shrink-0" />
+          <span>DepEd School ID: 405621 • S.Y. 2026-2027 ENROLLMENT OPEN</span>
+        </div>
+
+        <!-- Main Title -->
+        <h1 class="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white tracking-tight leading-[1.12] font-serif max-w-5xl mx-auto">
+          Junior & Senior High School
+          <span class="block bg-gradient-to-r from-amber-300 via-amber-200 to-yellow-400 bg-clip-text text-transparent mt-2">
+            Enrollment System
+          </span>
+        </h1>
+
+        <!-- Short Subtitle -->
+        <p class="text-sm sm:text-base lg:text-lg text-slate-200 leading-relaxed font-normal max-w-3xl mx-auto mt-4 drop-shadow-xs">
+          Official online admission and enrollment portal for <strong>Junior High School (Grades 7–10)</strong> and <strong>Senior High School (Grades 11–12)</strong>. Submit requirements, track status, and access student records online.
+        </p>
+
+        <!-- Key Feature Badges Pill -->
+        <div class="flex flex-wrap items-center justify-center gap-2.5 mt-6 max-w-4xl mx-auto">
+          <div class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700 text-xs font-bold text-slate-200 shadow-xs">
+            <CheckCircle class="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>Grades 7 to 10 (JHS)</span>
+          </div>
+          <div class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700 text-xs font-bold text-slate-200 shadow-xs">
+            <CheckCircle class="w-4 h-4 text-amber-400 shrink-0" />
+            <span>Grades 11 & 12 (SHS Strands)</span>
+          </div>
+          <div class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700 text-xs font-bold text-slate-200 shadow-xs">
+            <CheckCircle class="w-4 h-4 text-blue-400 shrink-0" />
+            <span>100% DepEd Voucher Subsidy</span>
+          </div>
+          <div class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700 text-xs font-bold text-slate-200 shadow-xs">
+            <CheckCircle class="w-4 h-4 text-purple-400 shrink-0" />
+            <span>PEAC ESC Grantee Accredited</span>
+          </div>
+        </div>
+
+        <!-- Primary Call-to-Action Buttons -->
+        <div class="flex flex-wrap items-center justify-center gap-4 mt-8">
           
-          <!-- Left: Hero Headline & Clear Primary Call-to-Actions (7 Cols) -->
-          <div class="lg:col-span-7 xl:col-span-7 space-y-6 text-center lg:text-left z-10">
-            
-            <!-- Official Institutional Badge -->
-            <div class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-amber-500/15 backdrop-blur-md border border-amber-400/40 text-amber-300 text-xs font-black uppercase tracking-wider shadow-sm">
-              <Sparkles class="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span>DepEd School ID: 405621 • S.Y. 2026-2027 ENROLLMENT OFFICIALLY OPEN</span>
-            </div>
+          <!-- 1. Apply for Enrollment -->
+          <router-link 
+            to="/register" 
+            class="px-8 py-4 rounded-2xl text-xs sm:text-sm font-black bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-xl shadow-amber-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center space-x-2.5 cursor-pointer border-2 border-amber-300"
+          >
+            <UserPlus class="w-4 h-4 text-slate-950" />
+            <span>Apply for Enrollment</span>
+            <ArrowRight class="w-4 h-4 text-slate-950" />
+          </router-link>
 
-            <!-- Main Title -->
-            <h1 class="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white tracking-tight leading-[1.1] font-serif">
-              Junior & Senior High School
-              <span class="block bg-gradient-to-r from-amber-300 via-amber-200 to-yellow-400 bg-clip-text text-transparent mt-1.5">
-                Enrollment System
-              </span>
-            </h1>
+          <!-- 2. Student Portal Login -->
+          <router-link 
+            to="/login" 
+            class="px-7 py-4 rounded-2xl text-xs sm:text-sm font-extrabold bg-blue-900/90 hover:bg-blue-800 text-white border-2 border-blue-400/50 hover:border-amber-400 backdrop-blur-md shadow-lg transition-all flex items-center space-x-2 cursor-pointer"
+          >
+            <GraduationCap class="w-4 h-4 text-amber-300" />
+            <span>Student Portal Login</span>
+          </router-link>
 
-            <!-- Short Description -->
-            <p class="text-sm sm:text-base lg:text-lg text-slate-200 leading-relaxed font-normal max-w-3xl mx-auto lg:mx-0 drop-shadow-xs">
-              Enroll, submit requirements, track your admission application, and access official student academic records online for <strong>Junior High School (Grades 7–10)</strong> and <strong>Senior High School (Grades 11–12)</strong>.
-            </p>
-
-            <!-- Core Feature Badges -->
-            <div class="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 pt-1">
-              <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700 text-xs font-bold text-slate-200 shadow-xs">
-                <CheckCircle class="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Grades 7 to 10 (JHS)</span>
-              </div>
-              <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700 text-xs font-bold text-slate-200 shadow-xs">
-                <CheckCircle class="w-4 h-4 text-amber-400 shrink-0" />
-                <span>Grades 11 & 12 (SHS Strands)</span>
-              </div>
-              <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700 text-xs font-bold text-slate-200 shadow-xs">
-                <CheckCircle class="w-4 h-4 text-blue-400 shrink-0" />
-                <span>100% DepEd Voucher Subsidy</span>
-              </div>
-              <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700 text-xs font-bold text-slate-200 shadow-xs">
-                <CheckCircle class="w-4 h-4 text-purple-400 shrink-0" />
-                <span>PEAC ESC Grantee Eligible</span>
-              </div>
-            </div>
-
-            <!-- Primary Call-to-Action Buttons -->
-            <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3.5 pt-3">
-              
-              <!-- 1. Apply for Enrollment -->
-              <router-link 
-                to="/register" 
-                class="px-7 py-4 rounded-2xl text-xs sm:text-sm font-black bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-xl shadow-amber-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center space-x-2.5 cursor-pointer border-2 border-amber-300"
-              >
-                <UserPlus class="w-4 h-4 text-slate-950" />
-                <span>Apply for Enrollment</span>
-                <ArrowRight class="w-4 h-4 text-slate-950" />
-              </router-link>
-
-              <!-- 2. Student Login -->
-              <router-link 
-                to="/login" 
-                class="px-6 py-4 rounded-2xl text-xs sm:text-sm font-extrabold bg-blue-900/90 hover:bg-blue-800 text-white border-2 border-blue-400/50 hover:border-amber-400 backdrop-blur-md shadow-lg transition-all flex items-center space-x-2 cursor-pointer"
-              >
-                <GraduationCap class="w-4 h-4 text-amber-300" />
-                <span>Student Portal Login</span>
-              </router-link>
-
-              <!-- 3. Staff Login -->
-              <router-link 
-                to="/staff-login" 
-                class="px-6 py-4 rounded-2xl text-xs sm:text-sm font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-amber-400 backdrop-blur-md transition-all flex items-center space-x-2 cursor-pointer"
-              >
-                <ShieldCheck class="w-4 h-4 text-amber-400" />
-                <span>Faculty & Staff Portal</span>
-              </router-link>
-
-            </div>
-
-            <!-- Quick Academic Highlights Ticker -->
-            <div class="pt-4 border-t border-slate-800/80 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center lg:text-left">
-              <div>
-                <div class="text-lg sm:text-xl font-black font-mono text-amber-400">100%</div>
-                <div class="text-[10px] sm:text-xs text-slate-400">DepEd Voucher Grant</div>
-              </div>
-              <div>
-                <div class="text-lg sm:text-xl font-black font-mono text-blue-400">JHS & SHS</div>
-                <div class="text-[10px] sm:text-xs text-slate-400">Secondary Education</div>
-              </div>
-              <div>
-                <div class="text-lg sm:text-xl font-black font-mono text-emerald-400">6 Strands</div>
-                <div class="text-[10px] sm:text-xs text-slate-400">Academic & TVL Tracks</div>
-              </div>
-              <div>
-                <div class="text-lg sm:text-xl font-black font-mono text-purple-400">Online</div>
-                <div class="text-[10px] sm:text-xs text-slate-400">Admissions & Portal</div>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Right: Educational Visual Showcase Card (5 Cols) -->
-          <div class="lg:col-span-5 xl:col-span-5 w-full z-10">
-            <div class="p-6 sm:p-8 rounded-3xl bg-slate-900/95 backdrop-blur-xl border-2 border-amber-400/60 shadow-2xl space-y-5 text-slate-100">
-              
-              <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-                <div class="flex items-center space-x-3">
-                  <div class="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-400/50 text-amber-400 flex items-center justify-center shadow-xs">
-                    <GraduationCap class="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h2 class="text-base font-black font-serif text-white">Academic Pathways</h2>
-                    <p class="text-xs text-slate-400">Secondary Curriculums Available</p>
-                  </div>
-                </div>
-                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                  Active S.Y. 2026–2027
-                </span>
-              </div>
-
-              <!-- Quick Program Highlights -->
-              <div class="space-y-3 text-xs">
-                
-                <div 
-                  @click="openStrandModal(academicPrograms[0])"
-                  class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-between hover:border-blue-400 transition cursor-pointer group"
-                >
-                  <div class="flex items-center space-x-3.5">
-                    <div class="w-9 h-9 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center font-black text-xs font-mono group-hover:scale-105 transition">
-                      JHS
-                    </div>
-                    <div>
-                      <h3 class="font-bold text-white text-xs group-hover:text-amber-300 transition">Junior High School</h3>
-                      <p class="text-[11px] text-slate-400">Grades 7, 8, 9, 10 • DepEd MATATAG</p>
-                    </div>
-                  </div>
-                  <span class="text-[11px] text-amber-300 font-bold">ESC Subsidy</span>
-                </div>
-
-                <div 
-                  @click="activeHubTab = 'academics'"
-                  class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-between hover:border-amber-400 transition cursor-pointer group"
-                >
-                  <div class="flex items-center space-x-3.5">
-                    <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-xs font-mono group-hover:scale-105 transition">
-                      SHS
-                    </div>
-                    <div>
-                      <h3 class="font-bold text-white text-xs group-hover:text-amber-300 transition">SHS Academic Track</h3>
-                      <p class="text-[11px] text-slate-400">STEM, ABM, HUMSS, GAS</p>
-                    </div>
-                  </div>
-                  <span class="text-[11px] text-emerald-400 font-bold">100% Voucher</span>
-                </div>
-
-                <div 
-                  @click="activeHubTab = 'academics'"
-                  class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-between hover:border-purple-400 transition cursor-pointer group"
-                >
-                  <div class="flex items-center space-x-3.5">
-                    <div class="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-black text-xs font-mono group-hover:scale-105 transition">
-                      TVL
-                    </div>
-                    <div>
-                      <h3 class="font-bold text-white text-xs group-hover:text-amber-300 transition">SHS TVL Track</h3>
-                      <p class="text-[11px] text-slate-400">ICT (Programming) & HE (Culinary)</p>
-                    </div>
-                  </div>
-                  <span class="text-[11px] text-purple-300 font-bold">TESDA NC II</span>
-                </div>
-
-              </div>
-
-              <!-- Quick Action in Card -->
-              <div class="pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
-                <span class="text-slate-400 text-xs">Explore curriculums & facilities</span>
-                <button 
-                  type="button"
-                  @click="activeHubTab = 'academics'" 
-                  class="text-amber-400 hover:text-amber-300 font-bold inline-flex items-center space-x-1.5 cursor-pointer"
-                >
-                  <span>View All Programs</span>
-                  <ArrowRight class="w-4 h-4" />
-                </button>
-              </div>
-
-            </div>
-          </div>
+          <!-- 3. Faculty & Staff Portal -->
+          <router-link 
+            to="/staff-login" 
+            class="px-7 py-4 rounded-2xl text-xs sm:text-sm font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 hover:border-amber-400 backdrop-blur-md transition-all flex items-center space-x-2 cursor-pointer"
+          >
+            <ShieldCheck class="w-4 h-4 text-amber-400" />
+            <span>Faculty & Staff Portal</span>
+          </router-link>
 
         </div>
 
@@ -207,24 +90,24 @@
     </section>
 
     <!-- ========================================================================= -->
-    <!-- 2. ENROLLMENT LEVELS & PROGRAMS (Expansive JHS & SHS Showcase)              -->
+    <!-- 2. ENROLLMENT LEVELS & PROGRAMS (Clear JHS & SHS Dual Cards)               -->
     <!-- ========================================================================= -->
-    <section class="mt-10 sm:mt-12 max-w-[1680px] 2xl:max-w-[1780px] w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
+    <section class="mt-10 sm:mt-12 max-w-[1600px] 2xl:max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-12">
       
       <div class="text-center max-w-3xl mx-auto mb-8">
         <div class="inline-block px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-blue-100 text-blue-900 border border-blue-200 mb-2">
           Academic Levels Supported
         </div>
         <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0c2340] font-serif tracking-tight">
-          Comprehensive Secondary Education
+          Secondary Education Programs
         </h2>
-        <p class="text-xs sm:text-sm lg:text-base text-slate-600 mt-1.5">
-          Offering complete DepEd-recognized curriculums from Grade 7 through Grade 12 with full government tuition subsidy programs.
+        <p class="text-xs sm:text-sm text-slate-600 mt-1.5">
+          Offering complete DepEd-recognized curriculums from Grade 7 through Grade 12 with full government tuition subsidies.
         </p>
       </div>
 
-      <!-- Side-by-Side Dual Program Cards (Widescreen 2-Column Grid) -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 xl:gap-10">
+      <!-- Side-by-Side Dual Program Cards -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
         <!-- CARD 1: JUNIOR HIGH SCHOOL (GRADES 7 TO 10) -->
         <div class="p-7 sm:p-9 rounded-3xl bg-white border-2 border-slate-200 hover:border-blue-600 shadow-md hover:shadow-xl transition-all duration-200 flex flex-col justify-between space-y-6">
@@ -346,9 +229,9 @@
     </section>
 
     <!-- ========================================================================= -->
-    <!-- 3. COMPACT INTERACTIVE ACADEMIC & ADMISSION HUB (Expansive Tabbed Grid)     -->
+    <!-- 3. INTERACTIVE INFORMATION HUB (Clean Tabbed Section)                     -->
     <!-- ========================================================================= -->
-    <section id="academic-hub" class="mt-10 sm:mt-12 max-w-[1680px] 2xl:max-w-[1780px] w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
+    <section id="academic-hub" class="mt-10 sm:mt-12 max-w-[1600px] 2xl:max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-12">
       <div class="bg-white rounded-3xl border-2 border-slate-200 shadow-xl p-6 sm:p-8 lg:p-10">
         
         <!-- Navigation Tabs Bar -->
@@ -418,7 +301,7 @@
           </router-link>
         </div>
 
-        <!-- TAB 1: ACADEMICS & STRANDS (Widescreen 4-Column Grid) -->
+        <!-- TAB 1: ACADEMICS & STRANDS -->
         <div v-show="activeHubTab === 'academics'" class="space-y-6 animate-in fade-in duration-200">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
@@ -477,7 +360,7 @@
           </div>
         </div>
 
-        <!-- TAB 2: ADMISSION PATHWAY (Expansive 4-Column Grid) -->
+        <!-- TAB 2: ADMISSION PATHWAY -->
         <div v-show="activeHubTab === 'pathway'" class="space-y-6 animate-in fade-in duration-200">
           <div>
             <h3 class="text-xl font-black text-[#0c2340] font-serif">4-Stage Streamlined Admission Pathway</h3>
@@ -613,7 +496,7 @@
           </div>
         </div>
 
-        <!-- TAB 5: CAMPUS FACILITIES (Widescreen 3-Column Grid) -->
+        <!-- TAB 5: CAMPUS FACILITIES -->
         <div v-show="activeHubTab === 'facilities'" class="space-y-6 animate-in fade-in duration-200">
           <div>
             <h3 class="text-xl font-black text-[#0c2340] font-serif">Campus Laboratories & Learning Spaces</h3>
@@ -656,7 +539,7 @@
     <!-- ========================================================================= -->
     <!-- 4. INSTITUTIONAL CONTACT & ACCREDITATION BANNER                            -->
     <!-- ========================================================================= -->
-    <section class="mt-10 sm:mt-12 max-w-[1680px] 2xl:max-w-[1780px] w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16">
+    <section class="mt-10 sm:mt-12 max-w-[1600px] 2xl:max-w-[1720px] w-full mx-auto px-4 sm:px-8 lg:px-12">
       <div class="p-6 sm:p-8 rounded-3xl bg-[#0c2340] text-white flex flex-col md:flex-row items-center justify-between gap-6 border-2 border-amber-400 shadow-lg">
         <div class="flex items-center space-x-4">
           <div class="w-14 h-14 rounded-2xl bg-white/10 border border-amber-400 flex items-center justify-center shrink-0">

@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Config\Database;
 use App\Config\Response;
 use App\Helpers\Auth;
+use App\Helpers\Mailer;
 use PDO;
 
 class RegistrarController {
@@ -547,6 +548,19 @@ class RegistrarController {
 
             $db->commit();
             Auth::logAudit('APPROVE_AND_QUEUE', "Approved App #{$appId}, Queued #{queueNum}, Enr #{$enrId}", $user['id']);
+
+            // Dispatch Approval & Assessment Email (Fail-safe)
+            Mailer::sendRegistrarApproval([
+                'first_name'   => $app['first_name'] ?? '',
+                'last_name'    => $app['last_name'] ?? '',
+                'email'        => $app['email'] ?? '',
+                'student_no'   => $studentNo,
+                'section_name' => $sectionName ?? 'Main Section'
+            ], [
+                'assessment_no'   => $assNo,
+                'net_amount'      => $netPayable,
+                'min_downpayment' => 3000.00
+            ]);
 
             Response::success('Applicant successfully approved and added to the Enrollment Queue!', [
                 'queue_number'  => $queueNum,

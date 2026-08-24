@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Config\Database;
 use App\Config\Response;
 use App\Helpers\Auth;
+use App\Helpers\Mailer;
 use PDO;
 
 class AuthController {
@@ -218,6 +219,15 @@ class AuthController {
             $db->commit();
 
             Auth::logAudit('APPLICANT_REGISTER', "New applicant registered: {$appNo} ({$email})", $userId);
+
+            // Fail-safe asynchronous/isolated SMTP email notification
+            Mailer::sendApplicantRegistration([
+                'first_name'     => $firstName,
+                'last_name'      => $lastName,
+                'email'          => $email,
+                'username'       => $username,
+                'application_no' => $appNo
+            ]);
 
             Response::success('Admission account created successfully!', [
                 'user_id'        => $userId,

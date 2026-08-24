@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Config\Database;
 use App\Config\Response;
 use App\Helpers\Auth;
+use App\Helpers\Mailer;
 use PDO;
 
 class TreasuryController {
@@ -346,6 +347,17 @@ class TreasuryController {
 
             $db->commit();
             Auth::logAudit('PAYMENT_PROCESSED', "OR {$orNumber} for Assessment #{$assessmentId}, Amount: PHP {$amountPaid}", $cashier['id']);
+
+            // Dispatch Official Enrollment & COR Email (Fail-safe)
+            Mailer::sendOfficialEnrollment([
+                'first_name' => $ass['first_name'] ?? '',
+                'last_name'  => $ass['last_name'] ?? '',
+                'email'      => $ass['email'] ?? '',
+                'student_id' => $studentNo ?? $permanentStudentId ?? ''
+            ], [
+                'or_number'   => $orNumber,
+                'amount_paid' => $amountPaid
+            ]);
 
             Response::success('Payment processed successfully! Student is now Officially Enrolled.', [
                 'or_number'            => $orNumber,
@@ -695,6 +707,17 @@ class TreasuryController {
 
             $db->commit();
             Auth::logAudit('ONLINE_PAYMENT_VERIFIED', "Verified OR {$orNumber} (Ref: {$sub['reference_no']}) for {$sub['first_name']} {$sub['last_name']}, Student No: {$studentNo}", $staff['id']);
+
+            // Dispatch Official Enrollment & COR Email (Fail-safe)
+            Mailer::sendOfficialEnrollment([
+                'first_name' => $sub['first_name'] ?? '',
+                'last_name'  => $sub['last_name'] ?? '',
+                'email'      => $sub['email'] ?? '',
+                'student_id' => $studentNo ?? ''
+            ], [
+                'or_number'   => $orNumber,
+                'amount_paid' => $amountPaid
+            ]);
 
             Response::success('Online payment verified successfully! Student is now Officially Enrolled.', [
                 'or_number'       => $orNumber,

@@ -14,6 +14,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+// Vendor autoloader for PHPMailer and 3rd party packages
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require_once __DIR__ . '/../vendor/autoload.php';
+}
+
 // Autoloader for App namespace
 spl_autoload_register(function ($class) {
     $prefix = 'App\\';

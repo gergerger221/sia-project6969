@@ -65,11 +65,15 @@ class AuthController {
         $middleName = trim($input['middle_name'] ?? '');
         $email = trim($input['email'] ?? '');
         $rawContact = trim($input['contact_number'] ?? '');
-        $contactNumber = substr(preg_replace('/\D/', '', $rawContact), 0, 11);
+        $contactNumber = preg_replace('/\D/', '', $rawContact);
         $password = trim($input['password'] ?? '');
 
         if (!$firstName || !$lastName || !$middleName || !$email || !$password) {
             Response::error('First name, middle name, last name, email, and password are required.');
+        }
+
+        if (!preg_match('/^09\d{9}$/', $contactNumber)) {
+            Response::error('Must be an 11-digit Philippine mobile number starting with 09.');
         }
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -77,6 +81,25 @@ class AuthController {
         }
 
         $db = Database::getConnection();
+
+        // Check if optional LRN passed at registration is unique
+        $rawLrn = trim($input['lrn'] ?? '');
+        $cleanLrn = preg_replace('/\D/', '', $rawLrn);
+        if (!empty($cleanLrn)) {
+            if (strlen($cleanLrn) !== 12) {
+                Response::error('DepEd Learner Reference Number (LRN) must be exactly 12 numeric digits.');
+            }
+            $chkLrn = $db->prepare("
+                SELECT id FROM admission_applications WHERE lrn = :lrn1
+                UNION
+                SELECT id FROM enrollments WHERE lrn = :lrn2
+                LIMIT 1
+            ");
+            $chkLrn->execute(['lrn1' => $cleanLrn, 'lrn2' => $cleanLrn]);
+            if ($chkLrn->fetch()) {
+                Response::error('This LRN is already registered in the system. Please verify your LRN.');
+            }
+        }
 
         // Check if email already exists
         $check = $db->prepare("SELECT id FROM users WHERE email = :email");

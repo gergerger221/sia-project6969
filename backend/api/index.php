@@ -104,6 +104,12 @@ try {
         case 'admission/academic-options':
             (new AdmissionController())->getAcademicOptions();
             break;
+        case 'admission/checkout-payment':
+            (new AdmissionController())->checkoutPayment();
+            break;
+        case 'admission/switch-payment-mode':
+            (new AdmissionController())->switchPaymentMode();
+            break;
 
         // --- REGISTRAR ---
         case 'registrar/applications':
@@ -136,6 +142,12 @@ try {
             break;
         case 'treasury/process-payment':
             (new TreasuryController())->processPayment();
+            break;
+        case 'treasury/online-payments':
+            (new TreasuryController())->getOnlinePaymentVerifications();
+            break;
+        case 'treasury/verify-online-payment':
+            (new TreasuryController())->verifyOnlinePayment();
             break;
         case 'treasury/fee-structures':
             (new TreasuryController())->getFeeStructures();

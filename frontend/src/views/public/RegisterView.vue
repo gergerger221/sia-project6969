@@ -241,8 +241,18 @@ const handleRegister = async () => {
   isLoading.value = true;
   errorMessage.value = '';
 
+  const cleanContact = (form.value.contact_number || '').replace(/\D/g, '');
+  if (!/^09\d{9}$/.test(cleanContact)) {
+    errorMessage.value = 'Must be an 11-digit Philippine mobile number starting with 09 (e.g. 09123456789).';
+    isLoading.value = false;
+    return;
+  }
+
   try {
-    const res = await api.registerApplicant(form.value);
+    const res = await api.registerApplicant({
+      ...form.value,
+      contact_number: cleanContact
+    });
     const user = res.data;
 
     // Clear saved draft on successful registration

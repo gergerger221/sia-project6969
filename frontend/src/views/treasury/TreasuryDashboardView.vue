@@ -14,14 +14,24 @@
         <button 
           @click="activeTab = 'assessments'"
           :class="activeTab === 'assessments' ? 'bg-emerald-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-          class="px-4 py-2 rounded-xl text-xs transition"
+          class="px-4 py-2 rounded-xl text-xs transition cursor-pointer"
         >
           Billing Assessments ({{ assessments.length }})
         </button>
         <button 
+          @click="activeTab = 'online_payments'"
+          :class="activeTab === 'online_payments' ? 'bg-emerald-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
+          class="px-4 py-2 rounded-xl text-xs transition flex items-center space-x-1.5 cursor-pointer"
+        >
+          <span>Online Payment Queue</span>
+          <span v-if="pendingOnlineCount > 0" class="px-1.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[10px]">
+            {{ pendingOnlineCount }}
+          </span>
+        </button>
+        <button 
           @click="activeTab = 'fees'"
           :class="activeTab === 'fees' ? 'bg-emerald-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-          class="px-4 py-2 rounded-xl text-xs transition"
+          class="px-4 py-2 rounded-xl text-xs transition cursor-pointer"
         >
           Fee Structures
         </button>
@@ -107,6 +117,15 @@
               </td>
               <td class="p-3.5 text-right">
                 <button 
+                  v-if="ass.status === 'Payment Submitted – Awaiting Verification' || ass.online_submission_status === 'Pending Verification'"
+                  @click="handleReviewFromBilling(ass)" 
+                  class="px-3 py-1.5 rounded-lg text-xs font-black bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md transition flex items-center space-x-1.5 cursor-pointer ml-auto"
+                >
+                  <CreditCard class="w-3.5 h-3.5" />
+                  <span>Verify PayMongo (₱{{ Number(ass.online_amount_submitted || ass.net_payable).toLocaleString('en-US', {minimumFractionDigits: 2}) }})</span>
+                </button>
+                <button 
+                  v-else
                   @click="openPaymentModal(ass.id)" 
                   class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition"
                 >
@@ -159,7 +178,118 @@
       </div>
     </div>
 
-    <!-- PAYMENT COLLECTION & OR ISSUANCE MODAL -->
+    <!-- TAB 3: ONLINE PAYMENT VERIFICATION QUEUE -->
+    <div v-if="activeTab === 'online_payments'" class="no-print bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">PayMongo & E-Wallet Verification Queue</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Verify online transaction reference numbers, validate merchant receipts, and release official enrollment.</p>
+        </div>
+
+        <div class="flex items-center space-x-2 w-full sm:w-auto">
+          <div class="relative w-full sm:w-64">
+            <input 
+              v-model="onlineSearchQuery" 
+              @input="loadOnlinePayments"
+              type="text" 
+              placeholder="Search by student, Ref #, App #..."
+              class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500"
+            />
+            <Search class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+          </div>
+
+          <select v-model="onlineFilterStatus" @change="loadOnlinePayments" class="px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white">
+            <option value="">All Statuses</option>
+            <option value="Pending Verification">Pending Verification</option>
+            <option value="Verified">Verified</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+
+          <button @click="loadOnlinePayments" class="p-2 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-600 cursor-pointer">
+            <RefreshCw class="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Table of Online Submissions -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
+              <th class="p-3.5">Submission & Date</th>
+              <th class="p-3.5">Enrollee Student</th>
+              <th class="p-3.5">Program</th>
+              <th class="p-3.5">Channel</th>
+              <th class="p-3.5">Reference / Txn ID</th>
+              <th class="p-3.5 text-right">Amount (PHP)</th>
+              <th class="p-3.5 text-center">Receipt Proof</th>
+              <th class="p-3.5">Status</th>
+              <th class="p-3.5 text-right">Treasury Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr v-for="sub in onlinePayments" :key="sub.id" class="hover:bg-slate-50 transition">
+              <td class="p-3.5">
+                <div class="font-bold text-slate-900">#SUB-{{ String(sub.id).padStart(4, '0') }}</div>
+                <div class="text-[10px] text-slate-400 font-mono">{{ sub.created_at }}</div>
+              </td>
+              <td class="p-3.5">
+                <div class="font-bold text-slate-800">{{ sub.last_name }}, {{ sub.first_name }} {{ sub.middle_name || '' }}</div>
+                <div class="text-[11px] font-mono text-slate-400">App: {{ sub.application_no }}</div>
+              </td>
+              <td class="p-3.5">
+                <div>{{ sub.grade_level_name }}</div>
+                <div class="text-[10px] text-slate-400">{{ sub.strand_code ? '(' + sub.strand_code + ')' : '' }}</div>
+              </td>
+              <td class="p-3.5">
+                <span :class="getChannelBadgeClass(sub.payment_channel)" class="px-2 py-0.5 rounded-full font-bold text-[10px] uppercase">
+                  {{ sub.payment_channel }}
+                </span>
+              </td>
+              <td class="p-3.5 font-mono font-bold text-slate-900">
+                {{ sub.reference_no }}
+              </td>
+              <td class="p-3.5 text-right font-mono font-bold text-emerald-600 text-sm">
+                ₱{{ Number(sub.amount_submitted).toLocaleString('en-US', {minimumFractionDigits: 2}) }}
+              </td>
+              <td class="p-3.5 text-center">
+                <button 
+                  v-if="sub.receipt_file_path" 
+                  @click="openReviewModal(sub)" 
+                  class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] inline-flex items-center space-x-1 cursor-pointer"
+                >
+                  <Eye class="w-3 h-3" />
+                  <span>View Proof</span>
+                </button>
+                <span v-else class="text-slate-400 text-[10px]">No File</span>
+              </td>
+              <td class="p-3.5">
+                <span :class="getVerificationBadgeClass(sub.status)" class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase inline-flex items-center space-x-1">
+                  <span v-if="sub.status === 'Pending Verification'" class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping mr-1"></span>
+                  <span>{{ sub.status }}</span>
+                </span>
+              </td>
+              <td class="p-3.5 text-right">
+                <button 
+                  @click="openReviewModal(sub)"
+                  :class="sub.status === 'Pending Verification' ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'"
+                  class="px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition cursor-pointer"
+                >
+                  {{ sub.status === 'Pending Verification' ? 'Review & Verify' : 'View Details' }}
+                </button>
+              </td>
+            </tr>
+            <tr v-if="onlinePayments.length === 0">
+              <td colspan="9" class="p-8 text-center text-slate-400 text-xs">
+                No online payment submissions found in queue.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PAYMENT COLLECTION & OR ISSUANCE MODAL (CASHIER WALK-IN & BILLING) -->
     <div v-if="selectedAssessment" class="no-print fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl border border-slate-200">
         <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
@@ -172,6 +302,15 @@
             </h3>
           </div>
           <button @click="selectedAssessment = null" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold">✕</button>
+        </div>
+
+        <!-- Walk-in Cashier Ticket Banner (If scheduled) -->
+        <div v-if="selectedAssessment.walkin_ticket_no || selectedAssessment.payment_ticket" class="p-3.5 rounded-2xl bg-indigo-50 border border-indigo-200 text-xs text-indigo-900 mb-4 flex items-center justify-between">
+          <div>
+            <span class="font-extrabold text-indigo-950 block">Walk-in Payment Ticket: {{ selectedAssessment.walkin_ticket_no || selectedAssessment.payment_ticket }}</span>
+            <span class="text-[11px] text-indigo-700 font-mono">Scheduled: {{ selectedAssessment.walkin_scheduled_date || 'Appointment' }} • {{ selectedAssessment.walkin_time_slot || 'Morning Batch' }}</span>
+          </div>
+          <span class="px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800 font-bold text-[10px] uppercase border border-indigo-300">Window 1 / 2</span>
         </div>
 
         <!-- Assessment Financial Breakdown -->
@@ -203,7 +342,7 @@
         </div>
 
         <!-- Record Payment Form (if balance remains) -->
-        <form v-if="selectedAssessment.remaining_balance > 0" @submit.prevent="submitPayment" class="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-xs space-y-4 mb-6">
+        <form v-if="selectedAssessment.remaining_balance > 0" @submit.prevent="openPaymentConfirmModal" class="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-xs space-y-4 mb-6">
           <h4 class="font-bold text-emerald-950 uppercase">Accept Cashier Payment</h4>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -258,12 +397,13 @@
 
           <div class="flex justify-end space-x-3 pt-2">
             <button 
-              type="submit" 
+              type="button" 
+              @click="openPaymentConfirmModal"
               :disabled="isPaying"
-              class="px-6 py-2.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md transition flex items-center space-x-1.5"
+              class="px-6 py-2.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md transition flex items-center space-x-1.5 cursor-pointer"
             >
               <span v-if="isPaying" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              <span>Submit Payment & Issue Official Receipt</span>
+              <span>Process Payment & Issue OR</span>
             </button>
           </div>
         </form>
@@ -301,6 +441,59 @@
               No payments recorded yet.
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYMENT CONFIRMATION MODAL -->
+    <div v-if="showPaymentConfirmModal" class="no-print fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 text-slate-900">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-100 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto mb-4 shadow-sm">
+          <CreditCard class="w-6 h-6" />
+        </div>
+        <div class="text-center">
+          <h3 class="text-base font-extrabold text-slate-900">Confirm Payment Collection</h3>
+          <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
+            Please verify the payment details below before finalizing the transaction and issuing the Official Receipt (OR).
+          </p>
+        </div>
+
+        <div class="my-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Student:</span>
+            <strong class="text-slate-900 font-sans">{{ selectedAssessment?.first_name }} {{ selectedAssessment?.last_name }}</strong>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Assessment No:</span>
+            <span class="font-bold text-slate-800">{{ selectedAssessment?.assessment_no }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Payment Channel:</span>
+            <strong class="text-blue-700 font-sans">{{ paymentForm.payment_method }}</strong>
+          </div>
+          <div class="flex justify-between border-t border-slate-200 pt-1.5 text-sm">
+            <span class="text-slate-600 font-sans font-bold">Amount to Collect:</span>
+            <strong class="text-emerald-700 font-black">₱{{ Number(paymentForm.amount_paid).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</strong>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2.5 mt-6">
+          <button 
+            type="button" 
+            @click="showPaymentConfirmModal = false" 
+            class="w-1/2 py-2.5 px-4 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button 
+            type="button" 
+            @click="executePayment" 
+            :disabled="isPaying"
+            class="w-1/2 py-2.5 px-4 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white shadow-md transition flex items-center justify-center space-x-1.5 cursor-pointer"
+          >
+            <span v-if="isPaying" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <span v-else>Confirm & Issue OR</span>
+          </button>
         </div>
       </div>
     </div>
@@ -424,23 +617,506 @@
         </div>
       </div>
     </div>
+
+    <!-- ONLINE PAYMENT VERIFICATION REVIEW MODAL -->
+    <div v-if="selectedOnlineSubmission" class="no-print fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto p-6 sm:p-8 shadow-2xl border border-slate-200 text-slate-900 animate-in fade-in zoom-in-95 duration-200">
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-slate-200 pb-4 mb-5">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-black shadow-md shadow-emerald-600/30">
+              PM
+            </div>
+            <div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase" :class="getVerificationBadgeClass(selectedOnlineSubmission.status)">
+                {{ selectedOnlineSubmission.status }}
+              </span>
+              <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight mt-0.5">
+                ONLINE PAYMENT VERIFICATION
+              </h3>
+            </div>
+          </div>
+          <button @click="selectedOnlineSubmission = null" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center font-bold text-slate-500 transition cursor-pointer">
+            ✕
+          </button>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="space-y-5 text-xs">
+          <!-- Student & Assessment Matrix -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 font-mono text-[11px]">
+            <div>
+              <span class="block text-[10px] text-slate-500 uppercase font-sans font-bold">Applicant Name:</span>
+              <strong class="text-slate-900 uppercase">{{ selectedOnlineSubmission.first_name }} {{ selectedOnlineSubmission.last_name }}</strong>
+            </div>
+            <div>
+              <span class="block text-[10px] text-slate-500 uppercase font-sans font-bold">Application No:</span>
+              <strong class="text-slate-900">{{ selectedOnlineSubmission.application_no }}</strong>
+            </div>
+            <div>
+              <span class="block text-[10px] text-slate-500 uppercase font-sans font-bold">Assessment No:</span>
+              <strong class="text-slate-900">{{ selectedOnlineSubmission.assessment_no }}</strong>
+            </div>
+            <div>
+              <span class="block text-[10px] text-slate-500 uppercase font-sans font-bold">Grade & Strand:</span>
+              <strong class="text-slate-900">{{ selectedOnlineSubmission.grade_level_name }} {{ selectedOnlineSubmission.strand_code ? '(' + selectedOnlineSubmission.strand_code + ')' : '' }}</strong>
+            </div>
+            <div>
+              <span class="block text-[10px] text-slate-500 uppercase font-sans font-bold">Payment Method:</span>
+              <strong class="text-emerald-700 font-bold">PayMongo ({{ selectedOnlineSubmission.payment_channel }})</strong>
+            </div>
+            <div>
+              <span class="block text-[10px] text-slate-500 uppercase font-sans font-bold">Date Submitted:</span>
+              <strong class="text-slate-900">{{ selectedOnlineSubmission.created_at }}</strong>
+            </div>
+          </div>
+
+          <!-- Transaction Summary Banner -->
+          <div class="p-4 rounded-2xl bg-emerald-50/80 border-2 border-emerald-300 space-y-2">
+            <div class="flex items-center justify-between">
+              <h4 class="font-black text-emerald-950 uppercase text-[11px] tracking-wider">Submitted PayMongo Details</h4>
+              <span class="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">
+                Channel: {{ selectedOnlineSubmission.payment_channel }}
+              </span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono">
+              <div class="bg-white p-3 rounded-xl border border-emerald-200">
+                <span class="block text-[10px] text-slate-500 uppercase font-sans font-bold">Reference / Txn ID:</span>
+                <span class="font-black text-slate-900 text-sm tracking-wide">
+                  {{ selectedOnlineSubmission.reference_no }}
+                </span>
+              </div>
+              <div class="bg-white p-3 rounded-xl border border-emerald-200">
+                <span class="block text-[10px] text-slate-500 uppercase font-sans font-bold">Amount Paid (PHP):</span>
+                <span class="font-black text-emerald-700 text-base">
+                  ₱{{ Number(selectedOnlineSubmission.amount_submitted).toLocaleString('en-US', {minimumFractionDigits: 2}) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- PAYMENT PROOF / RECEIPT SECTION -->
+          <div class="p-4 rounded-2xl border bg-slate-50 space-y-3" :class="selectedOnlineSubmission.receipt_file_path ? 'border-slate-200' : 'border-rose-300 bg-rose-50/50'">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <FileText class="w-4 h-4 text-slate-700" />
+                <h4 class="font-black text-slate-900 uppercase text-[11px] tracking-wider">Payment Proof / Receipt</h4>
+              </div>
+              <span v-if="selectedOnlineSubmission.receipt_file_path" class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase">
+                Attachment Present
+              </span>
+              <span v-else class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px] font-bold uppercase">
+                Proof Missing
+              </span>
+            </div>
+
+            <!-- If proof is present -->
+            <div v-if="selectedOnlineSubmission.receipt_file_path" class="space-y-3">
+              <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200">
+                <div class="flex items-center space-x-2.5 overflow-hidden">
+                  <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xs shrink-0">
+                    {{ selectedOnlineSubmission.receipt_file_path.toLowerCase().endsWith('.pdf') ? 'PDF' : 'IMG' }}
+                  </div>
+                  <div class="truncate">
+                    <p class="font-bold text-slate-800 text-xs truncate">
+                      {{ selectedOnlineSubmission.receipt_original_name || 'Payment Receipt Proof' }}
+                    </p>
+                    <p class="text-[10px] text-slate-400 font-mono">Format: {{ selectedOnlineSubmission.receipt_file_path.split('.').pop().toUpperCase() }}</p>
+                  </div>
+                </div>
+
+                <button 
+                  type="button" 
+                  @click="openPreviewProof(selectedOnlineSubmission.receipt_file_path, selectedOnlineSubmission.receipt_original_name)" 
+                  class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center space-x-1.5 shadow-sm transition cursor-pointer shrink-0"
+                >
+                  <Eye class="w-3.5 h-3.5" />
+                  <span>View Uploaded Receipt</span>
+                </button>
+              </div>
+
+              <!-- Inline Visual Preview Box -->
+              <div class="max-h-56 overflow-auto rounded-xl border border-slate-200 bg-white p-2 flex items-center justify-center">
+                <iframe 
+                  v-if="selectedOnlineSubmission.receipt_file_path.toLowerCase().endsWith('.pdf')" 
+                  :src="getFileUrl(selectedOnlineSubmission.receipt_file_path)" 
+                  class="w-full h-48 rounded border border-slate-200"
+                ></iframe>
+                <img 
+                  v-else 
+                  :src="getFileUrl(selectedOnlineSubmission.receipt_file_path)" 
+                  alt="Receipt Proof Preview" 
+                  @click="openPreviewProof(selectedOnlineSubmission.receipt_file_path, selectedOnlineSubmission.receipt_original_name)"
+                  class="max-h-48 max-w-full rounded object-contain cursor-pointer hover:opacity-95 transition"
+                />
+              </div>
+            </div>
+
+            <!-- If proof is missing -->
+            <div v-else class="p-3.5 rounded-xl bg-rose-100/90 border border-rose-300 text-rose-900 text-xs flex items-start space-x-2">
+              <AlertTriangle class="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />
+              <div>
+                <p class="font-bold">Payment proof is missing. Please review the submission.</p>
+                <p class="text-[11px] text-rose-800 mt-0.5">
+                  Treasury policy strictly requires an uploaded payment receipt screenshot or PDF before verification can proceed.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- TREASURY VERIFICATION CHECKLIST (MANDATORY BEFORE APPROVAL) -->
+          <div v-if="selectedOnlineSubmission.status === 'Pending Verification'" class="p-4 rounded-2xl bg-slate-900 text-white border border-slate-800 space-y-3 shadow-inner">
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-[11px] uppercase tracking-wider text-amber-400 flex items-center space-x-1.5">
+                <ShieldCheck class="w-4 h-4 text-amber-400" />
+                <span>Treasury Verification Checklist</span>
+              </span>
+              <button 
+                type="button" 
+                @click="checkAllVerifications"
+                class="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold underline cursor-pointer"
+              >
+                Select All Checklist Items
+              </button>
+            </div>
+            <div class="space-y-2 text-xs">
+              <label class="flex items-center space-x-2.5 cursor-pointer text-slate-200 hover:text-white transition">
+                <input type="checkbox" v-model="verificationChecklist.refChecked" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer" />
+                <span>PayMongo Reference/Transaction Number checked against merchant statement</span>
+              </label>
+              <label class="flex items-center space-x-2.5 cursor-pointer text-slate-200 hover:text-white transition">
+                <input type="checkbox" v-model="verificationChecklist.amountChecked" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer" />
+                <span>Amount Paid checked (matches required assessment downpayment)</span>
+              </label>
+              <label class="flex items-center space-x-2.5 cursor-pointer text-slate-200 hover:text-white transition">
+                <input type="checkbox" v-model="verificationChecklist.dateChecked" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer" />
+                <span>Payment Date checked & confirmed current</span>
+              </label>
+              <label class="flex items-center space-x-2.5 cursor-pointer text-slate-200 hover:text-white transition">
+                <input type="checkbox" v-model="verificationChecklist.proofChecked" :disabled="!selectedOnlineSubmission.receipt_file_path" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 disabled:opacity-30 cursor-pointer" />
+                <span>Payment Receipt/Proof checked & verified clear</span>
+              </label>
+              <label class="flex items-center space-x-2.5 cursor-pointer text-slate-200 hover:text-white transition">
+                <input type="checkbox" v-model="verificationChecklist.matchChecked" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer" />
+                <span>Payment details match the submitted transaction & enrollee record</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- If already verified, show Official Receipt info -->
+          <div v-if="selectedOnlineSubmission.status === 'Verified'" class="p-3.5 rounded-2xl bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-mono">
+            <span class="font-bold block mb-0.5 font-sans">Official Receipt Generated: {{ selectedOnlineSubmission.or_number }}</span>
+            <p class="text-[11px] font-sans">Verified at {{ selectedOnlineSubmission.verified_at }} by {{ selectedOnlineSubmission.verified_by_username || 'Treasury Staff' }}. Student is Officially Enrolled.</p>
+          </div>
+
+          <!-- If already rejected, show Rejection Remarks -->
+          <div v-if="selectedOnlineSubmission.status === 'Rejected'" class="p-3.5 rounded-2xl bg-rose-100 text-rose-900 border border-rose-300 text-xs">
+            <span class="font-bold block mb-0.5">Rejected / Flagged Remarks:</span>
+            <p class="text-[11px]">{{ selectedOnlineSubmission.rejection_reason }}</p>
+          </div>
+
+          <!-- Inline Error / Notice Banner in Review Modal -->
+          <div v-if="checklistErrorMessage" class="p-3.5 rounded-2xl bg-amber-50 border-2 border-amber-400 text-amber-950 text-xs flex items-center space-x-2 animate-in fade-in duration-150">
+            <AlertTriangle class="w-4 h-4 text-amber-600 shrink-0" />
+            <span class="font-bold">{{ checklistErrorMessage }}</span>
+          </div>
+
+          <div v-if="reviewModalError" class="p-3.5 rounded-2xl bg-rose-50 border-2 border-rose-300 text-rose-950 text-xs flex items-center space-x-2 animate-in fade-in duration-150">
+            <AlertTriangle class="w-4 h-4 text-rose-600 shrink-0" />
+            <span class="font-bold">{{ reviewModalError }}</span>
+          </div>
+
+          <!-- Rejection Reason Input Box (Shows when clicking Reject) -->
+          <div v-if="showRejectInput" class="p-4 rounded-2xl bg-rose-50 border-2 border-rose-300 space-y-2 animate-in fade-in duration-150">
+            <label class="block font-bold text-rose-900">Specify Reason for Rejection / Review *</label>
+            <textarea 
+              v-model="rejectionReason" 
+              rows="3" 
+              placeholder="e.g. Transaction ID not found in PayMongo records or receipt screenshot is unreadable. Please upload a clear copy."
+              class="w-full p-2.5 rounded-xl border border-rose-300 text-xs focus:ring-2 focus:ring-rose-500 bg-white"
+            ></textarea>
+            <div class="flex justify-end space-x-2">
+              <button 
+                type="button" 
+                @click="showRejectInput = false" 
+                class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 font-bold hover:bg-slate-100 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                @click="confirmRejectOnlinePayment" 
+                :disabled="isVerifying || !rejectionReason.trim()"
+                class="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold disabled:opacity-50 cursor-pointer"
+              >
+                Submit Rejection
+              </button>
+            </div>
+          </div>
+
+          <!-- Action Buttons for Pending Verification -->
+          <div v-if="selectedOnlineSubmission.status === 'Pending Verification' && !showRejectInput" class="flex flex-col sm:flex-row items-center justify-end gap-3 pt-3 border-t border-slate-100">
+            <button 
+              type="button" 
+              @click="showRejectInput = true" 
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 transition flex items-center justify-center space-x-1.5 cursor-pointer"
+            >
+              <AlertTriangle class="w-4 h-4" />
+              <span>Reject Payment</span>
+            </button>
+
+            <button 
+              type="button" 
+              @click="approveOnlinePayment" 
+              :disabled="isVerifying || !selectedOnlineSubmission.receipt_file_path"
+              class="w-full sm:w-auto px-6 py-2.5 rounded-xl font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 transition flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span v-if="isVerifying" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              <span v-else class="flex items-center space-x-2">
+                <CheckCircle class="w-4 h-4" />
+                <span>Verify Payment</span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ONLINE PAYMENT APPROVE CONFIRMATION MODAL (CUSTOM MODERN DIALOG) -->
+    <div v-if="showOnlineApproveConfirmModal && selectedOnlineSubmission" class="no-print fixed inset-0 z-[70] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 text-slate-900">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-100 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto mb-4 shadow-sm">
+          <CheckCircle class="w-7 h-7" />
+        </div>
+        <div class="text-center">
+          <h3 class="text-lg font-black text-slate-900">Confirm Payment Verification</h3>
+          <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+            Verify this online transaction and officially enroll the student into their assigned section.
+          </p>
+        </div>
+
+        <div class="my-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2 font-mono">
+          <div class="flex justify-between">
+            <span class="text-slate-500 font-sans">Enrollee Student:</span>
+            <strong class="text-slate-900 font-sans uppercase">{{ selectedOnlineSubmission.first_name }} {{ selectedOnlineSubmission.last_name }}</strong>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500 font-sans">Application No:</span>
+            <strong class="text-slate-800">{{ selectedOnlineSubmission.application_no }}</strong>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500 font-sans">Channel & Ref No:</span>
+            <strong class="text-emerald-800">{{ selectedOnlineSubmission.payment_channel }} • {{ selectedOnlineSubmission.reference_no }}</strong>
+          </div>
+          <div class="flex justify-between border-t border-slate-200 pt-2 text-sm">
+            <span class="text-slate-700 font-sans font-bold">Verified Amount:</span>
+            <strong class="text-emerald-700 font-black">₱{{ Number(selectedOnlineSubmission.amount_submitted).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</strong>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 space-y-1 mb-5">
+          <div class="font-bold flex items-center space-x-1 text-emerald-800">
+            <ShieldCheck class="w-3.5 h-3.5" />
+            <span>Automatic Post-Verification Actions:</span>
+          </div>
+          <ul class="list-disc list-inside space-y-0.5 text-[10px] text-emerald-800/90 pl-1">
+            <li>Generate Official Receipt (OR-2026-XXXXXX)</li>
+            <li>Assign Permanent Student ID & create login account</li>
+            <li>Change status to <strong>Officially Enrolled</strong></li>
+            <li>Unlock Step 5 (COR & Schedule) in Student Portal</li>
+          </ul>
+        </div>
+
+        <div class="flex items-center space-x-2.5">
+          <button 
+            type="button" 
+            @click="showOnlineApproveConfirmModal = false" 
+            class="w-1/2 py-2.5 px-4 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button 
+            type="button" 
+            @click="executeApproveOnlinePayment" 
+            :disabled="isVerifying"
+            class="w-1/2 py-2.5 px-4 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white shadow-lg shadow-emerald-600/30 transition flex items-center justify-center space-x-1.5 cursor-pointer"
+          >
+            <span v-if="isVerifying" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <span v-else>Confirm & Verify →</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYMENT VERIFICATION SUCCESS DIALOG POPUP (REPLACES PLAIN TOAST) -->
+    <div v-if="verifiedSuccessModalData" class="no-print fixed inset-0 z-[80] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-200 text-slate-900 text-center">
+        <div class="w-16 h-16 rounded-full bg-emerald-100 border-2 border-emerald-300 text-emerald-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/20">
+          <CheckCircle class="w-9 h-9" />
+        </div>
+        
+        <span class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-black uppercase tracking-widest inline-block mb-2">
+          Payment Verified & Approved
+        </span>
+        <h3 class="text-xl sm:text-2xl font-black text-slate-900">
+          Student Officially Enrolled!
+        </h3>
+        <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+          The transaction has been approved. The Official Receipt and Student Account are now active.
+        </p>
+
+        <!-- Details Card -->
+        <div class="my-5 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-mono text-left space-y-2">
+          <div class="flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-200">
+            <span class="text-slate-500 font-sans text-[11px]">Official Receipt No:</span>
+            <strong class="text-emerald-700 font-bold text-sm tracking-wide">{{ verifiedSuccessModalData.or_number }}</strong>
+          </div>
+          <div class="flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-200">
+            <span class="text-slate-500 font-sans text-[11px]">Permanent Student ID:</span>
+            <strong class="text-blue-700 font-bold text-sm tracking-wide">{{ verifiedSuccessModalData.student_no }}</strong>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-[11px] pt-1">
+            <div>
+              <span class="text-slate-400 font-sans block text-[10px]">Student Name:</span>
+              <strong class="text-slate-800 font-sans uppercase">{{ verifiedSuccessModalData.student_name }}</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 font-sans block text-[10px]">Amount Settled:</span>
+              <strong class="text-emerald-700 font-bold">₱{{ Number(verifiedSuccessModalData.amount_paid).toLocaleString('en-US', {minimumFractionDigits: 2}) }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="space-y-2">
+          <button 
+            type="button" 
+            @click="openReceiptFromSuccessModal" 
+            class="w-full py-3 px-4 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white text-xs shadow-lg shadow-emerald-600/30 transition flex items-center justify-center space-x-2 cursor-pointer"
+          >
+            <Printer class="w-4 h-4" />
+            <span>View & Print Official Receipt (OR)</span>
+          </button>
+          
+          <button 
+            type="button" 
+            @click="verifiedSuccessModalData = null" 
+            class="w-full py-2.5 px-4 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs transition cursor-pointer"
+          >
+            Done / Return to Queue
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEDICATED FULLSCREEN PAYMENT PROOF VIEWER MODAL -->
+    <div v-if="previewProofDoc" class="no-print fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
+        <!-- Modal Header -->
+        <div class="p-4 sm:px-6 border-b border-slate-200 flex items-center justify-between bg-slate-900 text-white">
+          <div class="flex items-center space-x-3">
+            <FileText class="w-5 h-5 text-emerald-400" />
+            <div>
+              <h3 class="font-bold text-sm text-white">Payment Receipt Proof Preview</h3>
+              <p class="text-[11px] text-slate-400 font-mono">{{ previewProofDoc.original_filename || 'Uploaded Receipt' }}</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <a 
+              :href="getFileUrl(previewProofDoc.file_path)" 
+              target="_blank" 
+              download
+              class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center space-x-1.5 transition"
+            >
+              <Download class="w-3.5 h-3.5" />
+              <span>Download</span>
+            </a>
+            <button 
+              @click="previewProofDoc = null" 
+              class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center font-bold transition cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="flex-1 p-4 sm:p-6 overflow-y-auto bg-slate-100 flex items-center justify-center min-h-[420px]">
+          <iframe 
+            v-if="previewProofDoc.file_path.toLowerCase().endsWith('.pdf')" 
+            :src="getFileUrl(previewProofDoc.file_path)" 
+            class="w-full h-[70vh] rounded-xl border border-slate-300 bg-white shadow-inner"
+          ></iframe>
+          <div v-else class="max-h-[70vh] overflow-auto flex items-center justify-center">
+            <img 
+              :src="getFileUrl(previewProofDoc.file_path)" 
+              alt="Payment Receipt Proof" 
+              class="max-w-full max-h-[68vh] rounded-xl shadow-lg object-contain border border-slate-300 bg-white"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { Search, RefreshCw, Printer, ArrowLeft } from 'lucide-vue-next';
-import api from '../../services/api';
+import { ref, computed, onMounted } from 'vue';
+import { 
+  Search, RefreshCw, Printer, ArrowLeft, CheckCircle, AlertTriangle, Eye, Clock, 
+  CreditCard, FileText, Download, ShieldCheck 
+} from 'lucide-vue-next';
+import api, { getFileUrl } from '../../services/api';
 
 const activeTab = ref('assessments');
 const assessments = ref([]);
 const feeStructuresList = ref([]);
+const onlinePayments = ref([]);
+const onlineSearchQuery = ref('');
+const onlineFilterStatus = ref('');
 const selectedAssessment = ref(null);
 const selectedReceipt = ref(null);
+const selectedOnlineSubmission = ref(null);
+const previewProofDoc = ref(null);
+const showRejectInput = ref(false);
+const rejectionReason = ref('');
+const isVerifying = ref(false);
 const searchQuery = ref('');
 const filterStatus = ref('');
 const isPaying = ref(false);
 const successMessage = ref('');
+const showPaymentConfirmModal = ref(false);
+const showOnlineApproveConfirmModal = ref(false);
+const verifiedSuccessModalData = ref(null);
+const checklistErrorMessage = ref('');
+const reviewModalError = ref('');
+
+const verificationChecklist = ref({
+  refChecked: false,
+  amountChecked: false,
+  dateChecked: false,
+  proofChecked: false,
+  matchChecked: false
+});
+
+const checkAllVerifications = () => {
+  checklistErrorMessage.value = '';
+  verificationChecklist.value = {
+    refChecked: true,
+    amountChecked: true,
+    dateChecked: true,
+    proofChecked: !!selectedOnlineSubmission.value?.receipt_file_path,
+    matchChecked: true
+  };
+};
+
+const openPreviewProof = (file_path, original_filename) => {
+  previewProofDoc.value = { file_path, original_filename };
+};
+
+const pendingOnlineCount = computed(() => {
+  return onlinePayments.value.filter(p => p.status === 'Pending Verification').length;
+});
 
 const paymentForm = ref({
   amount_paid: 3000,
@@ -455,6 +1131,18 @@ const getStatusBadgeClass = (status) => {
   return 'bg-amber-100 text-amber-800';
 };
 
+const getVerificationBadgeClass = (status) => {
+  if (status === 'Verified') return 'bg-emerald-100 text-emerald-800 border border-emerald-300';
+  if (status === 'Rejected') return 'bg-rose-100 text-rose-800 border border-rose-300';
+  return 'bg-amber-100 text-amber-800 border border-amber-300';
+};
+
+const getChannelBadgeClass = (channel) => {
+  if (channel === 'GCash') return 'bg-blue-100 text-blue-800';
+  if (channel === 'Maya') return 'bg-emerald-100 text-emerald-800';
+  return 'bg-slate-100 text-slate-800';
+};
+
 const loadAssessments = async () => {
   try {
     let params = '';
@@ -464,6 +1152,18 @@ const loadAssessments = async () => {
     assessments.value = res.data;
   } catch (err) {
     console.error('Failed to load assessments:', err);
+  }
+};
+
+const loadOnlinePayments = async () => {
+  try {
+    let params = '';
+    if (onlineFilterStatus.value) params += `status=${onlineFilterStatus.value}&`;
+    if (onlineSearchQuery.value) params += `search=${encodeURIComponent(onlineSearchQuery.value)}`;
+    const res = await api.getOnlinePaymentVerifications(params);
+    onlinePayments.value = res.data;
+  } catch (err) {
+    console.error('Failed to load online payment queue:', err);
   }
 };
 
@@ -492,6 +1192,137 @@ const handleAmountInput = () => {
   const max = Number(selectedAssessment.value.remaining_balance || 0);
   if (paymentForm.value.amount_paid > max) {
     paymentForm.value.amount_paid = max;
+  }
+};
+
+const handleReviewFromBilling = async (ass) => {
+  if (onlinePayments.value.length === 0) {
+    await loadOnlinePayments();
+  }
+  const match = onlinePayments.value.find(p => p.assessment_id === ass.id || p.id === ass.online_submission_id);
+  if (match) {
+    openReviewModal(match);
+  } else {
+    activeTab.value = 'online_payments';
+    await loadOnlinePayments();
+  }
+};
+
+const openReviewModal = (sub) => {
+  selectedOnlineSubmission.value = sub;
+  showRejectInput.value = false;
+  rejectionReason.value = '';
+  checklistErrorMessage.value = '';
+  reviewModalError.value = '';
+  showOnlineApproveConfirmModal.value = false;
+  verificationChecklist.value = {
+    refChecked: false,
+    amountChecked: false,
+    dateChecked: false,
+    proofChecked: !!sub.receipt_file_path,
+    matchChecked: false
+  };
+};
+
+const approveOnlinePayment = () => {
+  if (!selectedOnlineSubmission.value) return;
+  checklistErrorMessage.value = '';
+  reviewModalError.value = '';
+
+  // 1. Strict Payment Proof Validation
+  if (!selectedOnlineSubmission.value.receipt_file_path) {
+    checklistErrorMessage.value = 'Payment proof is missing. Treasury policy strictly requires an uploaded payment receipt proof before verification.';
+    return;
+  }
+
+  // 2. Checklist Validation
+  const chk = verificationChecklist.value;
+  if (!chk.refChecked || !chk.amountChecked || !chk.dateChecked || !chk.proofChecked || !chk.matchChecked) {
+    checklistErrorMessage.value = 'Please check and confirm all 5 items in the Treasury Verification Checklist before completing verification.';
+    return;
+  }
+
+  // Open custom confirmation modal instead of browser confirm()
+  showOnlineApproveConfirmModal.value = true;
+};
+
+const executeApproveOnlinePayment = async () => {
+  if (!selectedOnlineSubmission.value) return;
+  isVerifying.value = true;
+  reviewModalError.value = '';
+
+  try {
+    const subCopy = { ...selectedOnlineSubmission.value };
+    const res = await api.verifyOnlinePayment({
+      submission_id: subCopy.id,
+      action: 'approve'
+    });
+
+    showOnlineApproveConfirmModal.value = false;
+    selectedOnlineSubmission.value = null;
+
+    // Trigger celebratory popup dialog
+    verifiedSuccessModalData.value = {
+      ...res.data,
+      student_name: `${subCopy.first_name} ${subCopy.last_name}`,
+      amount_paid: subCopy.amount_submitted,
+      grade_level_name: subCopy.grade_level_name,
+      strand_code: subCopy.strand_code,
+      assessment_id: subCopy.assessment_id
+    };
+
+    await loadOnlinePayments();
+    await loadAssessments();
+  } catch (err) {
+    showOnlineApproveConfirmModal.value = false;
+    reviewModalError.value = err.message || 'Payment verification failed.';
+  } finally {
+    isVerifying.value = false;
+  }
+};
+
+const openReceiptFromSuccessModal = async () => {
+  if (!verifiedSuccessModalData.value) return;
+  const assId = verifiedSuccessModalData.value.assessment_id;
+  try {
+    const res = await api.getAssessmentDetails(assId);
+    const ass = res.data;
+    const latestPay = ass.payments?.[0] || {
+      or_number: verifiedSuccessModalData.value.or_number,
+      payment_date: new Date().toISOString().split('T')[0],
+      payment_method: 'Online PayMongo',
+      reference_no: verifiedSuccessModalData.value.student_no,
+      amount_paid: verifiedSuccessModalData.value.amount_paid,
+      received_by_user: 'Treasury Officer'
+    };
+    verifiedSuccessModalData.value = null;
+    openReceipt(latestPay, ass);
+  } catch (err) {
+    console.error('Failed to load receipt details:', err);
+  }
+};
+
+const confirmRejectOnlinePayment = async () => {
+  if (!selectedOnlineSubmission.value || !rejectionReason.value.trim()) return;
+
+  isVerifying.value = true;
+  reviewModalError.value = '';
+  try {
+    await api.verifyOnlinePayment({
+      submission_id: selectedOnlineSubmission.value.id,
+      action: 'reject',
+      rejection_reason: rejectionReason.value.trim()
+    });
+
+    successMessage.value = 'Payment flagged / rejected. The applicant has been notified to provide corrected payment details.';
+    selectedOnlineSubmission.value = null;
+    showRejectInput.value = false;
+    await loadOnlinePayments();
+    await loadAssessments();
+  } catch (err) {
+    reviewModalError.value = err.message || 'Payment rejection failed.';
+  } finally {
+    isVerifying.value = false;
   }
 };
 
@@ -525,19 +1356,23 @@ const printReceipt = () => {
   window.print();
 };
 
-const submitPayment = async () => {
+const openPaymentConfirmModal = () => {
   if (!selectedAssessment.value) return;
 
   const max = Number(selectedAssessment.value.remaining_balance || 0);
   if (Number(paymentForm.value.amount_paid) > max) {
-    alert(`Payment amount cannot exceed the remaining balance of ₱${max.toLocaleString('en-US', {minimumFractionDigits: 2})}.`);
     paymentForm.value.amount_paid = max;
     return;
   }
   if (Number(paymentForm.value.amount_paid) <= 0) {
-    alert('Please enter a valid payment amount greater than 0.');
     return;
   }
+
+  showPaymentConfirmModal.value = true;
+};
+
+const executePayment = async () => {
+  if (!selectedAssessment.value) return;
 
   isPaying.value = true;
   try {
@@ -549,17 +1384,22 @@ const submitPayment = async () => {
       remarks: paymentForm.value.remarks
     });
 
-    successMessage.value = `Official Receipt ${res.data.or_number} generated! Student is now Officially Enrolled.`;
-    await openPaymentModal(selectedAssessment.value.id);
+    showPaymentConfirmModal.value = false;
+    const currentAss = { ...selectedAssessment.value };
+    await openPaymentModal(currentAss.id);
     await loadAssessments();
 
-    // Auto-open printable receipt for the newly created payment
-    if (selectedAssessment.value.payments && selectedAssessment.value.payments.length > 0) {
-      const latestPayment = selectedAssessment.value.payments[0];
-      openReceipt(latestPayment, selectedAssessment.value);
-    }
+    // Trigger celebratory success modal
+    verifiedSuccessModalData.value = {
+      ...res.data,
+      student_name: `${currentAss.first_name} ${currentAss.last_name}`,
+      amount_paid: paymentForm.value.amount_paid,
+      grade_level_name: currentAss.grade_level_name,
+      strand_code: currentAss.strand_code,
+      assessment_id: currentAss.id
+    };
   } catch (err) {
-    alert(err.message || 'Payment processing failed.');
+    successMessage.value = err.message || 'Payment processing failed.';
   } finally {
     isPaying.value = false;
   }
@@ -568,5 +1408,6 @@ const submitPayment = async () => {
 onMounted(() => {
   loadAssessments();
   loadFeeStructures();
+  loadOnlinePayments();
 });
 </script>

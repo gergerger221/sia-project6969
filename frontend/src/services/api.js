@@ -79,6 +79,8 @@ export default {
   deleteDocument: (documentId) => apiRequest('admission/delete-document', { method: 'POST', body: { document_id: documentId } }),
   submitApplication: () => apiRequest('admission/submit', { method: 'POST' }),
   getAcademicOptions: () => apiRequest('admission/academic-options'),
+  checkoutPayment: (data) => apiRequest('admission/checkout-payment', { method: 'POST', body: data }),
+  switchPaymentMode: (data) => apiRequest('admission/switch-payment-mode', { method: 'POST', body: data }),
 
   // Registrar
   getApplications: (params = '') => apiRequest(`registrar/applications${params ? '&' + params : ''}`),
@@ -92,6 +94,8 @@ export default {
   getAssessments: (params = '') => apiRequest(`treasury/assessments${params ? '&' + params : ''}`),
   getAssessmentDetails: (id) => apiRequest(`treasury/assessment-details&id=${id}`),
   processPayment: (data) => apiRequest('treasury/process-payment', { method: 'POST', body: data }),
+  getOnlinePaymentVerifications: (params = '') => apiRequest(`treasury/online-payments${params ? '&' + params : ''}`),
+  verifyOnlinePayment: (data) => apiRequest('treasury/verify-online-payment', { method: 'POST', body: data }),
   getFeeStructures: () => apiRequest('treasury/fee-structures'),
 
   // Coordinator & Sectioning

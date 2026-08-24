@@ -29,9 +29,14 @@
     </div>
 
     <!-- Alert Notifications -->
-    <div v-if="successMessage" class="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500 text-emerald-300 text-xs mb-6 flex items-center justify-between">
+    <div v-if="successMessage" class="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500 text-emerald-300 text-xs mb-6 flex items-center justify-between shadow-md">
       <span>{{ successMessage }}</span>
-      <button @click="successMessage = ''" class="font-bold">✕</button>
+      <button @click="successMessage = ''" class="font-bold cursor-pointer">✕</button>
+    </div>
+
+    <div v-if="errorMessage" class="p-4 rounded-2xl bg-rose-950/80 border border-rose-500 text-rose-300 text-xs mb-6 flex items-center justify-between shadow-md">
+      <span>{{ errorMessage }}</span>
+      <button @click="errorMessage = ''" class="font-bold cursor-pointer">✕</button>
     </div>
 
     <!-- TAB 1: ADMISSION APPLICATIONS REVIEW -->
@@ -806,6 +811,7 @@ const isApproving = ref(false);
 const isSubmittingDeficiency = ref(false);
 const isUndoing = ref(false);
 const successMessage = ref('');
+const errorMessage = ref('');
 
 const undoModal = ref({
   isOpen: false,
@@ -820,7 +826,7 @@ const isOfficiallyEnrolled = computed(() => {
 
 const openUndoModal = (appId, appNo, studentName = '') => {
   if (isOfficiallyEnrolled.value) {
-    alert('Cannot undo approval: This student has already completed treasury payment and is officially enrolled.');
+    errorMessage.value = 'Cannot undo approval: This student has already completed treasury payment and is officially enrolled.';
     return;
   }
   undoModal.value = {
@@ -838,10 +844,11 @@ const closeUndoModal = () => {
 const confirmUndoApproval = async () => {
   if (!undoModal.value.appId) return;
   if (isOfficiallyEnrolled.value) {
-    alert('Cannot undo approval: This student is already officially enrolled.');
+    errorMessage.value = 'Cannot undo approval: This student is already officially enrolled.';
     return;
   }
   isUndoing.value = true;
+  errorMessage.value = '';
   try {
     const res = await api.undoApproval(undoModal.value.appId);
     successMessage.value = res.message || `Approval successfully undone for #${undoModal.value.appNo}.`;
@@ -852,7 +859,7 @@ const confirmUndoApproval = async () => {
     }
     await Promise.all([loadApplications(), loadQueue()]);
   } catch (err) {
-    alert(err.message || 'Failed to undo approval.');
+    errorMessage.value = err.message || 'Failed to undo approval.';
   } finally {
     isUndoing.value = false;
   }
@@ -1000,17 +1007,19 @@ const verifyDoc = async (docId, status) => {
 const submitApproval = async () => {
   if (!selectedApp.value || hasDeficiencies.value) return;
   isApproving.value = true;
+  errorMessage.value = '';
+  const appNo = selectedApp.value.application_no || 'Applicant';
   try {
-    await api.approveAndQueue({
+    const res = await api.approveAndQueue({
       application_id: selectedApp.value.id,
       section_id: approvalForm.value.section_id,
       remarks: approvalForm.value.remarks
     });
-    successMessage.value = `Applicant ${selectedApp.value.application_no} successfully approved & added to the Enrollment Queue!`;
+    successMessage.value = res?.message || `Applicant ${appNo} successfully approved & added to the Enrollment Queue!`;
     selectedApp.value = null;
     await Promise.all([loadApplications(), loadQueue()]);
   } catch (err) {
-    alert(err.message || 'Approval failed.');
+    errorMessage.value = err.message || 'Approval failed.';
   } finally {
     isApproving.value = false;
   }

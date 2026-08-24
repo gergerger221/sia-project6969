@@ -71,6 +71,15 @@ class AdmissionController {
         $assStmt->execute(['app_id' => $application['id']]);
         $application['assessment_info'] = $assStmt->fetch() ?: null;
 
+        // Fetch latest online payment submission if any
+        $opsStmt = $db->prepare("
+            SELECT * FROM online_payment_submissions
+            WHERE application_id = :app_id
+            ORDER BY id DESC LIMIT 1
+        ");
+        $opsStmt->execute(['app_id' => $application['id']]);
+        $application['online_payment_submission'] = $opsStmt->fetch() ?: null;
+
         Response::success('Application retrieved successfully', $application);
     }
 
@@ -94,9 +103,52 @@ class AdmissionController {
             Response::error('Your application has already been processed and cannot be edited directly.');
         }
 
+        // Strict Mobile number validation
+        $rawContact = trim($input['contact_number'] ?? '');
+        $cleanContact = preg_replace('/\D/', '', $rawContact);
+        if (!preg_match('/^09\d{9}$/', $cleanContact)) {
+            Response::error('Must be an 11-digit Philippine mobile number starting with 09.');
+        }
+
+        // Guardian mobile number validation if provided
+        $rawGuardianContact = trim($input['guardian_contact'] ?? '');
+        if (!empty($rawGuardianContact)) {
+            $cleanGuardianContact = preg_replace('/\D/', '', $rawGuardianContact);
+            if (!preg_match('/^09\d{9}$/', $cleanGuardianContact)) {
+                Response::error('Guardian contact must be an 11-digit Philippine mobile number starting with 09.');
+            }
+        } else {
+            $cleanGuardianContact = $cleanContact;
+        }
+
+        // Global LRN Normalization and Uniqueness Check
+        $rawLrn = trim($input['lrn'] ?? '');
+        $cleanLrn = preg_replace('/\D/', '', $rawLrn);
+        if (!empty($cleanLrn)) {
+            if (strlen($cleanLrn) !== 12) {
+                Response::error('DepEd Learner Reference Number (LRN) must be exactly 12 numeric digits.');
+            }
+            // Check global uniqueness across all other applications and enrollments
+            $chkLrn = $db->prepare("
+                SELECT id FROM admission_applications WHERE lrn = :lrn1 AND id != :curr_app_id
+                UNION
+                SELECT id FROM enrollments WHERE lrn = :lrn2 AND application_id != :curr_app_id2
+                LIMIT 1
+            ");
+            $chkLrn->execute([
+                'lrn1'          => $cleanLrn,
+                'curr_app_id'   => $app['id'],
+                'lrn2'          => $cleanLrn,
+                'curr_app_id2'  => $app['id']
+            ]);
+            if ($chkLrn->fetch()) {
+                Response::error('This LRN is already registered in the system. Please verify your LRN.');
+            }
+        }
+
         $fields = [
             'applicant_type'        => in_array($input['applicant_type'] ?? '', ['New Student', 'Transferee']) ? $input['applicant_type'] : 'New Student',
-            'lrn'                   => trim($input['lrn'] ?? ''),
+            'lrn'                   => $cleanLrn,
             'first_name'            => trim($input['first_name'] ?? ''),
             'middle_name'           => trim($input['middle_name'] ?? ''),
             'last_name'             => trim($input['last_name'] ?? ''),
@@ -107,7 +159,7 @@ class AdmissionController {
             'civil_status'          => $input['civil_status'] ?? 'Single',
             'nationality'           => $input['nationality'] ?? 'Filipino',
             'religion'              => trim($input['religion'] ?? ''),
-            'contact_number'        => trim($input['contact_number'] ?? ''),
+            'contact_number'        => $cleanContact,
             'email'                 => $user['email'], // Locked to the user's login account email
             'address_street'        => trim($input['address_street'] ?? ''),
             'address_barangay'      => trim($input['address_barangay'] ?? ''),
@@ -116,7 +168,7 @@ class AdmissionController {
             'address_zip'           => trim($input['address_zip'] ?? ''),
             'guardian_name'         => trim($input['guardian_name'] ?? ''),
             'guardian_relationship' => trim($input['guardian_relationship'] ?? ''),
-            'guardian_contact'      => trim($input['guardian_contact'] ?? ''),
+            'guardian_contact'      => $cleanGuardianContact,
             'guardian_occupation'   => trim($input['guardian_occupation'] ?? ''),
             'last_school_attended'  => trim($input['last_school_attended'] ?? ''),
             'last_school_type'      => $input['last_school_type'] ?? 'Public',
@@ -423,6 +475,324 @@ class AdmissionController {
             'subjects'     => $subjects,
             'school_year'  => $schoolYear
         ]);
+    }
+
+    /**
+     * Checkout / Pay Tuition Downpayment via PayMongo Online Simulation or Cashier Walk-in Ticket.
+     */
+    public function checkoutPayment(): void {
+        $user = Auth::requireRole(['applicant', 'student']);
+        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+
+        $db = Database::getConnection();
+
+        // 1. Fetch user's admission application
+        $appStmt = $db->prepare("SELECT * FROM admission_applications WHERE user_id = :user_id LIMIT 1");
+        $appStmt->execute(['user_id' => $user['id']]);
+        $app = $appStmt->fetch();
+
+        if (!$app) {
+            Response::error('Admission application not found.', 404);
+        }
+
+        // STRICT ENROLLMENT WORKFLOW: REQUIREMENTS MUST BE APPROVED BEFORE PAYMENT
+        if (!in_array($app['status'], ['Approved', 'Queued for Enrollment', 'Assessed'])) {
+            Response::error('Payment is not available yet. Your application must first be approved by the Registrar.', 403);
+        }
+
+        // Guard 1: Officially Enrolled
+        if ($app['status'] === 'Enrolled') {
+            Response::error('You are already officially enrolled. No additional payment is required.', 422);
+        }
+
+        // 2. Fetch associated enrollment & assessment
+        $enrStmt = $db->prepare("
+            SELECT e.*, sa.id as assessment_id, sa.net_payable, sa.remaining_balance, sa.total_paid, sa.status as assessment_status, sa.minimum_downpayment
+            FROM enrollments e
+            LEFT JOIN student_assessments sa ON e.id = sa.enrollment_id
+            WHERE e.application_id = :app_id
+            LIMIT 1
+        ");
+        $enrStmt->execute(['app_id' => $app['id']]);
+        $enr = $enrStmt->fetch();
+
+        if (!$enr || empty($enr['assessment_id'])) {
+            Response::error('Assessment record not found for your application. Please wait for Registrar processing.', 422);
+        }
+
+        // Guard 2: Online Payment Pending Verification
+        $chkActiveSub = $db->prepare("
+            SELECT id, reference_no, amount_submitted FROM online_payment_submissions 
+            WHERE application_id = :app_id AND status = 'Pending Verification'
+            LIMIT 1
+        ");
+        $chkActiveSub->execute(['app_id' => $app['id']]);
+        $activeSub = $chkActiveSub->fetch();
+        if ($activeSub) {
+            Response::error("Your online payment (Ref: {$activeSub['reference_no']}) is already submitted and currently awaiting Treasury verification. You cannot submit another payment or switch payment methods while under review.", 422);
+        }
+
+        $paymentType = $input['payment_type'] ?? ($_POST['payment_type'] ?? 'online'); // 'online' or 'walkin'
+
+        $db->beginTransaction();
+        try {
+            if ($paymentType === 'walkin') {
+                $location = 'Main Cashier Office, Bldg A, 123 Education Blvd, U-Belt, Manila';
+                $amountDue = (float)($input['amount'] ?? $_POST['amount'] ?? $enr['minimum_downpayment'] ?? 3000.00);
+
+                // Generate Walk-in Payment Ticket
+                $payCount = $db->query("SELECT COUNT(*) FROM student_assessments WHERE walkin_ticket_no IS NOT NULL OR payment_ticket IS NOT NULL")->fetchColumn();
+                $ticketNo = 'PAY-' . date('Y') . '-' . str_pad((string)((int)$payCount + 101), 4, '0', STR_PAD_LEFT);
+
+                $upAss = $db->prepare("
+                    UPDATE student_assessments SET 
+                        payment_ticket = :ticket,
+                        walkin_ticket_no = :ticket2,
+                        walkin_location = :loc,
+                        payment_mode = 'Walk-in Cashier',
+                        payment_verification_status = 'Awaiting Payment',
+                        status = 'Walk-in Payment Scheduled'
+                    WHERE id = :id
+                ");
+                $upAss->execute([
+                    'ticket'  => $ticketNo,
+                    'ticket2' => $ticketNo,
+                    'loc'     => $location,
+                    'id'      => $enr['assessment_id']
+                ]);
+
+                // Update application status
+                $db->prepare("UPDATE admission_applications SET status = 'Walk-in Payment Scheduled' WHERE id = :id")->execute(['id' => $app['id']]);
+
+                $db->commit();
+                Auth::logAudit('WALKIN_TICKET_GENERATED', "Generated walk-in payment ticket {$ticketNo} for App #{$app['application_no']}", $user['id']);
+
+                Response::success('Walk-in Cashier Payment Ticket generated successfully!', [
+                    'payment_type'    => 'walkin',
+                    'ticket_number'   => $ticketNo,
+                    'walkin_ticket_no'=> $ticketNo,
+                    'location'        => $location,
+                    'amount_due'      => $amountDue,
+                    'net_payable'     => (float)$enr['net_payable'],
+                    'student_name'    => "{$app['first_name']} {$app['last_name']}",
+                    'application_no'  => $app['application_no'],
+                    'status'          => 'Walk-in Payment Scheduled / Awaiting Payment',
+                    'instructions'    => 'Present your printed Blue Form at the Main Cashier Window.'
+                ]);
+                return;
+            }
+
+            // ONLINE PAYMENT (PayMongo Simulation with Reference Verification)
+            $paymentChannel = trim($input['payment_channel'] ?? $_POST['payment_channel'] ?? 'GCash');
+            $amountSubmitted = (float)($input['amount'] ?? $_POST['amount'] ?? 3000.00);
+            $referenceNo = trim($input['reference_no'] ?? $_POST['reference_no'] ?? '');
+            $accountName = trim($input['account_name'] ?? $_POST['account_name'] ?? "{$app['first_name']} {$app['last_name']}");
+            $accountNumber = trim($input['account_number'] ?? $_POST['account_number'] ?? ($app['contact_number'] ?? ''));
+
+            if (!$referenceNo) {
+                $db->rollBack();
+                Response::error('Payment Reference Number / Transaction ID is required to verify your payment.', 422);
+            }
+
+            if ($amountSubmitted <= 0) {
+                $db->rollBack();
+                Response::error('Please specify a valid payment amount.', 422);
+            }
+
+            // Prevent duplicate reference numbers across existing verified payments and active submissions
+            $chkDupPay = $db->prepare("SELECT id FROM payments WHERE reference_no = :ref LIMIT 1");
+            $chkDupPay->execute(['ref' => $referenceNo]);
+            if ($chkDupPay->fetch()) {
+                $db->rollBack();
+                Response::error("Payment Reference Number '{$referenceNo}' has already been verified and processed.", 422);
+            }
+
+            $chkDupSub = $db->prepare("
+                SELECT id, application_id FROM online_payment_submissions 
+                WHERE reference_no = :ref AND status != 'Rejected' AND application_id != :app_id 
+                LIMIT 1
+            ");
+            $chkDupSub->execute(['ref' => $referenceNo, 'app_id' => $app['id']]);
+            if ($chkDupSub->fetch()) {
+                $db->rollBack();
+                Response::error("Payment Reference Number '{$referenceNo}' has already been submitted by another enrollee. Please check your transaction receipt.", 422);
+            }
+
+            // Handle optional receipt screenshot/PDF file upload
+            $receiptFilePath = null;
+            $receiptOriginalName = null;
+            if (isset($_FILES['receipt']) || isset($_FILES['file'])) {
+                $file = $_FILES['receipt'] ?? $_FILES['file'];
+                if ($file['size'] > 0) {
+                    $uploadedReceipt = FileUpload::upload($file);
+                    $receiptFilePath = $uploadedReceipt['file_path'];
+                    $receiptOriginalName = $uploadedReceipt['original_name'];
+                }
+            }
+
+            // Check if there is an existing submission for this application
+            $chkExisting = $db->prepare("
+                SELECT id FROM online_payment_submissions 
+                WHERE application_id = :app_id 
+                ORDER BY id DESC LIMIT 1
+            ");
+            $chkExisting->execute(['app_id' => $app['id']]);
+            $existingSub = $chkExisting->fetch();
+
+            if ($existingSub) {
+                // Update submission
+                $upSub = $db->prepare("
+                    UPDATE online_payment_submissions SET
+                        assessment_id = :ass_id,
+                        enrollment_id = :enr_id,
+                        payment_channel = :channel,
+                        amount_submitted = :amount,
+                        reference_no = :ref,
+                        account_name = :acc_name,
+                        account_number = :acc_no,
+                        receipt_file_path = COALESCE(:rec_path, receipt_file_path),
+                        receipt_original_name = COALESCE(:rec_name, receipt_original_name),
+                        status = 'Pending Verification',
+                        rejection_reason = NULL,
+                        created_at = CURRENT_TIMESTAMP
+                    WHERE id = :id
+                ");
+                $upSub->execute([
+                    'ass_id'   => $enr['assessment_id'],
+                    'enr_id'   => $enr['id'],
+                    'channel'  => $paymentChannel,
+                    'amount'   => $amountSubmitted,
+                    'ref'      => $referenceNo,
+                    'acc_name' => $accountName,
+                    'acc_no'   => $accountNumber,
+                    'rec_path' => $receiptFilePath,
+                    'rec_name' => $receiptOriginalName,
+                    'id'       => $existingSub['id']
+                ]);
+                $submissionId = $existingSub['id'];
+            } else {
+                // Insert new submission
+                $insSub = $db->prepare("
+                    INSERT INTO online_payment_submissions (
+                        assessment_id, enrollment_id, application_id, payment_channel,
+                        amount_submitted, reference_no, account_name, account_number,
+                        receipt_file_path, receipt_original_name, status
+                    ) VALUES (
+                        :ass_id, :enr_id, :app_id, :channel,
+                        :amount, :ref, :acc_name, :acc_no,
+                        :rec_path, :rec_name, 'Pending Verification'
+                    )
+                ");
+                $insSub->execute([
+                    'ass_id'   => $enr['assessment_id'],
+                    'enr_id'   => $enr['id'],
+                    'app_id'   => $app['id'],
+                    'channel'  => $paymentChannel,
+                    'amount'   => $amountSubmitted,
+                    'ref'      => $referenceNo,
+                    'acc_name' => $accountName,
+                    'acc_no'   => $accountNumber,
+                    'rec_path' => $receiptFilePath,
+                    'rec_name' => $receiptOriginalName
+                ]);
+                $submissionId = $db->lastInsertId();
+            }
+
+            // Update Assessment and Application status to Awaiting Verification
+            $upAss = $db->prepare("
+                UPDATE student_assessments SET
+                    payment_mode = 'Online PayMongo',
+                    payment_verification_status = 'Pending Verification',
+                    status = 'Payment Submitted – Awaiting Verification'
+                WHERE id = :id
+            ");
+            $upAss->execute(['id' => $enr['assessment_id']]);
+
+            $db->prepare("UPDATE admission_applications SET status = 'Payment Submitted – Awaiting Verification' WHERE id = :id")->execute(['id' => $app['id']]);
+
+            $db->commit();
+            Auth::logAudit('ONLINE_PAYMENT_SUBMITTED', "Submitted online payment of ₱{$amountSubmitted} (Ref: {$referenceNo}) for App #{$app['application_no']}", $user['id']);
+
+            Response::success('Payment details submitted successfully! Your transaction is now awaiting Treasury verification.', [
+                'submission_id'   => $submissionId,
+                'payment_type'    => 'online',
+                'payment_channel' => $paymentChannel,
+                'reference_no'    => $referenceNo,
+                'amount_submitted'=> $amountSubmitted,
+                'status'          => 'Payment Submitted – Awaiting Verification',
+                'notice'          => 'Your payment has been logged. Our Treasury team will verify the transaction before releasing your Official Student ID and COR.'
+            ]);
+        } catch (\Exception $e) {
+            $db->rollBack();
+            Response::error('Payment submission failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Switch payment mode between Online PayMongo and Walk-in Cashier (Allowed ONLY before payment submitted or after rejection)
+     */
+    public function switchPaymentMode(): void {
+        $user = Auth::requireRole(['applicant', 'student']);
+        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        $targetMode = trim($input['payment_mode'] ?? 'online'); // 'online' or 'walkin'
+
+        $db = Database::getConnection();
+        $appStmt = $db->prepare("SELECT * FROM admission_applications WHERE user_id = :user_id LIMIT 1");
+        $appStmt->execute(['user_id' => $user['id']]);
+        $app = $appStmt->fetch();
+
+        if (!$app) {
+            Response::error('Application not found.', 404);
+        }
+
+        if ($app['status'] === 'Enrolled') {
+            Response::error('You are already officially enrolled. No payment method change is allowed.', 422);
+        }
+
+        // Check if there is an active pending online payment
+        $chkActiveSub = $db->prepare("
+            SELECT id, reference_no FROM online_payment_submissions 
+            WHERE application_id = :app_id AND status = 'Pending Verification'
+            LIMIT 1
+        ");
+        $chkActiveSub->execute(['app_id' => $app['id']]);
+        if ($chkActiveSub->fetch()) {
+            Response::error('You cannot switch payment methods while your online payment is awaiting Treasury verification.', 422);
+        }
+
+        $db->beginTransaction();
+        try {
+            if ($targetMode === 'online') {
+                $db->prepare("
+                    UPDATE student_assessments sa
+                    JOIN enrollments e ON sa.enrollment_id = e.id
+                    SET sa.payment_mode = 'Online PayMongo',
+                        sa.status = CASE WHEN sa.status = 'Walk-in Payment Scheduled' THEN 'Unpaid' ELSE sa.status END
+                    WHERE e.application_id = :app_id
+                ")->execute(['app_id' => $app['id']]);
+
+                if ($app['status'] === 'Walk-in Payment Scheduled') {
+                    $db->prepare("UPDATE admission_applications SET status = 'Approved' WHERE id = :id")->execute(['id' => $app['id']]);
+                }
+            } else {
+                $db->prepare("
+                    UPDATE student_assessments sa
+                    JOIN enrollments e ON sa.enrollment_id = e.id
+                    SET sa.payment_mode = 'Walk-in Cashier'
+                    WHERE e.application_id = :app_id
+                ")->execute(['app_id' => $app['id']]);
+            }
+
+            $db->commit();
+            Auth::logAudit('PAYMENT_MODE_SWITCHED', "Switched payment mode to {$targetMode} for App #{$app['application_no']}", $user['id']);
+
+            Response::success("Payment mode switched to {$targetMode} successfully.", [
+                'payment_mode' => $targetMode
+            ]);
+        } catch (\Exception $e) {
+            $db->rollBack();
+            Response::error('Failed to switch payment mode: ' . $e->getMessage());
+        }
     }
 }
 

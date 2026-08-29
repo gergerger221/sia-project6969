@@ -1,35 +1,30 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <!-- Top Header & Actions -->
+    <div class="no-print flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 pb-5 border-b border-slate-200">
       <div>
-        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-950 text-amber-400 border border-amber-500/30 text-xs font-bold uppercase tracking-wider mb-2">
+        <div class="flex items-center space-x-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+          <Sparkles class="w-3.5 h-3.5 text-amber-600" />
           <span>Super Admin Control Center</span>
         </div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-white">System Administration & School Year Control</h1>
-        <p class="text-xs text-slate-400 mt-1">Manage user roles, toggle enrollment lock status, and monitor system metrics.</p>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">System Administration & School Year Control</h1>
+        <p class="text-xs text-slate-500 mt-0.5">Manage user roles, toggle enrollment lock status, and monitor system metrics.</p>
       </div>
 
-      <div class="flex items-center space-x-2">
+      <div class="flex items-center space-x-2.5 shrink-0">
         <button 
-          @click="activeTab = 'stats'"
-          :class="activeTab === 'stats' ? 'bg-amber-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-          class="px-4 py-2 rounded-xl text-xs transition"
+          @click="openUserModal()"
+          class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-xs transition flex items-center space-x-1.5 cursor-pointer"
         >
-          Overview & Logs
+          <Plus class="w-4 h-4" />
+          <span>Add Staff Account</span>
         </button>
         <button 
-          @click="activeTab = 'users'"
-          :class="activeTab === 'users' ? 'bg-amber-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-          class="px-4 py-2 rounded-xl text-xs transition"
+          @click="loadStats(); loadUsers(); loadSchoolYears();"
+          class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-medium shadow-2xs transition flex items-center space-x-1.5 cursor-pointer"
         >
-          Staff & User Management
-        </button>
-        <button 
-          @click="activeTab = 'school_years'"
-          :class="activeTab === 'school_years' ? 'bg-amber-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-          class="px-4 py-2 rounded-xl text-xs transition"
-        >
-          School Year Lock
+          <RefreshCw class="w-3.5 h-3.5" />
+          <span>Refresh</span>
         </button>
       </div>
     </div>
@@ -64,34 +59,81 @@
           <span class="text-[11px] text-emerald-600 font-semibold">Treasury Verified</span>
         </div>
 
-        <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm">
+        <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs">
           <span class="text-xs font-bold uppercase text-slate-400">Active Staff</span>
-          <div class="text-2xl font-extrabold text-purple-700 mt-1">{{ stats.total_staff || 0 }}</div>
+          <div class="text-2xl font-extrabold text-blue-900 mt-1">{{ stats.total_staff || 0 }}</div>
           <span class="text-[11px] text-slate-500 font-medium">Registrar, Treasury, Coordinator</span>
         </div>
       </div>
 
       <!-- Audit Logs Trail -->
+      <!-- Audit Logs Trail -->
       <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
-        <h2 class="text-base font-bold text-slate-800 mb-4">System Audit Trail & Security Logs</h2>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <h2 class="text-base font-bold text-slate-800">System Audit Trail & Security Logs</h2>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-900 border border-blue-200 font-mono">
+                {{ filteredLogs.length }} Events
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">Real-time immutable security events, role transactions, and user logins.</p>
+          </div>
+
+          <div class="flex items-center space-x-2 w-full sm:w-auto">
+            <div class="relative w-full sm:w-64">
+              <input 
+                v-model="searchLogQuery" 
+                type="text" 
+                placeholder="Search action, user, details..." 
+                class="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-blue-900"
+              />
+              <Search class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+            </div>
+            <button 
+              type="button" 
+              @click="loadStats()" 
+              class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center shrink-0 cursor-pointer"
+              title="Refresh security audit logs"
+            >
+              <RefreshCw class="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
         <div class="overflow-x-auto">
           <table class="w-full text-xs text-left border-collapse">
             <thead>
               <tr class="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
                 <th class="p-3">Timestamp</th>
                 <th class="p-3">User</th>
-                <th class="p-3">Action</th>
+                <th class="p-3">Security Action</th>
                 <th class="p-3">Activity Details</th>
                 <th class="p-3 font-mono">IP Address</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-              <tr v-for="log in stats.recent_logs" :key="log.id" class="hover:bg-slate-50">
-                <td class="p-3 text-slate-500 font-mono text-[11px]">{{ log.created_at }}</td>
-                <td class="p-3 font-bold text-slate-800">{{ log.username || 'System' }}</td>
-                <td class="p-3 font-bold text-amber-700">{{ log.action }}</td>
-                <td class="p-3 text-slate-600">{{ log.details }}</td>
-                <td class="p-3 font-mono text-slate-400">{{ log.ip_address }}</td>
+              <tr v-for="log in filteredLogs" :key="log.id" class="hover:bg-slate-50 transition">
+                <td class="p-3 text-slate-500 font-mono text-[11px] whitespace-nowrap">{{ log.created_at }}</td>
+                <td class="p-3 font-bold text-slate-800 whitespace-nowrap">
+                  <div class="flex items-center space-x-1.5">
+                    <span class="w-2 h-2 rounded-full" :class="log.username ? 'bg-blue-600' : 'bg-slate-400'"></span>
+                    <span>{{ log.username ? '@' + log.username : 'System / Automated' }}</span>
+                  </div>
+                </td>
+                <td class="p-3 whitespace-nowrap">
+                  <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase font-mono tracking-wider border inline-block" :class="getAuditActionClass(log.action)">
+                    {{ log.action }}
+                  </span>
+                </td>
+                <td class="p-3 text-slate-700 font-medium max-w-md">{{ log.details }}</td>
+                <td class="p-3 font-mono text-slate-400 text-[11px] whitespace-nowrap">{{ log.ip_address || '127.0.0.1' }}</td>
+              </tr>
+              <tr v-if="filteredLogs.length === 0">
+                <td colspan="5" class="p-8 text-center text-slate-400 text-xs">
+                  <ShieldAlert class="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                  <div>No matching system audit logs found.</div>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -106,7 +148,7 @@
           <h2 class="text-base font-bold text-slate-800">Staff & System Accounts</h2>
           <p class="text-xs text-slate-500">Manage credentials and roles for Administrator, Coordinator, Registrar, Treasury, and Records.</p>
         </div>
-        <button @click="openUserModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-md transition flex items-center space-x-1.5">
+        <button @click="openUserModal()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs transition flex items-center space-x-1.5 cursor-pointer">
           <Plus class="w-4 h-4" />
           <span>Create User Account</span>
         </button>
@@ -141,7 +183,7 @@
                 </span>
               </td>
               <td class="p-3.5 text-right">
-                <button @click="openUserModal(u)" class="px-2.5 py-1 rounded text-xs font-semibold text-amber-600 hover:bg-amber-50">
+                <button @click="openUserModal(u)" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-900 hover:bg-blue-50 cursor-pointer">
                   Edit
                 </button>
               </td>
@@ -160,7 +202,7 @@
         </div>
         <button 
           @click="openSchoolYearModal()" 
-          class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-md transition flex items-center space-x-1.5 shrink-0"
+          class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs transition flex items-center space-x-1.5 shrink-0 cursor-pointer"
         >
           <Plus class="w-4 h-4" />
           <span>Add School Year</span>
@@ -315,8 +357,8 @@
           </div>
 
           <div class="flex justify-end space-x-3 pt-3">
-            <button type="button" @click="showUserModal = false" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100">Cancel</button>
-            <button type="submit" class="px-5 py-2 rounded-xl font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-md">Save Account</button>
+            <button type="button" @click="showUserModal = false" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold cursor-pointer">Cancel</button>
+            <button type="submit" class="px-5 py-2.5 rounded-xl font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs cursor-pointer">Save Account</button>
           </div>
         </form>
       </div>
@@ -446,8 +488,8 @@
           </div>
 
           <div class="flex justify-end space-x-3 pt-3 border-t border-slate-100">
-            <button type="button" @click="showSchoolYearModal = false" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold">Cancel</button>
-            <button type="submit" :disabled="isSavingSy" class="px-5 py-2 rounded-xl font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-md transition flex items-center space-x-1.5">
+            <button type="button" @click="showSchoolYearModal = false" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold cursor-pointer">Cancel</button>
+            <button type="submit" :disabled="isSavingSy" class="px-5 py-2.5 rounded-xl font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs transition flex items-center space-x-1.5 cursor-pointer">
               <span v-if="isSavingSy" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               <span>{{ isSavingSy ? 'Saving...' : 'Save School Year' }}</span>
             </button>
@@ -517,15 +559,52 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { Plus, Lock, Unlock, AlertCircle, Sparkles } from 'lucide-vue-next';
+import { ref, computed, watch, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { 
+  Users, Key, ShieldCheck, Plus, CheckCircle2, Lock, Unlock, AlertCircle, 
+  RotateCcw, Sparkles, RefreshCw, Eye, BookOpen, Layers, Check, Search, ShieldAlert
+} from 'lucide-vue-next';
 import api from '../../services/api';
 
+const route = useRoute();
 const activeTab = ref('stats');
+
+watch(() => route.query.tab, (newTab) => {
+  if (newTab && ['stats', 'users', 'school_years'].includes(newTab)) {
+    activeTab.value = newTab;
+  }
+}, { immediate: true });
+
 const stats = ref({ recent_logs: [] });
 const usersList = ref({ users: [], roles: [] });
 const schoolYears = ref([]);
 const successMessage = ref('');
+const searchLogQuery = ref('');
+
+const filteredLogs = computed(() => {
+  const list = stats.value?.recent_logs || [];
+  if (!searchLogQuery.value.trim()) return list;
+  const q = searchLogQuery.value.toLowerCase();
+  return list.filter(l => 
+    (l.action && l.action.toLowerCase().includes(q)) ||
+    (l.username && l.username.toLowerCase().includes(q)) ||
+    (l.details && l.details.toLowerCase().includes(q)) ||
+    (l.ip_address && l.ip_address.toLowerCase().includes(q))
+  );
+});
+
+const getAuditActionClass = (action) => {
+  if (!action) return 'bg-slate-100 text-slate-700 border-slate-200';
+  const a = action.toUpperCase();
+  if (a.includes('LOGIN') || a.includes('REGISTER')) return 'bg-blue-50 text-blue-900 border-blue-200';
+  if (a.includes('APPROVE') || a.includes('ENROLL') || a.includes('VERIFIED')) return 'bg-emerald-50 text-emerald-800 border-emerald-300';
+  if (a.includes('PAYMENT') || a.includes('OR_')) return 'bg-emerald-100 text-emerald-900 border-emerald-300';
+  if (a.includes('LOCK') || a.includes('TOGGLE')) return 'bg-amber-50 text-amber-900 border-amber-300';
+  if (a.includes('CREATE') || a.includes('USER')) return 'bg-purple-50 text-purple-900 border-purple-200';
+  if (a.includes('REJECT') || a.includes('DELETE') || a.includes('REVOKE')) return 'bg-rose-50 text-rose-800 border-rose-300';
+  return 'bg-slate-100 text-slate-800 border-slate-200';
+};
 
 const showUserModal = ref(false);
 const userForm = ref({

@@ -28,13 +28,17 @@ class AuthController {
             FROM users u
             JOIN roles r ON u.role_id = r.id
             LEFT JOIN user_profiles p ON u.id = p.user_id
-            WHERE u.username = :ident1 OR u.email = :ident2 OR u.student_id = :ident3
+            WHERE u.username = :ident1 
+               OR u.email = :ident2 
+               OR u.student_id = :ident3
+               OR (r.slug = :ident4 AND r.slug IN ('admin', 'coordinator', 'registrar', 'treasury', 'records'))
             LIMIT 1
         ");
         $stmt->execute([
             'ident1' => $identity,
             'ident2' => $identity,
-            'ident3' => $identity
+            'ident3' => $identity,
+            'ident4' => $identity
         ]);
         $user = $stmt->fetch();
 
@@ -102,9 +106,18 @@ class AuthController {
         $rawContact = trim($input['contact_number'] ?? '');
         $contactNumber = preg_replace('/\D/', '', $rawContact);
         $password = trim($input['password'] ?? '');
+        $passwordConfirmation = trim($input['password_confirmation'] ?? '');
 
-        if (!$firstName || !$lastName || !$middleName || !$email || !$password) {
-            Response::error('First name, middle name, last name, email, and password are required.');
+        if (!$firstName || !$lastName || !$email || !$password) {
+            Response::error('First name, last name, email, and password are required.');
+        }
+
+        if (strlen($password) < 6) {
+            Response::error('Password must be at least 6 characters long.');
+        }
+
+        if (!empty($passwordConfirmation) && $password !== $passwordConfirmation) {
+            Response::error('Passwords do not match. Please re-enter your password.');
         }
 
         if (!preg_match('/^09\d{9}$/', $contactNumber)) {
@@ -369,8 +382,8 @@ class AuthController {
 
             case 'custom':
             default:
-                $subject = $input['subject'] ?? 'SMTP Test Ping - JJKINGS Biringan School';
-                $body = $input['body'] ?? '<p>This is an automated SMTP test email from the SIA Enrollment System.</p>';
+                $subject = $input['subject'] ?? 'SMTP Test Ping - BSLA Admissions';
+                $body = $input['body'] ?? '<p>This is an automated SMTP test email from the Biringan Science and Leadership Academy (BSLA) Enrollment System.</p>';
                 $result = Mailer::send($recipientEmail, $recipientName, $subject, $body);
                 break;
         }

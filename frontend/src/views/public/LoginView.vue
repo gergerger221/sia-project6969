@@ -1,19 +1,28 @@
 <template>
-  <div class="min-h-[calc(100vh-5rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-900 via-[#0c2340] to-slate-950 text-slate-100 selection:bg-amber-500 selection:text-white relative overflow-hidden">
+  <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-900 via-[#0c2340] to-slate-950 text-slate-100 selection:bg-blue-900 selection:text-white relative overflow-hidden">
     
     <!-- Academic Decorative Background Elements -->
     <div class="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] [background-size:24px_24px] opacity-20 pointer-events-none"></div>
     <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-blue-600/15 blur-3xl pointer-events-none"></div>
-    <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-amber-500/15 blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-blue-500/15 blur-3xl pointer-events-none"></div>
 
-    <div class="max-w-md w-full space-y-6 p-7 sm:p-9 rounded-3xl bg-white/95 backdrop-blur-xl border-2 border-amber-400/60 shadow-2xl relative z-10 text-slate-900 animate-in fade-in zoom-in-95 duration-200">
+    <!-- Quick Back to Website Trigger (Top Left) -->
+    <router-link 
+      to="/" 
+      class="absolute top-6 left-6 inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold backdrop-blur-md transition-all shadow-md z-20 cursor-pointer"
+    >
+      <ArrowLeft class="w-4 h-4 text-blue-300" />
+      <span>Back to Public Website</span>
+    </router-link>
+
+    <div class="max-w-md w-full space-y-6 p-7 sm:p-9 rounded-3xl bg-white/95 backdrop-blur-xl border border-slate-200 shadow-2xl relative z-10 text-slate-900 animate-in fade-in zoom-in-95 duration-200">
       
       <!-- Institutional Header Emblem & Titles -->
       <div class="text-center">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0c2340] to-[#163860] border-2 border-amber-400 text-amber-400 flex items-center justify-center mx-auto mb-3.5 shadow-lg shadow-blue-950/30">
-          <GraduationCap class="w-8 h-8 text-amber-400" />
+        <div class="w-16 h-16 rounded-2xl bg-[#091524] border border-blue-500/40 text-blue-300 flex items-center justify-center mx-auto mb-3.5 shadow-lg shadow-blue-950/30">
+          <GraduationCap class="w-8 h-8 text-blue-300" />
         </div>
-        <div class="inline-flex items-center space-x-1.5 px-3 py-0.5 rounded-full bg-blue-100 border border-blue-300 text-blue-950 text-[10px] font-extrabold uppercase tracking-wider mb-2 shadow-xs">
+        <div class="inline-flex items-center space-x-1.5 px-3 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-950 text-[10px] font-bold uppercase tracking-wider mb-2 shadow-2xs">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
           <span>Enrolled Student Gateway</span>
         </div>
@@ -27,7 +36,14 @@
           <AlertCircle class="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
           <span class="font-bold leading-relaxed">{{ errorMessage }}</span>
         </div>
-        <div v-if="isStaffAccountAttempt" class="pt-1 border-t border-rose-200/80 flex items-center justify-between">
+        <div v-if="isApplicantAccountAttempt" class="pt-1.5 border-t border-rose-200 flex items-center justify-between">
+          <span class="text-[11px] text-rose-800">Checking admission status?</span>
+          <router-link to="/admission-login" class="px-2.5 py-1 rounded-lg bg-blue-900 hover:bg-blue-800 text-white font-bold text-[11px] transition inline-flex items-center space-x-1">
+            <span>Open Admission Login</span>
+            <ArrowRight class="w-3 h-3" />
+          </router-link>
+        </div>
+        <div v-if="isStaffAccountAttempt" class="pt-1.5 border-t border-rose-200 flex items-center justify-between">
           <span class="text-[11px] text-rose-700">Need administrative access?</span>
           <router-link to="/staff-login" class="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] transition inline-flex items-center space-x-1">
             <span>Open Staff Login</span>
@@ -46,7 +62,7 @@
               type="text" 
               required 
               placeholder="e.g. 2026-SHS-0005, 2026-JHS-0001, or email"
-              class="w-full px-4 py-3 rounded-xl bg-slate-50 border-2 border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-800 focus:ring-2 focus:ring-blue-100 text-sm font-medium transition shadow-inner"
+              class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-900 focus:ring-2 focus:ring-blue-100 text-sm font-medium transition shadow-inner"
             />
             <User class="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5" />
           </div>
@@ -60,7 +76,7 @@
               :type="showPassword ? 'text' : 'password'" 
               required 
               placeholder="••••••••"
-              class="w-full px-4 py-3 pr-11 rounded-xl bg-slate-50 border-2 border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-800 focus:ring-2 focus:ring-blue-100 text-sm transition shadow-inner"
+              class="w-full px-4 py-3 pr-11 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-900 focus:ring-2 focus:ring-blue-100 text-sm transition shadow-inner"
             />
             <button 
               type="button" 
@@ -77,27 +93,27 @@
         <button 
           type="submit" 
           :disabled="isLoading"
-          class="w-full py-3.5 px-4 rounded-xl text-xs sm:text-sm font-black bg-[#0c2340] hover:bg-blue-900 disabled:opacity-50 text-amber-400 shadow-lg shadow-blue-950/25 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center space-x-2 cursor-pointer border-2 border-amber-400"
+          class="w-full py-3.5 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-blue-900 hover:bg-blue-800 disabled:opacity-50 text-white shadow-md transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center space-x-2 cursor-pointer"
         >
-          <span v-if="isLoading" class="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></span>
+          <span v-if="isLoading" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
           <span v-else class="flex items-center space-x-2">
             <span>Sign In to Student Portal</span>
-            <ArrowRight class="w-4 h-4 text-amber-400" />
+            <ArrowRight class="w-4 h-4 text-white" />
           </span>
         </button>
       </form>
 
       <!-- Quick Demo Student Switcher -->
       <div class="pt-4 border-t-2 border-slate-100">
-        <div class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-2.5 text-center flex items-center justify-center space-x-1.5">
-          <Key class="w-3 h-3 text-amber-600" />
+        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2.5 text-center flex items-center justify-center space-x-1.5">
+          <Key class="w-3 h-3 text-blue-900" />
           <span>Demo Enrolled Student Accounts (Password: <code class="text-blue-950 font-bold font-mono">password123</code>)</span>
         </div>
         <div class="grid grid-cols-2 gap-2 text-xs">
           <button 
             @click="fillCredentials('shs')" 
             type="button" 
-            class="p-2.5 rounded-xl bg-slate-50 hover:bg-amber-50 border-2 border-slate-200 hover:border-amber-400 text-left transition flex flex-col justify-between cursor-pointer shadow-xs"
+            class="p-2.5 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-500 text-left transition flex flex-col justify-between cursor-pointer shadow-2xs"
           >
             <span class="font-bold text-[#0c2340] text-[11px]">Senior High (STEM)</span>
             <span class="text-[10px] text-slate-500 font-mono">2026-SHS-0005</span>
@@ -105,7 +121,7 @@
           <button 
             @click="fillCredentials('jhs')" 
             type="button" 
-            class="p-2.5 rounded-xl bg-slate-50 hover:bg-amber-50 border-2 border-slate-200 hover:border-amber-400 text-left transition flex flex-col justify-between cursor-pointer shadow-xs"
+            class="p-2.5 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-500 text-left transition flex flex-col justify-between cursor-pointer shadow-2xs"
           >
             <span class="font-bold text-[#0c2340] text-[11px]">Junior High (Grade 7)</span>
             <span class="text-[10px] text-slate-500 font-mono">2026-JHS-0001</span>
@@ -113,19 +129,19 @@
         </div>
       </div>
 
-      <!-- Links: Registration & Staff Portal -->
+      <!-- Links: Admission Login & Registration -->
       <div class="space-y-2 pt-2 border-t border-slate-100 text-center text-xs text-slate-600">
         <div>
-          New Student Applicant? 
-          <router-link to="/register" class="font-bold text-blue-950 hover:text-blue-700 ml-1 inline-flex items-center space-x-0.5 underline">
-            <span>Apply for Admission Now</span>
+          Looking for your Admission Application? 
+          <router-link to="/admission-login" class="font-bold text-blue-900 hover:text-blue-700 ml-1 inline-flex items-center space-x-0.5 underline">
+            <span>Admission Portal Login</span>
             <ArrowRight class="w-3.5 h-3.5" />
           </router-link>
         </div>
-        <div>
-          Are you a Teacher or Administrator? 
-          <router-link to="/staff-login" class="font-bold text-amber-700 hover:text-amber-800 ml-1 inline-flex items-center space-x-0.5 underline">
-            <span>Faculty & Staff Portal →</span>
+        <div class="pt-0.5">
+          New Student Applicant? 
+          <router-link to="/register" class="font-semibold text-slate-700 hover:text-blue-900 ml-1 underline">
+            <span>Apply for Admission Now →</span>
           </router-link>
         </div>
       </div>
@@ -137,7 +153,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { User, Eye, EyeOff, AlertCircle, GraduationCap, ArrowRight, Key } from 'lucide-vue-next';
+import { User, Eye, EyeOff, AlertCircle, GraduationCap, ArrowRight, ArrowLeft, Key } from 'lucide-vue-next';
 import api from '../../services/api';
 import { getRoleRouteName } from '../../router';
 
@@ -154,6 +170,11 @@ const errorMessage = ref('');
 
 const isStaffAccountAttempt = computed(() => {
   return errorMessage.value.toLowerCase().includes('staff login');
+});
+
+const isApplicantAccountAttempt = computed(() => {
+  return errorMessage.value.toLowerCase().includes('applicant') || 
+         errorMessage.value.toLowerCase().includes('admission procedure');
 });
 
 const fillCredentials = (type) => {

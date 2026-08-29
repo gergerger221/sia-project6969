@@ -24,7 +24,7 @@ class MailConfig {
             
             // Institutional Sender Information
             'from_email' => 'ver.smtp221@gmail.com',
-            'from_name'  => 'JJKINGS Biringan School Admissions',
+            'from_name'  => 'Biringan Science and Leadership Academy Admissions',
             'reply_to'   => 'ver.smtp221@gmail.com',
             
             // SMTP Debug level (0 = off, 1 = client commands, 2 = client + server)

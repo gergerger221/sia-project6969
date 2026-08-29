@@ -39,7 +39,7 @@ class AdmissionController {
 
         // Fetch uploaded documents
         $docStmt = $db->prepare("
-            SELECT id, document_type, file_path, original_filename, file_size, status, verification_notes, uploaded_at
+            SELECT id, document_type, submission_mode, target_date, promissory_note, file_path, original_filename, file_size, status, verification_notes, uploaded_at
             FROM admission_documents
             WHERE application_id = :app_id
             ORDER BY id ASC
@@ -302,6 +302,87 @@ class AdmissionController {
             'document_id' => $docId,
             'file_path'   => $uploaded['file_path'],
             'status'      => 'Pending'
+        ]);
+    }
+
+    /**
+     * Set a document requirement as Physical Submission or To Follow Up (Promissory).
+     */
+    public function setDocumentSubmissionMode(): void {
+        $user = Auth::requireAuth();
+        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        
+        $documentType = trim($input['document_type'] ?? '');
+        $mode = $input['submission_mode'] ?? 'Physical Submission'; // 'Physical Submission' or 'To Follow Up'
+        $targetDate = !empty($input['target_date']) ? $input['target_date'] : null;
+        $promissoryNote = trim($input['promissory_note'] ?? '');
+
+        if (!$documentType) {
+            Response::error('Document type is required.');
+        }
+
+        if (!in_array($mode, ['Physical Submission', 'To Follow Up'])) {
+            Response::error('Invalid submission mode.');
+        }
+
+        $db = Database::getConnection();
+        $appStmt = $db->prepare("SELECT id, status FROM admission_applications WHERE user_id = :user_id LIMIT 1");
+        $appStmt->execute(['user_id' => $user['id']]);
+        $app = $appStmt->fetch();
+
+        if (!$app) {
+            Response::error('Application not found.');
+        }
+
+        // Check if record exists
+        $checkDoc = $db->prepare("SELECT id, status FROM admission_documents WHERE application_id = :app_id AND document_type = :doc_type");
+        $checkDoc->execute(['app_id' => $app['id'], 'doc_type' => $documentType]);
+        $existing = $checkDoc->fetch();
+
+        $status = ($mode === 'Physical Submission') ? 'Physical Submission' : 'To Follow Up';
+
+        if ($existing) {
+            if ($existing['status'] === 'Verified') {
+                Response::error('This document has already been verified by the Registrar and cannot be modified.');
+            }
+            $docStmt = $db->prepare("
+                UPDATE admission_documents SET
+                    submission_mode = :mode, target_date = :target_date, promissory_note = :promissory_note,
+                    status = :status, verification_notes = NULL, uploaded_at = CURRENT_TIMESTAMP
+                WHERE id = :id
+            ");
+            $docStmt->execute([
+                'mode'            => $mode,
+                'target_date'     => $targetDate,
+                'promissory_note' => $promissoryNote,
+                'status'          => $status,
+                'id'              => $existing['id']
+            ]);
+            $docId = $existing['id'];
+        } else {
+            $docStmt = $db->prepare("
+                INSERT INTO admission_documents (application_id, document_type, submission_mode, target_date, promissory_note, status, file_path, original_filename, file_name, file_size)
+                VALUES (:app_id, :doc_type, :mode, :target_date, :promissory_note, :status, '', '', '', 0)
+            ");
+            $docStmt->execute([
+                'app_id'          => $app['id'],
+                'doc_type'        => $documentType,
+                'mode'            => $mode,
+                'target_date'     => $targetDate,
+                'promissory_note' => $promissoryNote,
+                'status'          => $status
+            ]);
+            $docId = $db->lastInsertId();
+        }
+
+        Auth::logAudit('DOCUMENT_MODE_SET', "Set {$documentType} mode to {$mode} for App #{$app['id']}", $user['id']);
+
+        Response::success("{$documentType} marked as {$mode} successfully", [
+            'document_id'     => $docId,
+            'submission_mode' => $mode,
+            'target_date'     => $targetDate,
+            'promissory_note' => $promissoryNote,
+            'status'          => $status
         ]);
     }
 

@@ -3,6 +3,7 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 // Public Views
 import HomeView from '../views/public/HomeView.vue';
 import LoginView from '../views/public/LoginView.vue';
+import AdmissionLoginView from '../views/public/AdmissionLoginView.vue';
 import StaffLoginView from '../views/public/StaffLoginView.vue';
 import RegisterView from '../views/public/RegisterView.vue';
 import SmtpSimulatorView from '../views/public/SmtpSimulatorView.vue';
@@ -19,6 +20,8 @@ import AdminDashboardView from '../views/admin/AdminDashboardView.vue';
 const routes = [
   { path: '/', name: 'Home', component: HomeView },
   { path: '/login', name: 'Login', component: LoginView },
+  { path: '/admission-login', name: 'AdmissionLogin', component: AdmissionLoginView },
+  { path: '/applicant-login', redirect: '/admission-login' },
   { path: '/staff-login', name: 'StaffLogin', component: StaffLoginView },
   { path: '/staff', redirect: '/staff-login' },
   { path: '/register', name: 'Register', component: RegisterView },

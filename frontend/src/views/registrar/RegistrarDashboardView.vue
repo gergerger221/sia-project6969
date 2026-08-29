@@ -1,29 +1,30 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Header -->
-    <div class="bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <!-- Top Header & Actions -->
+    <div class="no-print flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 pb-5 border-b border-slate-200">
       <div>
-        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-950 text-blue-400 border border-blue-500/30 text-xs font-bold uppercase tracking-wider mb-2">
+        <div class="flex items-center space-x-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+          <FileText class="w-3.5 h-3.5 text-blue-600" />
           <span>Registrar Admissions & Enrollment Management</span>
         </div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-white">Student Requirement Verification & Queue</h1>
-        <p class="text-xs text-slate-400 mt-1">Review incoming student credentials, approve verified applicants, and manage the enrollment queue.</p>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Student Requirement Verification & Queue</h1>
+        <p class="text-xs text-slate-500 mt-0.5">Review incoming student credentials, approve verified applicants, and manage the enrollment queue.</p>
       </div>
 
-      <div class="flex items-center space-x-2">
+      <div class="flex items-center space-x-2.5 shrink-0">
+        <div class="hidden sm:flex items-center space-x-2 bg-blue-50 text-blue-800 border border-blue-200 px-3.5 py-1.5 rounded-xl text-xs font-medium font-mono">
+          <span>Applications:</span>
+          <strong class="text-blue-900 font-bold">{{ applications.length }}</strong>
+          <span class="text-blue-300">•</span>
+          <span>In Queue:</span>
+          <strong class="text-blue-900 font-bold">{{ queueList.length }}</strong>
+        </div>
         <button 
-          @click="activeTab = 'applications'"
-          :class="activeTab === 'applications' ? 'bg-blue-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-          class="px-4 py-2 rounded-xl text-xs transition"
+          @click="loadApplications(); loadQueue();"
+          class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-medium shadow-2xs transition flex items-center space-x-1.5 cursor-pointer"
         >
-          Applications ({{ applications.length }})
-        </button>
-        <button 
-          @click="activeTab = 'queue'"
-          :class="activeTab === 'queue' ? 'bg-blue-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-          class="px-4 py-2 rounded-xl text-xs transition"
-        >
-          Enrollment Queue ({{ queueList.length }})
+          <RefreshCw class="w-3.5 h-3.5" />
+          <span>Refresh</span>
         </button>
       </div>
     </div>
@@ -110,7 +111,7 @@
               <td class="p-3.5 text-right">
                 <button 
                   @click="openReviewModal(app.id)" 
-                  class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition"
+                  class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs transition cursor-pointer"
                 >
                   Evaluate Docs
                 </button>
@@ -240,13 +241,49 @@
           <button @click="selectedApp = null" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold">✕</button>
         </div>
 
-        <!-- Student Profile Overview -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs mb-6">
-          <div><span class="text-slate-400 block">LRN:</span> <strong class="font-mono">{{ selectedApp.lrn || 'N/A' }}</strong></div>
-          <div><span class="text-slate-400 block">Grade Level:</span> <strong>{{ selectedApp.grade_level_name }}</strong></div>
-          <div><span class="text-slate-400 block">Strand:</span> <strong>{{ selectedApp.strand_name || 'JHS General' }}</strong></div>
-          <div><span class="text-slate-400 block">Voucher Subsidy:</span> <strong class="text-emerald-700">{{ selectedApp.voucher_status }}</strong></div>
+        <!-- Modal Sub-Navigation Tabs (Demographics First) -->
+        <div class="flex items-center space-x-2 border-b border-slate-200 mb-6 pb-2 flex-wrap gap-y-2">
+          <button 
+            type="button" 
+            @click="modalTab = 'profile'"
+            :class="[
+              'px-4 py-2 rounded-xl font-bold text-xs transition flex items-center space-x-2 cursor-pointer',
+              modalTab === 'profile' 
+                ? 'bg-blue-900 text-white shadow-xs' 
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            ]"
+          >
+            <User class="w-4 h-4" />
+            <span>Detailed Student Demographics</span>
+          </button>
+
+          <button 
+            type="button" 
+            @click="modalTab = 'docs'"
+            :class="[
+              'px-4 py-2 rounded-xl font-bold text-xs transition flex items-center space-x-2 cursor-pointer',
+              modalTab === 'docs' 
+                ? 'bg-blue-900 text-white shadow-xs' 
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            ]"
+          >
+            <FileText class="w-4 h-4" />
+            <span>Submitted Credentials & Approval</span>
+            <span class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-blue-800 text-white font-mono">
+              {{ (selectedApp.documents || []).filter(d => d.status === 'Verified').length }}/{{ (selectedApp.documents || []).length }}
+            </span>
+          </button>
         </div>
+
+        <!-- TAB 1: SUBMITTED DOCUMENTS & EVALUATION -->
+        <div v-if="modalTab === 'docs'">
+          <!-- Student Profile Overview -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs mb-6">
+            <div><span class="text-slate-400 block">LRN:</span> <strong class="font-mono">{{ selectedApp.lrn || 'N/A' }}</strong></div>
+            <div><span class="text-slate-400 block">Grade Level:</span> <strong>{{ selectedApp.grade_level_name }}</strong></div>
+            <div><span class="text-slate-400 block">Strand:</span> <strong>{{ selectedApp.strand_name || 'JHS General' }}</strong></div>
+            <div><span class="text-slate-400 block">Voucher Subsidy:</span> <strong class="text-emerald-700">{{ selectedApp.voucher_status }}</strong></div>
+          </div>
 
         <!-- Uploaded Documents Evaluation -->
         <div class="mb-6">
@@ -406,16 +443,186 @@
                 :disabled="hasDeficiencies || isApproving"
                 :class="[
                   hasDeficiencies 
-                    ? 'bg-slate-300 text-slate-500 cursor-not-allowed' 
-                    : 'bg-blue-600 hover:bg-blue-500 text-white shadow-md'
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300' 
+                    : 'bg-blue-900 hover:bg-blue-800 text-white shadow-xs cursor-pointer'
                 ]"
-                class="px-6 py-2.5 rounded-xl font-bold text-xs transition flex items-center space-x-1.5"
+                class="px-5 py-2.5 rounded-xl font-semibold text-xs transition flex items-center space-x-1.5"
               >
                 <span v-if="isApproving" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                 <span>{{ hasDeficiencies ? 'Cannot Approve (Resolve Deficiencies)' : 'Approve & Add to Enrollment Queue' }}</span>
               </button>
             </div>
           </template>
+        </div>
+
+        </div>
+
+        <!-- TAB 2: DETAILED STUDENT PROFILE & DEMOGRAPHICS -->
+        <div v-else-if="modalTab === 'profile'" class="space-y-6">
+          
+          <!-- Summary Strip -->
+          <div class="p-4 rounded-2xl bg-blue-50 border border-blue-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+            <div>
+              <span class="text-blue-900 font-bold uppercase tracking-wider text-[10px]">DepEd Learner Reference Number (LRN)</span>
+              <div class="font-mono text-base font-black text-blue-950">{{ selectedApp.lrn || 'No LRN Recorded' }}</div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-white text-slate-800 border border-blue-200">
+                Type: {{ selectedApp.applicant_type || 'New Student' }}
+              </span>
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                Voucher: {{ selectedApp.voucher_status || 'None' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- 1. Personal & Civil Demographics Card -->
+          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 text-xs">
+            <div class="flex items-center space-x-2 text-slate-900 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200 pb-2">
+              <User class="w-4 h-4 text-blue-900" />
+              <span>1. Learner Identification & Civil Status</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Full Legal Name</span>
+                <strong class="text-slate-900 text-[13px]">{{ selectedApp.last_name }}, {{ selectedApp.first_name }} {{ selectedApp.middle_name || '' }} {{ selectedApp.extension_name || '' }}</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Biological Sex / Gender</span>
+                <strong class="text-slate-900">{{ selectedApp.gender || 'Unspecified' }}</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Date of Birth</span>
+                <strong class="text-slate-900">{{ selectedApp.birth_date || 'N/A' }}</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Place of Birth</span>
+                <strong class="text-slate-900">{{ selectedApp.birth_place || 'N/A' }}</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Citizenship / Nationality</span>
+                <strong class="text-slate-900">{{ selectedApp.nationality || 'Filipino' }}</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Religion</span>
+                <strong class="text-slate-900">{{ selectedApp.religion || 'N/A' }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Residential Address & Contact Info Card -->
+          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 text-xs">
+            <div class="flex items-center space-x-2 text-slate-900 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200 pb-2">
+              <MapPin class="w-4 h-4 text-blue-900" />
+              <span>2. Residence & Direct Contact Channels</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Permanent Home Address</span>
+                <strong class="text-slate-900">{{ selectedApp.address_line1 || 'N/A' }}</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Barangay / Village</span>
+                <strong class="text-slate-900">{{ selectedApp.barangay || 'N/A' }}</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">City / Municipality & Province</span>
+                <strong class="text-slate-900">{{ selectedApp.city || 'N/A' }}, {{ selectedApp.province || 'N/A' }} {{ selectedApp.postal_code ? '(' + selectedApp.postal_code + ')' : '' }}</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Mobile / SMS Hotline</span>
+                <strong class="text-slate-900 font-mono">{{ selectedApp.contact_number || 'N/A' }}</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Email Address</span>
+                <strong class="text-slate-900 font-mono">{{ selectedApp.email || 'N/A' }}</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Facebook / Online Profile</span>
+                <strong class="text-slate-900">{{ selectedApp.facebook_profile || 'N/A' }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Parent, Guardian & Emergency Contact Card -->
+          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 text-xs">
+            <div class="flex items-center space-x-2 text-slate-900 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200 pb-2">
+              <Phone class="w-4 h-4 text-blue-900" />
+              <span>3. Parent, Guardian & Emergency Verification</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <!-- Father -->
+              <div class="p-3 bg-white rounded-xl border border-slate-200 space-y-1">
+                <span class="text-[10px] uppercase font-bold text-blue-900 block">Father's Information</span>
+                <div class="font-bold text-slate-900">{{ selectedApp.father_name || 'N/A' }}</div>
+                <div class="text-slate-500 text-[11px]">Occ: {{ selectedApp.father_occupation || 'N/A' }}</div>
+                <div class="text-slate-700 font-mono text-[11px]">Tel: {{ selectedApp.father_contact || 'N/A' }}</div>
+              </div>
+
+              <!-- Mother -->
+              <div class="p-3 bg-white rounded-xl border border-slate-200 space-y-1">
+                <span class="text-[10px] uppercase font-bold text-blue-900 block">Mother's Information</span>
+                <div class="font-bold text-slate-900">{{ selectedApp.mother_name || 'N/A' }}</div>
+                <div class="text-slate-500 text-[11px]">Occ: {{ selectedApp.mother_occupation || 'N/A' }}</div>
+                <div class="text-slate-700 font-mono text-[11px]">Tel: {{ selectedApp.mother_contact || 'N/A' }}</div>
+              </div>
+
+              <!-- Guardian / Emergency -->
+              <div class="p-3 bg-white rounded-xl border border-slate-200 space-y-1">
+                <span class="text-[10px] uppercase font-bold text-emerald-800 block">Legal Guardian / Emergency</span>
+                <div class="font-bold text-slate-900">{{ selectedApp.guardian_name || selectedApp.emergency_contact_name || 'N/A' }}</div>
+                <div class="text-slate-500 text-[11px]">Rel: {{ selectedApp.guardian_relation || selectedApp.emergency_contact_relation || 'Parent/Guardian' }}</div>
+                <div class="text-slate-700 font-mono text-[11px]">Tel: {{ selectedApp.guardian_contact || selectedApp.emergency_contact_phone || 'N/A' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Academic History & School of Origin Card -->
+          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 text-xs">
+            <div class="flex items-center space-x-2 text-slate-900 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200 pb-2">
+              <GraduationCap class="w-4 h-4 text-blue-900" />
+              <span>4. Academic Background & School of Origin</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Last School Attended</span>
+                <strong class="text-slate-900">{{ selectedApp.last_school_attended || 'N/A' }}</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">School Address & Type</span>
+                <strong class="text-slate-900">{{ selectedApp.last_school_address || 'N/A' }} ({{ selectedApp.previous_school_type || 'Public' }})</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">General Weighted Average (GWA)</span>
+                <strong class="text-blue-900 font-mono font-bold text-sm">{{ selectedApp.general_average || '88.0' }}%</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Target Grade & Strand</span>
+                <strong class="text-slate-900">{{ selectedApp.grade_level_name }} — {{ selectedApp.strand_name || 'General Curriculum' }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer Actions inside Profile Tab -->
+          <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+            <button 
+              type="button"
+              @click="openPrintForm(selectedApp.id)"
+              class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-sm transition flex items-center space-x-1.5 cursor-pointer"
+            >
+              <Printer class="w-3.5 h-3.5" />
+              <span>Print Application Summary</span>
+            </button>
+
+            <button 
+              type="button" 
+              @click="modalTab = 'docs'" 
+              class="px-5 py-2 rounded-xl bg-blue-900 hover:bg-blue-800 text-white font-bold text-xs shadow-sm transition flex items-center space-x-1.5 cursor-pointer"
+            >
+              <span>Back to Documents & Verification →</span>
+            </button>
+          </div>
+
         </div>
       </div>
     </div>
@@ -795,11 +1002,25 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { Search, RefreshCw, Eye, Download, FileText, AlertTriangle, RotateCcw, Printer, ArrowLeft, Lock, CheckCircle2 } from 'lucide-vue-next';
+import { ref, computed, watch, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { 
+  Search, RefreshCw, Eye, Download, FileText, AlertTriangle, RotateCcw, Printer, 
+  ArrowLeft, Lock, CheckCircle2, User, MapPin, Phone, Mail, GraduationCap, Building,
+  Calendar, ShieldCheck, BookOpen, Clock, Layers
+} from 'lucide-vue-next';
 import api, { getFileUrl } from '../../services/api';
 
+const route = useRoute();
 const activeTab = ref('applications');
+const modalTab = ref('profile');
+
+watch(() => route.query.tab, (newTab) => {
+  if (newTab && ['applications', 'queue', 'transferees'].includes(newTab)) {
+    activeTab.value = newTab;
+  }
+}, { immediate: true });
+
 const applications = ref([]);
 const queueList = ref([]);
 const queueFilterStatus = ref('active');
@@ -968,6 +1189,7 @@ const loadQueue = async () => {
 
 const openReviewModal = async (id) => {
   try {
+    modalTab.value = 'profile';
     const res = await api.getApplicationDetails(id);
     selectedApp.value = res.data;
     approvalForm.value.section_id = res.data.available_sections?.[0]?.id || 0;

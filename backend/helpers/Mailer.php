@@ -94,10 +94,10 @@ class Mailer {
         $appNo = $applicantData['application_no'] ?? 'Pending';
         $username = $applicantData['username'] ?? '';
 
-        $subject = "Admission Application Received: {$appNo} - JJKINGS Biringan School";
+        $subject = "Admission Application Received: {$appNo} - Biringan Science & Leadership Academy";
 
         $html = self::wrapTemplate("
-            <h2 style='color: #0c2340; margin-top: 0;'>Welcome to JJKINGS Biringan School!</h2>
+            <h2 style='color: #0c2340; margin-top: 0;'>Welcome to Biringan Science and Leadership Academy!</h2>
             <p>Dear <strong>{$name}</strong>,</p>
             <p>Your temporary admission account has been successfully created for <strong>School Year 2026–2027</strong>.</p>
             
@@ -110,13 +110,13 @@ class Mailer {
             <h3 style='color: #0c2340;'>Next Steps to Complete Admission:</h3>
             <ol style='padding-left: 20px; line-height: 1.6; color: #334155;'>
                 <li>Log in to your <strong>Admission Portal</strong>.</li>
-                <li>Enter your 12-digit DepEd LRN and personal information.</li>
+                <li>Enter your 12-digit DepEd LRN and personal demographics.</li>
                 <li>Upload digital copies of your <strong>PSA Birth Certificate</strong> and <strong>SF9 Form 138 (Report Card)</strong>.</li>
                 <li>Await Registrar document verification and Section assignment.</li>
             </ol>
 
             <p style='margin-top: 24px;'>
-                <a href='http://localhost/sia-project2/frontend/dist/index.html#/login' style='background-color: #0c2340; color: #fbbf24; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; display: inline-block;'>Access Admission Dashboard &rarr;</a>
+                <a href='http://localhost/sia-project2/frontend/dist/index.html#/login' style='background-color: #0c2340; color: #93c5fd; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; display: inline-block;'>Access Admission Dashboard &rarr;</a>
             </p>
         ");
 
@@ -135,12 +135,12 @@ class Mailer {
         $netPayable = number_format((float)($assessmentData['net_amount'] ?? 0), 2);
         $minDownpayment = number_format((float)($assessmentData['min_downpayment'] ?? 3000), 2);
 
-        $subject = "Admission Approved & Assessment Ready - JJKINGS Biringan School";
+        $subject = "Admission Approved & Assessment Ready - BSLA Admissions";
 
         $html = self::wrapTemplate("
             <h2 style='color: #059669; margin-top: 0;'>&#10004; Your Admission Has Been Approved!</h2>
             <p>Dear <strong>{$name}</strong>,</p>
-            <p>Congratulations! The Registrar has reviewed and authenticated your submitted credentials. You have been officially approved for enrollment.</p>
+            <p>Congratulations! The Registrar has reviewed and authenticated your submitted credentials. You have been officially approved for enrollment at Biringan Science and Leadership Academy.</p>
             
             <div style='background-color: #ecfdf5; border: 2px solid #a7f3d0; border-radius: 12px; padding: 18px; margin: 20px 0;'>
                 <p style='margin: 0 0 8px 0;'><strong>Assigned Student ID:</strong> <span style='font-family: monospace; font-size: 16px; color: #065f46;'>{$studentNo}</span></p>
@@ -173,12 +173,12 @@ class Mailer {
         $orNo = $orData['or_number'] ?? '';
         $amountPaid = number_format((float)($orData['amount_paid'] ?? 0), 2);
 
-        $subject = "Official Certificate of Registration (COR) - JJKINGS Biringan School";
+        $subject = "Official Certificate of Registration (COR) - BSLA Admissions";
 
         $html = self::wrapTemplate("
             <h2 style='color: #0c2340; margin-top: 0;'>&#127891; You Are Officially Enrolled!</h2>
             <p>Dear <strong>{$name}</strong>,</p>
-            <p>Your tuition payment of <strong>&#8369;{$amountPaid}</strong> has been verified by the Treasury Department. You are now officially enrolled as a student of JJKINGS Biringan School for <strong>S.Y. 2026–2027</strong>.</p>
+            <p>Your tuition payment of <strong>&#8369;{$amountPaid}</strong> has been verified by the Treasury Department. You are now officially enrolled as a student of Biringan Science and Leadership Academy for <strong>S.Y. 2026–2027</strong>.</p>
             
             <div style='background-color: #eff6ff; border: 2px solid #bfdbfe; border-radius: 12px; padding: 18px; margin: 20px 0;'>
                 <p style='margin: 0 0 8px 0;'><strong>Official Student ID:</strong> <span style='font-family: monospace; font-size: 16px; color: #1e3a8a;'>{$studentId}</span></p>
@@ -192,7 +192,7 @@ class Mailer {
             </p>
 
             <p style='margin-top: 24px;'>
-                <a href='http://localhost/sia-project2/frontend/dist/index.html#/login' style='background-color: #1e3a8a; color: #fbbf24; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; display: inline-block;'>Sign In to Student Portal &rarr;</a>
+                <a href='http://localhost/sia-project2/frontend/dist/index.html#/login' style='background-color: #1e3a8a; color: #93c5fd; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; display: inline-block;'>Sign In to Student Portal &rarr;</a>
             </p>
         ");
 
@@ -209,7 +209,7 @@ class Mailer {
         <head>
             <meta charset='UTF-8'>
             <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-            <title>JJKINGS Biringan School</title>
+            <title>Biringan Science and Leadership Academy</title>
         </head>
         <body style='margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;'>
             <table border='0' cellpadding='0' cellspacing='0' width='100%' style='table-layout: fixed;'>
@@ -218,9 +218,9 @@ class Mailer {
                         <table border='0' cellpadding='0' cellspacing='0' width='600' style='background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;'>
                             <!-- Header Banner -->
                             <tr>
-                                <td style='background: linear-gradient(135deg, #0c2340, #163860); padding: 25px 30px; text-align: center; border-bottom: 4px solid #f59e0b;'>
-                                    <h1 style='color: #ffffff; font-size: 20px; font-weight: 900; margin: 0; letter-spacing: 0.5px; font-family: Georgia, serif;'>JJKINGS BIRINGAN SCHOOL</h1>
-                                    <p style='color: #fcd34d; font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 4px 0 0 0; letter-spacing: 1px;'>Junior & Senior High School (DepEd ID: 405621)</p>
+                                <td style='background: linear-gradient(135deg, #0c2340, #163860); padding: 25px 30px; text-align: center; border-bottom: 4px solid #3b82f6;'>
+                                    <h1 style='color: #ffffff; font-size: 19px; font-weight: 900; margin: 0; letter-spacing: 0.5px; font-family: Georgia, serif;'>BIRINGAN SCIENCE AND LEADERSHIP ACADEMY</h1>
+                                    <p style='color: #93c5fd; font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 4px 0 0 0; letter-spacing: 1px;'>Junior & Senior High School • \"Innovating for the Nation\" (DepEd ID: 405621)</p>
                                 </td>
                             </tr>
                             <!-- Body Content -->
@@ -232,7 +232,7 @@ class Mailer {
                             <!-- Footer -->
                             <tr>
                                 <td style='background-color: #0f172a; padding: 20px 30px; text-align: center; color: #94a3b8; font-size: 11px; line-height: 1.5;'>
-                                    <p style='margin: 0 0 4px 0;'><strong>JJKINGS Biringan School Main Campus</strong></p>
+                                    <p style='margin: 0 0 4px 0;'><strong>Biringan Science and Leadership Academy (BSLA)</strong></p>
                                     <p style='margin: 0 0 8px 0;'>Academic Boulevard, Biringan City, Samar, Eastern Visayas • Tel: (055) 888-7766</p>
                                     <p style='margin: 0; color: #64748b;'>This is an automated institutional notification from the SIA Enrollment System.</p>
                                 </td>

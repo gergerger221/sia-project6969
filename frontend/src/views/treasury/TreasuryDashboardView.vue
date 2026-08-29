@@ -1,39 +1,30 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Top Header -->
-    <div class="no-print bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <!-- Top Header & Actions -->
+    <div class="no-print flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 pb-5 border-b border-slate-200">
       <div>
-        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/30 text-xs font-bold uppercase tracking-wider mb-2">
+        <div class="flex items-center space-x-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+          <CreditCard class="w-3.5 h-3.5 text-emerald-600" />
           <span>Treasury & Finance Management</span>
         </div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-white">Enrollment Billing & Official Receipts</h1>
-        <p class="text-xs text-slate-400 mt-1">Collect tuition downpayments, apply DepEd voucher subsidies, and issue Official Receipts.</p>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Enrollment Billing & Official Receipts</h1>
+        <p class="text-xs text-slate-500 mt-0.5">Collect tuition downpayments, apply DepEd voucher subsidies, and issue Official Receipts.</p>
       </div>
 
-      <div class="flex items-center space-x-2">
+      <div class="flex items-center space-x-2.5 shrink-0">
+        <div class="hidden sm:flex items-center space-x-2 bg-emerald-50 text-emerald-800 border border-emerald-200 px-3.5 py-1.5 rounded-xl text-xs font-medium font-mono">
+          <span>Assessments:</span>
+          <strong class="text-emerald-900 font-bold">{{ assessments.length }}</strong>
+          <span class="text-emerald-300">•</span>
+          <span>Pending Online:</span>
+          <strong :class="pendingOnlineCount > 0 ? 'text-amber-700 font-bold' : 'text-emerald-800'">{{ pendingOnlineCount }}</strong>
+        </div>
         <button 
-          @click="activeTab = 'assessments'"
-          :class="activeTab === 'assessments' ? 'bg-emerald-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-          class="px-4 py-2 rounded-xl text-xs transition cursor-pointer"
+          @click="loadAssessments(); loadOnlinePayments(); loadFeeStructures();"
+          class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-medium shadow-2xs transition flex items-center space-x-1.5 cursor-pointer"
         >
-          Billing Assessments ({{ assessments.length }})
-        </button>
-        <button 
-          @click="activeTab = 'online_payments'"
-          :class="activeTab === 'online_payments' ? 'bg-emerald-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-          class="px-4 py-2 rounded-xl text-xs transition flex items-center space-x-1.5 cursor-pointer"
-        >
-          <span>Online Payment Queue</span>
-          <span v-if="pendingOnlineCount > 0" class="px-1.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[10px]">
-            {{ pendingOnlineCount }}
-          </span>
-        </button>
-        <button 
-          @click="activeTab = 'fees'"
-          :class="activeTab === 'fees' ? 'bg-emerald-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-          class="px-4 py-2 rounded-xl text-xs transition cursor-pointer"
-        >
-          Fee Structures
+          <RefreshCw class="w-3.5 h-3.5" />
+          <span>Refresh</span>
         </button>
       </div>
     </div>
@@ -127,7 +118,7 @@
                 <button 
                   v-else
                   @click="openPaymentModal(ass.id)" 
-                  class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition"
+                  class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs transition cursor-pointer"
                 >
                   {{ ass.status === 'Fully Paid' ? 'View OR & History' : 'Process Payment' }}
                 </button>
@@ -272,8 +263,8 @@
               <td class="p-3.5 text-right">
                 <button 
                   @click="openReviewModal(sub)"
-                  :class="sub.status === 'Pending Verification' ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'"
-                  class="px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition cursor-pointer"
+                  :class="sub.status === 'Pending Verification' ? 'bg-blue-900 hover:bg-blue-800 text-white font-semibold shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium'"
+                  class="px-3.5 py-1.5 rounded-xl text-xs transition cursor-pointer"
                 >
                   {{ sub.status === 'Pending Verification' ? 'Review & Verify' : 'View Details' }}
                 </button>
@@ -400,7 +391,7 @@
               type="button" 
               @click="openPaymentConfirmModal"
               :disabled="isPaying"
-              class="px-6 py-2.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md transition flex items-center space-x-1.5 cursor-pointer"
+              class="px-5 py-2.5 rounded-xl font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs transition flex items-center space-x-1.5 cursor-pointer"
             >
               <span v-if="isPaying" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               <span>Process Payment & Issue OR</span>
@@ -1061,14 +1052,29 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { 
   Search, RefreshCw, Printer, ArrowLeft, CheckCircle, AlertTriangle, Eye, Clock, 
   CreditCard, FileText, Download, ShieldCheck 
 } from 'lucide-vue-next';
 import api, { getFileUrl } from '../../services/api';
 
+const route = useRoute();
 const activeTab = ref('assessments');
+
+watch(() => route.query.tab, (newTab) => {
+  if (newTab) {
+    if (newTab === 'online_payments' || newTab === 'online-payments') {
+      activeTab.value = 'online_payments';
+    } else if (newTab === 'fees' || newTab === 'fee-structures') {
+      activeTab.value = 'fees';
+    } else if (newTab === 'assessments') {
+      activeTab.value = 'assessments';
+    }
+  }
+}, { immediate: true });
+
 const assessments = ref([]);
 const feeStructuresList = ref([]);
 const onlinePayments = ref([]);

@@ -13,7 +13,7 @@ class FileUpload {
         }
     }
 
-    public static function upload(array $file, array $allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'webp'], int $maxSizeBytes = 10485760): array {
+    public static function upload(array $file, array $allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'webp', 'doc', 'docx'], int $maxSizeBytes = 10485760): array {
         self::init();
 
         if (!isset($file['error']) || is_array($file['error'])) {

@@ -1,51 +1,30 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <!-- Top Header & Actions -->
+    <div class="no-print flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 pb-5 border-b border-slate-200">
       <div>
-        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-purple-950 text-purple-400 border border-purple-500/30 text-xs font-bold uppercase tracking-wider mb-2">
+        <div class="flex items-center space-x-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+          <BookOpen class="w-3.5 h-3.5 text-purple-600" />
           <span>Academic Affairs & Curriculum Coordination</span>
         </div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-white">Curriculum, Subjects & Section Management</h1>
-        <p class="text-xs text-slate-400 mt-1">Configure DepEd K to 12 & MATATAG subjects, prerequisites, sections, and faculty adviser loading.</p>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Curriculum, Subjects & Section Management</h1>
+        <p class="text-xs text-slate-500 mt-0.5">Configure DepEd K to 12 & MATATAG subjects, prerequisites, sections, and faculty adviser loading.</p>
       </div>
 
-      <div class="flex items-center space-x-2 flex-wrap gap-y-2">
+      <div class="flex items-center space-x-2.5 flex-wrap gap-y-2 shrink-0">
+        <div class="hidden sm:flex items-center space-x-2 bg-purple-50 text-purple-800 border border-purple-200 px-3.5 py-1.5 rounded-xl text-xs font-medium font-mono">
+          <span>Curriculum:</span>
+          <strong class="text-purple-900 font-bold">{{ curriculumData.subjects?.length || 0 }} Subjects</strong>
+          <span class="text-purple-300">•</span>
+          <span>Sections:</span>
+          <strong class="text-purple-900 font-bold">{{ sectionsData.sections?.length || 0 }}</strong>
+        </div>
         <button 
-          @click="activeTab = 'curriculum'"
-          :class="activeTab === 'curriculum' ? 'bg-purple-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-          class="px-3.5 py-2 rounded-xl text-xs transition"
+          @click="loadData(); loadEventsData();"
+          class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-medium shadow-2xs transition flex items-center space-x-1.5 cursor-pointer"
         >
-          Curriculum ({{ curriculumData.subjects?.length || 0 }})
-        </button>
-        <button 
-          @click="activeTab = 'strands'"
-          :class="activeTab === 'strands' ? 'bg-purple-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-          class="px-3.5 py-2 rounded-xl text-xs transition"
-        >
-          Strands ({{ curriculumData.strands?.length || 0 }})
-        </button>
-        <button 
-          @click="activeTab = 'sections'"
-          :class="activeTab === 'sections' ? 'bg-purple-600 text-white font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-          class="px-3.5 py-2 rounded-xl text-xs transition"
-        >
-          Class Sections ({{ sectionsData.sections?.length || 0 }})
-        </button>
-        <button 
-          @click="switchToSchedulesTab()"
-          :class="activeTab === 'schedules' ? 'bg-purple-600 text-white font-bold shadow-lg shadow-purple-900/40' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-          class="px-3.5 py-2 rounded-xl text-xs transition flex items-center space-x-1.5"
-        >
-          <Clock class="w-3.5 h-3.5" />
-          <span>Class Schedules & Timetables</span>
-        </button>
-        <button 
-          @click="switchToEventsTab()"
-          :class="activeTab === 'events' ? 'bg-purple-600 text-white font-bold shadow-lg shadow-purple-900/40' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-          class="px-3.5 py-2 rounded-xl text-xs transition flex items-center space-x-1.5"
-        >
-          <Calendar class="w-3.5 h-3.5" />
-          <span>School Events Calendar</span>
+          <RefreshCw class="w-3.5 h-3.5" />
+          <span>Refresh</span>
         </button>
       </div>
     </div>
@@ -61,51 +40,51 @@
       <!-- CURRICULUM DECLARATION & LOCK STATUS BANNER -->
       <div 
         v-if="curriculumData.curriculum_locked"
-        class="mb-6 p-5 rounded-2xl bg-emerald-950 border border-emerald-500/40 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-lg"
+        class="mb-6 p-4 sm:p-5 rounded-2xl bg-emerald-50 border border-emerald-200 text-slate-900 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs"
       >
         <div class="flex items-start space-x-3.5">
-          <div class="p-2.5 rounded-xl bg-emerald-900/80 text-emerald-400 border border-emerald-500/40 shrink-0 mt-0.5">
+          <div class="p-2.5 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-200 shrink-0 mt-0.5">
             <Lock class="w-5 h-5" />
           </div>
           <div>
             <div class="flex items-center space-x-2 flex-wrap gap-y-1">
-              <h3 class="font-extrabold text-sm text-emerald-200">School Year Curriculum Officially Declared & Locked</h3>
-              <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-500/40">
-                🔒 DepEd Integrity Freeze Active
+              <h3 class="font-bold text-sm text-emerald-950">School Year Curriculum Officially Declared & Locked</h3>
+              <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold border border-emerald-300">
+                DepEd Integrity Freeze Active
               </span>
             </div>
-            <p class="text-[11px] text-slate-300 mt-1 leading-relaxed max-w-3xl">
-              All <strong>{{ curriculumData.subjects?.length || 0 }} subjects</strong> and <strong>{{ curriculumData.strands?.length || 0 }} strands</strong> are officially locked from editing or deletion to protect active student permanent records (SF10 / Form 137), quarterly report cards (SF9), and section timetables. Any mid-year DepEd curriculum adjustments will apply to the next school year.
+            <p class="text-xs text-slate-600 mt-1 leading-relaxed max-w-3xl">
+              All <strong>{{ curriculumData.subjects?.length || 0 }} subjects</strong> and <strong>{{ curriculumData.strands?.length || 0 }} strands</strong> are officially locked from editing or deletion to protect active student permanent records (SF10 / Form 137), quarterly report cards (SF9), and section timetables.
             </p>
           </div>
         </div>
 
         <button 
           @click="toggleCurriculumDeclaration()" 
-          class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition shrink-0 flex items-center space-x-1.5"
+          class="px-4 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition shrink-0 flex items-center space-x-1.5 shadow-2xs cursor-pointer"
           title="Unlock curriculum to enable drafting modifications"
         >
-          <Unlock class="w-3.5 h-3.5 text-amber-400" />
+          <Unlock class="w-3.5 h-3.5 text-amber-600" />
           <span>Unlock Curriculum (Setup Mode)</span>
         </button>
       </div>
 
       <div 
         v-else
-        class="mb-6 p-5 rounded-2xl bg-amber-950 border border-amber-500/40 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-lg"
+        class="mb-6 p-4 sm:p-5 rounded-2xl bg-amber-50 border border-amber-200 text-slate-900 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs"
       >
         <div class="flex items-start space-x-3.5">
-          <div class="p-2.5 rounded-xl bg-amber-900/80 text-amber-400 border border-amber-500/40 shrink-0 mt-0.5">
+          <div class="p-2.5 rounded-xl bg-amber-100 text-amber-800 border border-amber-200 shrink-0 mt-0.5">
             <AlertCircle class="w-5 h-5" />
           </div>
           <div>
             <div class="flex items-center space-x-2 flex-wrap gap-y-1">
-              <h3 class="font-extrabold text-sm text-amber-200">Curriculum in Draft / Setup Mode</h3>
-              <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-500/40">
-                🟡 Open for Editing
+              <h3 class="font-bold text-sm text-amber-950">Curriculum in Draft / Setup Mode</h3>
+              <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-mono text-[10px] font-bold border border-amber-300">
+                Open for Editing
               </span>
             </div>
-            <p class="text-[11px] text-slate-300 mt-1 leading-relaxed max-w-3xl">
+            <p class="text-xs text-slate-600 mt-1 leading-relaxed max-w-3xl">
               Curriculum learning areas, units, and strands are currently open for modifications. Once the academic year starts or official enrollments are generated, click <strong>"Declare & Lock SY Curriculum"</strong> to freeze the curriculum.
             </p>
           </div>
@@ -113,7 +92,7 @@
 
         <button 
           @click="toggleCurriculumDeclaration()" 
-          class="px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md transition shrink-0 flex items-center space-x-1.5"
+          class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs transition shrink-0 flex items-center space-x-1.5 cursor-pointer"
           title="Declare and freeze curriculum for active school year"
         >
           <Lock class="w-3.5 h-3.5 text-white" />
@@ -123,17 +102,17 @@
 
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 border-b border-slate-100 pb-5">
         <div>
-          <div class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-900 font-bold text-[10px] uppercase tracking-wider mb-1">
-            <BookOpen class="w-3 h-3 text-purple-700" />
+          <div class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-950 font-bold text-[10px] uppercase tracking-wider mb-1 border border-blue-200">
+            <BookOpen class="w-3 h-3 text-blue-900" />
             <span>Master Academic Blueprint</span>
           </div>
-          <h2 class="text-lg font-extrabold text-slate-900">DepEd Learning Areas & Curriculum</h2>
+          <h2 class="text-lg font-bold text-slate-900">DepEd Learning Areas & Curriculum</h2>
           <p class="text-xs text-slate-500">Configure core, applied, and specialized subjects, term scheduling, units, and prerequisites.</p>
         </div>
 
         <button 
           @click="openSubjectModal()" 
-          class="px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-md transition flex items-center space-x-1.5"
+          class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs transition flex items-center space-x-1.5 cursor-pointer"
         >
           <Plus class="w-4 h-4" />
           <span>Add New Subject</span>
@@ -349,7 +328,7 @@
         <template v-else>
           <button 
             @click="openStrandModal()" 
-            class="px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-md transition flex items-center space-x-1.5 shrink-0"
+            class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs transition flex items-center space-x-1.5 shrink-0 cursor-pointer"
           >
             <Plus class="w-4 h-4" />
             <span>Add New Strand</span>
@@ -364,11 +343,11 @@
             <button 
               type="button" 
               @click="strandFilter.status = 'Active'"
-              :class="strandFilter.status === 'Active' ? 'bg-purple-600 text-white font-bold shadow-sm' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
-              class="px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5"
+              :class="strandFilter.status === 'Active' ? 'bg-blue-900 text-white font-semibold shadow-2xs' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
+              class="px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5 cursor-pointer"
             >
               <span>Active Offerings</span>
-              <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="strandFilter.status === 'Active' ? 'bg-purple-800 text-purple-100' : 'bg-slate-100 text-slate-600'">
+              <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="strandFilter.status === 'Active' ? 'bg-blue-950 text-blue-100' : 'bg-slate-100 text-slate-600'">
                 {{ strandStats.activeCount }}
               </span>
             </button>
@@ -376,8 +355,8 @@
             <button 
               type="button" 
               @click="strandFilter.status = 'Archived'"
-              :class="strandFilter.status === 'Archived' ? 'bg-slate-800 text-white font-bold shadow-sm' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
-              class="px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5"
+              :class="strandFilter.status === 'Archived' ? 'bg-slate-800 text-white font-semibold shadow-2xs' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
+              class="px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5 cursor-pointer"
             >
               <span>Archived Strands</span>
               <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="strandFilter.status === 'Archived' ? 'bg-slate-950 text-slate-300' : 'bg-slate-100 text-slate-600'">
@@ -388,8 +367,8 @@
             <button 
               type="button" 
               @click="strandFilter.status = ''"
-              :class="strandFilter.status === '' ? 'bg-purple-100 text-purple-900 font-bold border border-purple-300' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
-              class="px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5"
+              :class="strandFilter.status === '' ? 'bg-blue-50 text-blue-900 font-semibold border border-blue-200' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
+              class="px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5 cursor-pointer"
             >
               <span>All Programs</span>
               <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600">
@@ -578,14 +557,14 @@
     <div v-if="activeTab === 'sections'" class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-100 pb-5">
         <div>
-          <div class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-900 font-bold text-[10px] uppercase tracking-wider mb-1">
-            <Users class="w-3 h-3 text-purple-700" />
+          <div class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-900 font-bold text-[10px] uppercase tracking-wider mb-1 border border-blue-200">
+            <Users class="w-3 h-3 text-blue-900" />
             <span>Classroom Capacity & Faculty Loading</span>
           </div>
-          <h2 class="text-lg font-extrabold text-slate-900">Class Sectioning & Advisers</h2>
+          <h2 class="text-lg font-bold text-slate-900">Class Sectioning & Advisers</h2>
           <p class="text-xs text-slate-500">Monitor section capacities, room assignments, and assigned faculty advisers across JHS and SHS.</p>
         </div>
-        <button @click="openSectionModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-md transition flex items-center space-x-1.5 shrink-0">
+        <button @click="openSectionModal()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs transition flex items-center space-x-1.5 shrink-0 cursor-pointer">
           <Plus class="w-4 h-4" />
           <span>Create Section</span>
         </button>
@@ -1005,19 +984,19 @@
 
     <!-- TAB 5: SCHOOL EVENTS & ACADEMIC CALENDAR -->
     <div v-if="activeTab === 'events'" class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-100 pb-5">
         <div>
-          <div class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-900 font-bold text-[10px] uppercase tracking-wider mb-1">
-            <Calendar class="w-3 h-3 text-purple-700" />
+          <div class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-900 font-bold text-[10px] uppercase tracking-wider mb-1 border border-blue-200">
+            <Calendar class="w-3 h-3 text-blue-900" />
             <span>Official Institutional Calendar & Milestones</span>
           </div>
-          <h2 class="text-lg font-extrabold text-slate-900">School Events & Academic Calendar</h2>
+          <h2 class="text-lg font-bold text-slate-900">School Events & Academic Calendar</h2>
           <p class="text-xs text-slate-500">Plan and broadcast academic milestones, examination periods, holidays, and campus events.</p>
         </div>
 
         <button 
           @click="openEventModal()" 
-          class="px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-md transition flex items-center space-x-1.5 shrink-0"
+          class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs transition flex items-center space-x-1.5 shrink-0 cursor-pointer"
         >
           <Plus class="w-4 h-4" />
           <span>Add School Event</span>
@@ -1025,31 +1004,31 @@
       </div>
 
       <!-- Upcoming Milestones Strip -->
-      <div class="p-4 bg-gradient-to-r from-purple-900 to-indigo-950 rounded-2xl text-white space-y-3">
+      <div class="p-4 bg-slate-900 rounded-2xl text-white space-y-3 border border-slate-800">
         <div class="flex items-center justify-between">
-          <h3 class="font-extrabold text-xs uppercase tracking-wider flex items-center space-x-1.5 text-purple-300">
-            <Sparkles class="w-3.5 h-3.5" />
+          <h3 class="font-bold text-xs uppercase tracking-wider flex items-center space-x-1.5 text-blue-300">
+            <Sparkles class="w-3.5 h-3.5 text-blue-400" />
             <span>Upcoming Academic Milestones & Deadlines</span>
           </h3>
-          <span class="text-[10px] text-purple-200 font-mono">SY 2026-2027</span>
+          <span class="text-[10px] text-blue-200 font-mono">SY 2026-2027</span>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div 
             v-for="up in calendarData.upcoming" 
             :key="up.id"
-            class="p-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 space-y-1"
+            class="p-3 rounded-xl bg-slate-800/80 border border-slate-700 space-y-1"
           >
             <div class="flex items-center justify-between text-[10px] font-bold">
               <span class="px-2 py-0.2 rounded uppercase" :class="getEventCategoryBadgeClass(up.event_category)">
                 {{ up.event_category }}
               </span>
-              <span class="font-mono text-purple-200">{{ formatEventDate(up.start_date) }}</span>
+              <span class="font-mono text-blue-200">{{ formatEventDate(up.start_date) }}</span>
             </div>
             <div class="font-bold text-xs text-white line-clamp-1">{{ up.title }}</div>
-            <div class="text-[10px] text-purple-200/80 line-clamp-1">{{ up.location || 'All Campuses' }}</div>
+            <div class="text-[10px] text-slate-400 line-clamp-1">{{ up.location || 'All Campuses' }}</div>
           </div>
-          <div v-if="!calendarData.upcoming || calendarData.upcoming.length === 0" class="col-span-full text-center text-xs text-purple-300">
+          <div v-if="!calendarData.upcoming || calendarData.upcoming.length === 0" class="col-span-full text-center text-xs text-slate-400 py-3">
             No upcoming events scheduled.
           </div>
         </div>
@@ -1061,48 +1040,48 @@
           <button 
             type="button" 
             @click="eventFilter.category = ''; loadEventsData()"
-            :class="eventFilter.category === '' ? 'bg-purple-600 text-white font-bold' : 'bg-white text-slate-700 border border-slate-200'"
-            class="px-3 py-1.5 rounded-xl transition text-[11px]"
+            :class="eventFilter.category === '' ? 'bg-blue-900 text-white font-semibold shadow-2xs' : 'bg-white text-slate-700 border border-slate-200'"
+            class="px-3 py-1.5 rounded-xl transition text-[11px] cursor-pointer"
           >
             All Events
           </button>
           <button 
             type="button" 
             @click="eventFilter.category = 'Academic'; loadEventsData()"
-            :class="eventFilter.category === 'Academic' ? 'bg-purple-600 text-white font-bold' : 'bg-white text-slate-700 border border-slate-200'"
-            class="px-3 py-1.5 rounded-xl transition text-[11px]"
+            :class="eventFilter.category === 'Academic' ? 'bg-blue-900 text-white font-semibold shadow-2xs' : 'bg-white text-slate-700 border border-slate-200'"
+            class="px-3 py-1.5 rounded-xl transition text-[11px] cursor-pointer"
           >
             Academic Milestones
           </button>
           <button 
             type="button" 
             @click="eventFilter.category = 'Examination'; loadEventsData()"
-            :class="eventFilter.category === 'Examination' ? 'bg-purple-600 text-white font-bold' : 'bg-white text-slate-700 border border-slate-200'"
-            class="px-3 py-1.5 rounded-xl transition text-[11px]"
+            :class="eventFilter.category === 'Examination' ? 'bg-blue-900 text-white font-semibold shadow-2xs' : 'bg-white text-slate-700 border border-slate-200'"
+            class="px-3 py-1.5 rounded-xl transition text-[11px] cursor-pointer"
           >
             Examinations
           </button>
           <button 
             type="button" 
             @click="eventFilter.category = 'Holiday'; loadEventsData()"
-            :class="eventFilter.category === 'Holiday' ? 'bg-purple-600 text-white font-bold' : 'bg-white text-slate-700 border border-slate-200'"
-            class="px-3 py-1.5 rounded-xl transition text-[11px]"
+            :class="eventFilter.category === 'Holiday' ? 'bg-blue-900 text-white font-semibold shadow-2xs' : 'bg-white text-slate-700 border border-slate-200'"
+            class="px-3 py-1.5 rounded-xl transition text-[11px] cursor-pointer"
           >
             Holidays
           </button>
           <button 
             type="button" 
             @click="eventFilter.category = 'Activity'; loadEventsData()"
-            :class="eventFilter.category === 'Activity' ? 'bg-purple-600 text-white font-bold' : 'bg-white text-slate-700 border border-slate-200'"
-            class="px-3 py-1.5 rounded-xl transition text-[11px]"
+            :class="eventFilter.category === 'Activity' ? 'bg-blue-900 text-white font-semibold shadow-2xs' : 'bg-white text-slate-700 border border-slate-200'"
+            class="px-3 py-1.5 rounded-xl transition text-[11px] cursor-pointer"
           >
             Activities & Intramurals
           </button>
           <button 
             type="button" 
             @click="eventFilter.category = 'Administrative'; loadEventsData()"
-            :class="eventFilter.category === 'Administrative' ? 'bg-purple-600 text-white font-bold' : 'bg-white text-slate-700 border border-slate-200'"
-            class="px-3 py-1.5 rounded-xl transition text-[11px]"
+            :class="eventFilter.category === 'Administrative' ? 'bg-blue-900 text-white font-semibold shadow-2xs' : 'bg-white text-slate-700 border border-slate-200'"
+            class="px-3 py-1.5 rounded-xl transition text-[11px] cursor-pointer"
           >
             Administrative & PTA
           </button>
@@ -2290,11 +2269,29 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { Plus, Users, ArrowRightLeft, AlertCircle, CheckCircle, Search, Trash2, BookOpen, Layers, Clock, Calendar, MapPin, Sparkles, Pencil, User, ChevronDown, Check, Lock, Unlock } from 'lucide-vue-next';
+import { ref, computed, watch, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { 
+  Plus, Users, ArrowRightLeft, AlertCircle, CheckCircle, Search, Trash2, BookOpen, 
+  Layers, Clock, Calendar, MapPin, Sparkles, Pencil, User, ChevronDown, Check, Lock, Unlock, RefreshCw 
+} from 'lucide-vue-next';
 import api from '../../services/api';
 
+const route = useRoute();
 const activeTab = ref('curriculum');
+
+watch(() => route.query.tab, (newTab) => {
+  if (newTab && ['curriculum', 'strands', 'sections', 'schedules', 'events'].includes(newTab)) {
+    if (newTab === 'schedules') {
+      switchToSchedulesTab();
+    } else if (newTab === 'events') {
+      switchToEventsTab();
+    } else {
+      activeTab.value = newTab;
+    }
+  }
+}, { immediate: true });
+
 const curriculumData = ref({ subjects: [], grade_levels: [], strands: [], tracks: [] });
 const sectionsData = ref({ sections: [], teachers: [] });
 const calendarData = ref({ events: [], upcoming: [] });

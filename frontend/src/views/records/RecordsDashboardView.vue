@@ -1,52 +1,51 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Header & Dashboard Summary Strip (Hidden in Print) -->
-    <div class="no-print bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl mb-6">
-      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-500/30 text-xs font-bold uppercase tracking-wider mb-2">
-            <span>School Records & DepEd Archives Custodian</span>
-          </div>
-          <h1 class="text-2xl sm:text-3xl font-extrabold text-white">Student Academic Records & DepEd Forms</h1>
-          <p class="text-xs text-slate-400 mt-1">Official repository for SF10 (Form 137), SF9 (Form 138), Document Requests (DRS), and DepEd School Forms.</p>
+    <!-- Header & Dashboard Actions (Hidden in Print) -->
+    <div class="no-print flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 pb-5 border-b border-slate-200">
+      <div>
+        <div class="flex items-center space-x-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+          <FileText class="w-3.5 h-3.5 text-cyan-700" />
+          <span>School Records & DepEd Archives Custodian</span>
         </div>
-
-        <div class="flex items-center space-x-2">
-          <button 
-            @click="openNewRequestModal" 
-            class="px-4 py-2.5 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white shadow-md transition flex items-center space-x-1.5"
-          >
-            <Plus class="w-4 h-4" />
-            <span>Issue Certificate</span>
-          </button>
-          <button 
-            @click="refreshCurrentTab" 
-            class="px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 shadow-sm transition flex items-center space-x-1.5"
-          >
-            <RefreshCw class="w-3.5 h-3.5" :class="{ 'animate-spin': isLoading }" />
-            <span>Refresh</span>
-          </button>
-        </div>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Student Academic Records & DepEd Forms</h1>
+        <p class="text-xs text-slate-500 mt-0.5">Official repository for SF10 (Form 137), SF9 (Form 138), Document Requests (DRS), and DepEd School Forms.</p>
       </div>
 
-      <!-- Quick Metrics Summary -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-slate-800 text-xs">
-        <div class="p-3 bg-slate-800/60 rounded-2xl border border-slate-700/60">
-          <span class="text-[10px] uppercase font-bold text-slate-400 block">Archived Learners</span>
-          <strong class="text-xl font-extrabold text-cyan-400 font-mono">{{ stats.total_students || 0 }}</strong>
-        </div>
-        <div class="p-3 bg-slate-800/60 rounded-2xl border border-slate-700/60">
-          <span class="text-[10px] uppercase font-bold text-slate-400 block">Pending Document Requests</span>
-          <strong class="text-xl font-extrabold text-amber-400 font-mono">{{ stats.pending_requests || 0 }}</strong>
-        </div>
-        <div class="p-3 bg-slate-800/60 rounded-2xl border border-slate-700/60">
-          <span class="text-[10px] uppercase font-bold text-slate-400 block">Honor Roll Candidates</span>
-          <strong class="text-xl font-extrabold text-emerald-400 font-mono">{{ stats.honor_roll_count || 0 }}</strong>
-        </div>
-        <div class="p-3 bg-slate-800/60 rounded-2xl border border-slate-700/60">
-          <span class="text-[10px] uppercase font-bold text-slate-400 block">Pending F137 Transferees</span>
-          <strong class="text-xl font-extrabold text-rose-400 font-mono">{{ stats.pending_f137_count || 0 }}</strong>
-        </div>
+      <div class="flex items-center space-x-2.5 shrink-0">
+        <button 
+          @click="openNewRequestModal" 
+          class="px-4 py-2 rounded-xl text-xs font-semibold bg-cyan-700 hover:bg-cyan-600 text-white shadow-xs transition flex items-center space-x-1.5 cursor-pointer"
+        >
+          <Plus class="w-4 h-4" />
+          <span>Issue Certificate</span>
+        </button>
+        <button 
+          @click="refreshCurrentTab" 
+          class="px-3.5 py-2 rounded-xl text-xs font-medium bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition flex items-center space-x-1.5 cursor-pointer"
+        >
+          <RefreshCw class="w-3.5 h-3.5" :class="{ 'animate-spin': isLoading }" />
+          <span>Refresh</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Metrics Summary (Hidden in Print) -->
+    <div class="no-print grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+      <div class="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
+        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Archived Learners</span>
+        <strong class="text-2xl font-bold text-slate-900 font-mono mt-1 block">{{ stats.total_students || 0 }}</strong>
+      </div>
+      <div class="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
+        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Pending Requests</span>
+        <strong class="text-2xl font-bold text-amber-600 font-mono mt-1 block">{{ stats.pending_requests || 0 }}</strong>
+      </div>
+      <div class="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
+        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Honor Roll Candidates</span>
+        <strong class="text-2xl font-bold text-emerald-600 font-mono mt-1 block">{{ stats.honor_roll_count || 0 }}</strong>
+      </div>
+      <div class="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
+        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Pending F137 Transferees</span>
+        <strong class="text-2xl font-bold text-rose-600 font-mono mt-1 block">{{ stats.pending_f137_count || 0 }}</strong>
       </div>
     </div>
 
@@ -74,7 +73,7 @@
         <div class="flex items-center space-x-2">
           <button 
             @click="triggerBrowserPrint" 
-            class="px-5 py-2.5 rounded-xl font-bold bg-cyan-700 hover:bg-cyan-600 text-white text-xs shadow-md transition flex items-center space-x-2"
+            class="px-5 py-2.5 rounded-xl font-semibold bg-blue-900 hover:bg-blue-800 text-white text-xs shadow-xs transition flex items-center space-x-2 cursor-pointer"
           >
             <Printer class="w-4 h-4" />
             <span>Print Official Document</span>
@@ -289,11 +288,11 @@
     <!-- 2. NORMAL TABS DASHBOARD -->
     <div v-else class="no-print space-y-6">
       <!-- Tabs Navigation Bar -->
-      <div class="bg-white rounded-2xl p-2 border border-slate-200 shadow-sm flex items-center space-x-2 overflow-x-auto text-xs">
+      <div class="bg-white rounded-2xl p-2 border border-slate-200 shadow-2xs flex items-center space-x-2 overflow-x-auto text-xs">
         <button 
           @click="activeTab = 'records'" 
-          :class="activeTab === 'records' ? 'bg-cyan-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:bg-slate-100 font-medium'"
-          class="px-4 py-2.5 rounded-xl transition flex items-center space-x-2 shrink-0"
+          :class="activeTab === 'records' ? 'bg-blue-900 text-white font-semibold shadow-xs' : 'text-slate-600 hover:bg-slate-100 font-medium'"
+          class="px-4 py-2.5 rounded-xl transition flex items-center space-x-2 shrink-0 cursor-pointer"
         >
           <BookOpen class="w-4 h-4" />
           <span>Permanent Records (SF10 & SF9)</span>
@@ -301,8 +300,8 @@
 
         <button 
           @click="activeTab = 'drs'" 
-          :class="activeTab === 'drs' ? 'bg-cyan-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:bg-slate-100 font-medium'"
-          class="px-4 py-2.5 rounded-xl transition flex items-center space-x-2 shrink-0"
+          :class="activeTab === 'drs' ? 'bg-blue-900 text-white font-semibold shadow-xs' : 'text-slate-600 hover:bg-slate-100 font-medium'"
+          class="px-4 py-2.5 rounded-xl transition flex items-center space-x-2 shrink-0 cursor-pointer"
         >
           <FileText class="w-4 h-4" />
           <span>Document Requests (DRS)</span>
@@ -313,8 +312,8 @@
 
         <button 
           @click="activeTab = 'school_forms'" 
-          :class="activeTab === 'school_forms' ? 'bg-cyan-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:bg-slate-100 font-medium'"
-          class="px-4 py-2.5 rounded-xl transition flex items-center space-x-2 shrink-0"
+          :class="activeTab === 'school_forms' ? 'bg-blue-900 text-white font-semibold shadow-xs' : 'text-slate-600 hover:bg-slate-100 font-medium'"
+          class="px-4 py-2.5 rounded-xl transition flex items-center space-x-2 shrink-0 cursor-pointer"
         >
           <Layers class="w-4 h-4" />
           <span>DepEd School Forms (SF1 & SF5)</span>
@@ -322,8 +321,8 @@
 
         <button 
           @click="activeTab = 'honors'" 
-          :class="activeTab === 'honors' ? 'bg-cyan-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:bg-slate-100 font-medium'"
-          class="px-4 py-2.5 rounded-xl transition flex items-center space-x-2 shrink-0"
+          :class="activeTab === 'honors' ? 'bg-blue-900 text-white font-semibold shadow-xs' : 'text-slate-600 hover:bg-slate-100 font-medium'"
+          class="px-4 py-2.5 rounded-xl transition flex items-center space-x-2 shrink-0 cursor-pointer"
         >
           <Award class="w-4 h-4" />
           <span>Academic Honors & Ranking</span>
@@ -331,8 +330,8 @@
 
         <button 
           @click="activeTab = 'transferees'" 
-          :class="activeTab === 'transferees' ? 'bg-cyan-600 text-white font-bold shadow-xs' : 'text-slate-600 hover:bg-slate-100 font-medium'"
-          class="px-4 py-2.5 rounded-xl transition flex items-center space-x-2 shrink-0"
+          :class="activeTab === 'transferees' ? 'bg-blue-900 text-white font-semibold shadow-xs' : 'text-slate-600 hover:bg-slate-100 font-medium'"
+          class="px-4 py-2.5 rounded-xl transition flex items-center space-x-2 shrink-0 cursor-pointer"
         >
           <ShieldAlert class="w-4 h-4" />
           <span>Transferee F137 Compliance</span>
@@ -345,10 +344,10 @@
           <div class="relative w-full sm:w-80">
             <input 
               v-model="searchQuery" 
-              @input="loadRecords"
+              @input="loadRecords" 
               type="text" 
-              placeholder="Search by student ID, LRN, or name..."
-              class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-cyan-500"
+              placeholder="Search by student ID, LRN, or name..." 
+              class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-blue-900" 
             />
             <Search class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
           </div>
@@ -374,12 +373,12 @@
             </thead>
             <tbody class="divide-y divide-slate-100">
               <tr v-for="rec in records" :key="rec.id" class="hover:bg-slate-50 transition">
-                <td class="p-3.5 font-bold font-mono text-cyan-800">{{ rec.student_number }}</td>
+                <td class="p-3.5 font-bold font-mono text-blue-900">{{ rec.student_number }}</td>
                 <td class="p-3.5 font-mono">{{ rec.lrn || 'N/A' }}</td>
                 <td class="p-3.5 font-bold text-slate-900">{{ rec.last_name }}, {{ rec.first_name }} {{ rec.middle_name || '' }}</td>
                 <td class="p-3.5">
                   {{ rec.grade_level_name }}
-                  <span v-if="rec.strand_code" class="ml-1 px-1.5 py-0.5 rounded bg-cyan-50 text-cyan-700 font-bold text-[10px]">
+                  <span v-if="rec.strand_code" class="ml-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-900 font-semibold border border-blue-200 text-[10px]">
                     {{ rec.strand_code }}
                   </span>
                 </td>
@@ -395,13 +394,13 @@
                 <td class="p-3.5 text-right space-x-1.5 whitespace-nowrap">
                   <button 
                     @click="openPrintDoc('SF9', rec.student_id)" 
-                    class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 transition"
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 transition cursor-pointer"
                   >
                     View SF9
                   </button>
                   <button 
                     @click="openPrintDoc('SF10', rec.student_id)" 
-                    class="px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white shadow-xs transition"
+                    class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs transition cursor-pointer"
                   >
                     View SF10
                   </button>
@@ -426,7 +425,7 @@
           </div>
           <button 
             @click="openNewRequestModal" 
-            class="px-4 py-2 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white shadow-sm transition flex items-center space-x-1"
+            class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs transition flex items-center space-x-1 cursor-pointer"
           >
             <Plus class="w-3.5 h-3.5" />
             <span>New Request</span>
@@ -468,7 +467,7 @@
                   </button>
                   <button 
                     @click="printOfficialCertificate(dr)" 
-                    class="px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-700 hover:bg-cyan-600 text-white shadow-xs transition inline-flex items-center space-x-1"
+                    class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs transition inline-flex items-center space-x-1 cursor-pointer"
                   >
                     <Printer class="w-3 h-3" />
                     <span>Print</span>
@@ -508,16 +507,16 @@
               <button 
                 type="button"
                 @click="activeSchoolFormType = 'SF1'; loadSchoolFormData()"
-                :class="activeSchoolFormType === 'SF1' ? 'bg-cyan-600 text-white font-bold' : 'bg-white text-slate-700 border border-slate-300'"
-                class="flex-1 py-2 rounded-xl text-xs transition"
+                :class="activeSchoolFormType === 'SF1' ? 'bg-blue-900 text-white font-semibold shadow-2xs' : 'bg-white text-slate-700 border border-slate-300'"
+                class="flex-1 py-2 rounded-xl text-xs transition cursor-pointer"
               >
                 SF1 (Master Register)
               </button>
               <button 
                 type="button"
                 @click="activeSchoolFormType = 'SF5'; loadSchoolFormData()"
-                :class="activeSchoolFormType === 'SF5' ? 'bg-cyan-600 text-white font-bold' : 'bg-white text-slate-700 border border-slate-300'"
-                class="flex-1 py-2 rounded-xl text-xs transition"
+                :class="activeSchoolFormType === 'SF5' ? 'bg-blue-900 text-white font-semibold shadow-2xs' : 'bg-white text-slate-700 border border-slate-300'"
+                class="flex-1 py-2 rounded-xl text-xs transition cursor-pointer"
               >
                 SF5 (Promotion Report)
               </button>
@@ -527,7 +526,7 @@
           <div class="flex items-end justify-end">
             <button 
               @click="triggerBrowserPrint" 
-              class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white transition flex items-center space-x-1.5"
+              class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white transition flex items-center space-x-1.5 cursor-pointer shadow-2xs"
             >
               <Printer class="w-3.5 h-3.5" />
               <span>Print Form</span>
@@ -541,7 +540,7 @@
             <h4 class="font-extrabold text-sm text-slate-900">
               School Form 1 (SF1) - School Register: {{ sf1Data.section?.name }}
             </h4>
-            <span class="text-xs font-bold text-cyan-800">
+            <span class="text-xs font-bold text-blue-900">
               Total Learners: {{ sf1Data.stats?.total_learners || 0 }} (Male: {{ sf1Data.stats?.male_count || 0 }} | Female: {{ sf1Data.stats?.female_count || 0 }})
             </span>
           </div>
@@ -684,7 +683,7 @@
                   <div class="font-bold text-slate-900">{{ h.first_name }} {{ h.last_name }}</div>
                   <div class="text-[10px] text-slate-500">{{ h.grade_level_name }} • {{ h.section_name }}</div>
                 </div>
-                <span class="font-mono font-extrabold text-cyan-800 text-sm">{{ Number(h.general_average).toFixed(2) }}</span>
+                <span class="font-mono font-extrabold text-blue-900 text-sm">{{ Number(h.general_average).toFixed(2) }}</span>
               </div>
               <div v-if="honorRollData.with_honors?.length === 0" class="text-center py-4 text-slate-400 text-xs italic">
                 No candidates in this tier yet
@@ -727,13 +726,13 @@
                 <td class="p-3.5 text-right space-x-1.5 whitespace-nowrap">
                   <button 
                     @click="updateF137(rec, 'Complete / Received')" 
-                    class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition"
+                    class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition cursor-pointer"
                   >
                     Mark Received
                   </button>
                   <button 
                     @click="updateF137(rec, 'Follow-up Sent')" 
-                    class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition"
+                    class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition cursor-pointer"
                   >
                     Log Follow-up
                   </button>
@@ -781,9 +780,9 @@
             <input 
               v-model="newReqForm.purpose" 
               type="text" 
-              placeholder="e.g. DOST Scholarship / SSS Dependent / College Entrance"
-              class="w-full px-3 py-2 rounded-xl border border-slate-300"
-              required
+              placeholder="e.g. DOST Scholarship / SSS Dependent / College Entrance" 
+              class="w-full px-3 py-2 rounded-xl border border-slate-300" 
+              required 
             />
           </div>
 
@@ -803,10 +802,10 @@
           </div>
 
           <div class="pt-3 border-t border-slate-100 flex items-center justify-end space-x-2">
-            <button type="button" @click="showNewReqModal = false" class="px-4 py-2 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">
+            <button type="button" @click="showNewReqModal = false" class="px-4 py-2 rounded-xl font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer">
               Cancel
             </button>
-            <button type="submit" class="px-5 py-2 rounded-xl font-bold bg-cyan-600 hover:bg-cyan-500 text-white shadow-md">
+            <button type="submit" class="px-5 py-2 rounded-xl font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs cursor-pointer">
               Submit & Issue
             </button>
           </div>
@@ -845,10 +844,10 @@
           </div>
 
           <div class="pt-3 border-t border-slate-100 flex items-center justify-end space-x-2">
-            <button type="button" @click="showStatusModal = false" class="px-4 py-2 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">
+            <button type="button" @click="showStatusModal = false" class="px-4 py-2 rounded-xl font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer">
               Cancel
             </button>
-            <button type="submit" class="px-5 py-2 rounded-xl font-bold bg-cyan-600 hover:bg-cyan-500 text-white shadow-md">
+            <button type="submit" class="px-5 py-2 rounded-xl font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs cursor-pointer">
               Save Status
             </button>
           </div>
@@ -860,11 +859,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { BookOpen, FileText, Layers, Award, ShieldAlert, Search, RefreshCw, Plus, Printer, CheckCircle } from 'lucide-vue-next';
 import api from '../../services/api';
 
+const route = useRoute();
 const activeTab = ref('records');
+
+watch(() => route.query.tab, (newTab) => {
+  if (newTab && ['records', 'drs', 'school_forms', 'honors', 'transferees'].includes(newTab)) {
+    activeTab.value = newTab;
+  }
+}, { immediate: true });
+
 const isLoading = ref(false);
 const feedbackMessage = ref('');
 const searchQuery = ref('');

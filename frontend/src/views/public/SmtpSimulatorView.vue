@@ -2,17 +2,17 @@
   <div class="min-h-screen bg-slate-100 text-slate-900 font-sans pb-16">
     
     <!-- Top Header Banner -->
-    <div class="bg-gradient-to-r from-[#061322] via-[#0c2340] to-[#0a1b2f] text-white border-b-4 border-amber-500 py-6 px-4 sm:px-8">
+    <div class="bg-gradient-to-r from-[#061322] via-[#0c2340] to-[#0a1b2f] text-white border-b border-[#16273f] py-6 px-4 sm:px-8">
       <div class="max-w-[1600px] w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         
         <div class="flex items-center space-x-3.5">
-          <div class="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-amber-400">
+          <div class="w-12 h-12 rounded-2xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-blue-300">
             <Mail class="w-6 h-6" />
           </div>
           <div>
             <div class="flex items-center space-x-2">
               <h1 class="text-xl sm:text-2xl font-black font-serif tracking-tight text-white">SMTP & Email Testing Simulator</h1>
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500 text-slate-950">Test Sandbox</span>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-900 text-white border border-blue-700">Test Sandbox</span>
             </div>
             <p class="text-xs text-slate-300">Test live or simulated outbound email notifications across the student admission lifecycle</p>
           </div>
@@ -20,7 +20,7 @@
 
         <router-link 
           to="/" 
-          class="px-5 py-2.5 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition flex items-center space-x-2 cursor-pointer shrink-0"
+          class="px-5 py-2.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition flex items-center space-x-2 cursor-pointer shrink-0"
         >
           <ArrowLeft class="w-4 h-4" />
           <span>Return to Home</span>
@@ -33,26 +33,26 @@
     <div class="max-w-[1600px] w-full mx-auto px-4 sm:px-8 mt-8 space-y-8">
       
       <!-- 1. SMTP Server Status & Configuration Inspector -->
-      <div class="p-6 rounded-3xl bg-white border-2 border-slate-200 shadow-md">
+      <div class="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
           <div>
-            <span class="text-xs font-black uppercase tracking-wider text-amber-800">Server Diagnostics</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-blue-900">Server Diagnostics</span>
             <h2 class="text-lg font-black text-[#0c2340] font-serif mt-0.5">Current SMTP Configuration</h2>
           </div>
 
           <div class="flex items-center space-x-2.5">
             <span 
-              :class="smtpConfig.enabled ? 'bg-emerald-100 text-emerald-900 border-emerald-300' : 'bg-amber-100 text-amber-900 border-amber-300'"
-              class="px-3.5 py-1.5 rounded-xl text-xs font-black uppercase border flex items-center space-x-1.5 shadow-xs"
+              :class="smtpConfig.enabled ? 'bg-emerald-100 text-emerald-900 border-emerald-300' : 'bg-blue-50 text-blue-950 border-blue-200'"
+              class="px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase border flex items-center space-x-1.5 shadow-2xs"
             >
-              <span :class="smtpConfig.enabled ? 'bg-emerald-500' : 'bg-amber-500'" class="w-2 h-2 rounded-full animate-pulse"></span>
+              <span :class="smtpConfig.enabled ? 'bg-emerald-500' : 'bg-blue-500'" class="w-2 h-2 rounded-full animate-pulse"></span>
               <span>{{ smtpConfig.enabled ? 'Live Outbound Mode (Active)' : 'Simulation Mode (Safe Preview & Audit)' }}</span>
             </span>
 
             <button 
               @click="fetchConfig" 
               :disabled="loadingConfig"
-              class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center space-x-1.5 cursor-pointer"
+              class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center space-x-1.5 cursor-pointer"
             >
               <RefreshCw :class="{'animate-spin': loadingConfig}" class="w-3.5 h-3.5" />
               <span>Refresh</span>
@@ -94,9 +94,9 @@
         
         <!-- Left: Dispatch Controller (5 cols) -->
         <div class="lg:col-span-5 space-y-6">
-          <div class="p-6 sm:p-7 rounded-3xl bg-white border-2 border-slate-200 shadow-md space-y-5">
+          <div class="p-6 sm:p-7 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-5">
             <div>
-              <span class="text-xs font-black uppercase tracking-wider text-amber-800">Dispatch Controls</span>
+              <span class="text-xs font-bold uppercase tracking-wider text-blue-900">Dispatch Controls</span>
               <h2 class="text-lg font-black text-[#0c2340] font-serif mt-0.5">Trigger Email Dispatch</h2>
               <p class="text-xs text-slate-500">Select an official institutional email template to test</p>
             </div>
@@ -109,49 +109,49 @@
                 <button 
                   type="button" 
                   @click="testForm.type = 'registration'"
-                  :class="testForm.type === 'registration' ? 'bg-[#0c2340] text-amber-400 border-amber-400' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'"
-                  class="p-3.5 rounded-2xl border-2 text-left text-xs font-bold transition flex items-center justify-between cursor-pointer shadow-xs"
+                  :class="testForm.type === 'registration' ? 'bg-blue-900 text-white border-blue-900 shadow-xs' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'"
+                  class="p-3.5 rounded-2xl border text-left text-xs font-semibold transition flex items-center justify-between cursor-pointer"
                 >
                   <div class="flex items-center space-x-2.5">
-                    <UserPlus class="w-4 h-4 text-amber-400" />
+                    <UserPlus class="w-4 h-4" :class="testForm.type === 'registration' ? 'text-blue-200' : 'text-blue-900'" />
                     <div>
-                      <div class="font-black">1. Applicant Registration Received</div>
-                      <div class="text-[11px] opacity-75 font-normal">Application number, username & upload steps</div>
+                      <div class="font-bold">1. Applicant Registration Received</div>
+                      <div class="text-[11px] opacity-80 font-normal">Application number, username & upload steps</div>
                     </div>
                   </div>
-                  <CheckCircle v-if="testForm.type === 'registration'" class="w-4 h-4 text-amber-400" />
+                  <CheckCircle v-if="testForm.type === 'registration'" class="w-4 h-4 text-blue-200" />
                 </button>
 
                 <button 
                   type="button" 
                   @click="testForm.type = 'approval'"
-                  :class="testForm.type === 'approval' ? 'bg-[#0c2340] text-amber-400 border-amber-400' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'"
-                  class="p-3.5 rounded-2xl border-2 text-left text-xs font-bold transition flex items-center justify-between cursor-pointer shadow-xs"
+                  :class="testForm.type === 'approval' ? 'bg-blue-900 text-white border-blue-900 shadow-xs' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'"
+                  class="p-3.5 rounded-2xl border text-left text-xs font-semibold transition flex items-center justify-between cursor-pointer"
                 >
                   <div class="flex items-center space-x-2.5">
-                    <CheckCircle class="w-4 h-4 text-emerald-400" />
+                    <CheckCircle class="w-4 h-4" :class="testForm.type === 'approval' ? 'text-emerald-300' : 'text-emerald-600'" />
                     <div>
-                      <div class="font-black">2. Registrar Evaluation & Approval</div>
-                      <div class="text-[11px] opacity-75 font-normal">Approved status, Student ID & assessment slip</div>
+                      <div class="font-bold">2. Registrar Evaluation & Approval</div>
+                      <div class="text-[11px] opacity-80 font-normal">Approved status, Student ID & assessment slip</div>
                     </div>
                   </div>
-                  <CheckCircle v-if="testForm.type === 'approval'" class="w-4 h-4 text-amber-400" />
+                  <CheckCircle v-if="testForm.type === 'approval'" class="w-4 h-4 text-blue-200" />
                 </button>
 
                 <button 
                   type="button" 
                   @click="testForm.type = 'enrollment'"
-                  :class="testForm.type === 'enrollment' ? 'bg-[#0c2340] text-amber-400 border-amber-400' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'"
-                  class="p-3.5 rounded-2xl border-2 text-left text-xs font-bold transition flex items-center justify-between cursor-pointer shadow-xs"
+                  :class="testForm.type === 'enrollment' ? 'bg-blue-900 text-white border-blue-900 shadow-xs' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'"
+                  class="p-3.5 rounded-2xl border text-left text-xs font-semibold transition flex items-center justify-between cursor-pointer"
                 >
                   <div class="flex items-center space-x-2.5">
-                    <GraduationCap class="w-4 h-4 text-blue-400" />
+                    <GraduationCap class="w-4 h-4" :class="testForm.type === 'enrollment' ? 'text-blue-200' : 'text-blue-900'" />
                     <div>
-                      <div class="font-black">3. Treasury Official Enrollment & COR</div>
-                      <div class="text-[11px] opacity-75 font-normal">Official COR, OR number & permanent portal login</div>
+                      <div class="font-bold">3. Treasury Official Enrollment & COR</div>
+                      <div class="text-[11px] opacity-80 font-normal">Official COR, OR number & permanent portal login</div>
                     </div>
                   </div>
-                  <CheckCircle v-if="testForm.type === 'enrollment'" class="w-4 h-4 text-amber-400" />
+                  <CheckCircle v-if="testForm.type === 'enrollment'" class="w-4 h-4 text-blue-200" />
                 </button>
 
               </div>
@@ -165,7 +165,7 @@
                   v-model="testForm.recipient_email" 
                   type="email" 
                   placeholder="e.g. your_email@gmail.com, user@yahoo.com" 
-                  class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border-2 border-slate-200 text-sm font-medium text-slate-900 focus:outline-none focus:border-blue-900 transition"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-900 focus:outline-none focus:border-blue-900 transition"
                 />
                 <span class="text-[10px] text-slate-500 mt-0.5 block">Accepts any email provider (Gmail, Yahoo, Outlook, custom school domain)</span>
               </div>
@@ -176,7 +176,7 @@
                   <input 
                     v-model="testForm.first_name" 
                     type="text" 
-                    class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border-2 border-slate-200 text-sm font-medium text-slate-900 focus:outline-none focus:border-blue-900 transition"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-900 focus:outline-none focus:border-blue-900 transition"
                   />
                 </div>
                 <div>
@@ -184,7 +184,7 @@
                   <input 
                     v-model="testForm.last_name" 
                     type="text" 
-                    class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border-2 border-slate-200 text-sm font-medium text-slate-900 focus:outline-none focus:border-blue-900 transition"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-900 focus:outline-none focus:border-blue-900 transition"
                   />
                 </div>
               </div>
@@ -195,11 +195,11 @@
               type="button" 
               @click="triggerDispatch" 
               :disabled="sendingMail"
-              class="w-full py-3.5 px-4 rounded-xl text-xs sm:text-sm font-black bg-[#0c2340] hover:bg-blue-900 disabled:opacity-50 text-amber-400 shadow-lg shadow-blue-950/20 transition flex items-center justify-center space-x-2 cursor-pointer border-2 border-amber-400"
+              class="w-full py-3.5 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-blue-900 hover:bg-blue-800 disabled:opacity-50 text-white shadow-md transition flex items-center justify-center space-x-2 cursor-pointer"
             >
-              <span v-if="sendingMail" class="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></span>
+              <span v-if="sendingMail" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               <span v-else class="flex items-center space-x-2">
-                <Send class="w-4 h-4 text-amber-400" />
+                <Send class="w-4 h-4 text-white" />
                 <span>Dispatch Email Test</span>
               </span>
             </button>
@@ -219,26 +219,26 @@
 
         <!-- Right: Live Email Visual Preview (7 cols) -->
         <div class="lg:col-span-7 space-y-6">
-          <div class="p-6 sm:p-7 rounded-3xl bg-white border-2 border-slate-200 shadow-md space-y-4">
+          <div class="p-6 sm:p-7 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
-                <span class="text-xs font-black uppercase tracking-wider text-blue-900">Email Canvas</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-blue-900">Email Canvas</span>
                 <h2 class="text-lg font-black text-[#0c2340] font-serif mt-0.5">Live Rendered Email Preview</h2>
               </div>
-              <span class="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+              <span class="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
                 To: {{ testForm.recipient_email || 'recipient@domain.com' }}
               </span>
             </div>
 
             <!-- Email Mock Browser Frame -->
-            <div class="rounded-2xl border-2 border-slate-300 overflow-hidden shadow-inner bg-slate-50">
+            <div class="rounded-2xl border border-slate-300 overflow-hidden shadow-inner bg-slate-50">
               
               <!-- Mock Email Client Bar -->
               <div class="bg-slate-200 px-4 py-2.5 border-b border-slate-300 flex items-center justify-between text-xs text-slate-700 font-medium">
                 <div class="flex items-center space-x-2">
                   <div class="flex space-x-1">
                     <span class="w-2.5 h-2.5 rounded-full bg-rose-400 inline-block"></span>
-                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-slate-400 inline-block"></span>
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span>
                   </div>
                   <span class="font-bold ml-2">Subject:</span>
@@ -252,9 +252,9 @@
                 <div class="max-w-[560px] mx-auto bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden text-slate-800">
                   
                   <!-- Email Header Banner -->
-                  <div class="bg-gradient-to-br from-[#0c2340] to-[#163860] p-6 text-center text-white border-b-4 border-amber-500">
-                    <h3 class="font-serif font-black text-lg sm:text-xl tracking-wide">JJKINGS BIRINGAN SCHOOL</h3>
-                    <p class="text-amber-300 text-[10px] font-bold uppercase tracking-wider mt-1">Junior & Senior High School (DepEd ID: 405621)</p>
+                  <div class="bg-gradient-to-br from-[#0c2340] to-[#163860] p-6 text-center text-white border-b-4 border-blue-900">
+                    <h3 class="font-serif font-black text-lg sm:text-xl tracking-wide">BIRINGAN SCIENCE & LEADERSHIP ACADEMY</h3>
+                    <p class="text-blue-200 text-[10px] font-bold uppercase tracking-wider mt-1">Junior & Senior High School • "Innovating for the Nation" (DepEd ID: 405621)</p>
                   </div>
 
                   <!-- Email Content Container -->
@@ -262,11 +262,11 @@
                     
                     <!-- Template 1: Registration -->
                     <template v-if="testForm.type === 'registration'">
-                      <h4 class="text-base font-black text-[#0c2340] font-serif">Welcome to JJKINGS Biringan School!</h4>
+                      <h4 class="text-base font-black text-[#0c2340] font-serif">Welcome to Biringan Science and Leadership Academy!</h4>
                       <p>Dear <strong>{{ testForm.first_name }} {{ testForm.last_name }}</strong>,</p>
                       <p>Your temporary admission account has been successfully created for <strong>School Year 2026–2027</strong>.</p>
                       
-                      <div class="p-4 rounded-xl bg-slate-50 border-2 border-slate-200 space-y-1.5 font-sans">
+                      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 font-sans">
                         <div class="flex justify-between">
                           <span class="text-slate-500">Application Reference No:</span>
                           <span class="font-mono font-bold text-[#0c2340]">ADM-2026-9999</span>
@@ -277,7 +277,7 @@
                         </div>
                         <div class="flex justify-between">
                           <span class="text-slate-500">Temporary Username:</span>
-                          <span class="font-mono font-bold text-amber-700">juandelacruz123</span>
+                          <span class="font-mono font-bold text-blue-900">juandelacruz123</span>
                         </div>
                       </div>
 
@@ -290,7 +290,7 @@
                       </ol>
 
                       <div class="pt-4">
-                        <div class="inline-block px-5 py-3 rounded-xl bg-[#0c2340] text-amber-400 font-black text-xs shadow-md">
+                        <div class="inline-block px-5 py-3 rounded-xl bg-blue-900 text-white font-bold text-xs shadow-xs">
                           Access Admission Dashboard &rarr;
                         </div>
                       </div>
@@ -354,7 +354,7 @@
                       </div>
 
                       <div class="pt-4">
-                        <div class="inline-block px-5 py-3 rounded-xl bg-[#0c2340] text-amber-400 font-black text-xs shadow-md">
+                        <div class="inline-block px-5 py-3 rounded-xl bg-blue-900 text-white font-bold text-xs shadow-xs">
                           Sign In to Student Portal &rarr;
                         </div>
                       </div>
@@ -363,8 +363,8 @@
                   </div>
 
                   <!-- Email Footer -->
-                  <div class="bg-slate-900 p-4 text-center text-[10px] text-slate-400 space-y-1">
-                    <p class="font-bold text-slate-300">JJKINGS Biringan School Main Campus</p>
+                  <div class="bg-[#0c2340] p-4 text-center text-[10px] text-slate-400 space-y-1">
+                    <p class="font-bold text-slate-300">Biringan Science and Leadership Academy (BSLA) Main Campus</p>
                     <p>Academic Boulevard, Biringan City, Samar • Tel: (055) 888-7766</p>
                   </div>
 
@@ -378,15 +378,15 @@
       </div>
 
       <!-- 3. Recent SMTP Audit & Dispatch Logs -->
-      <div class="p-6 sm:p-7 rounded-3xl bg-white border-2 border-slate-200 shadow-md space-y-4">
+      <div class="p-6 sm:p-7 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
         <div class="flex items-center justify-between">
           <div>
-            <span class="text-xs font-black uppercase tracking-wider text-amber-800">Delivery Audit</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-blue-900">Delivery Audit</span>
             <h2 class="text-lg font-black text-[#0c2340] font-serif mt-0.5">Recent Email Dispatch Activity Logs</h2>
           </div>
           <button 
             @click="fetchConfig" 
-            class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
           >
             Refresh Logs
           </button>
@@ -448,7 +448,7 @@ const smtpConfig = ref({
   encryption: 'tls',
   username: '',
   password_set: false,
-  from_email: 'admissions@jjkingsbiringan.edu.ph'
+  from_email: 'admissions@bsla.edu.ph'
 });
 
 const recentLogs = ref([]);
@@ -466,13 +466,13 @@ const testForm = ref({
 const previewSubject = computed(() => {
   switch (testForm.value.type) {
     case 'registration':
-      return 'Admission Application Received: ADM-2026-9999 - JJKINGS Biringan School';
+      return 'Admission Application Received: ADM-2026-9999 - Biringan Science & Leadership Academy';
     case 'approval':
-      return 'Admission Approved & Assessment Ready - JJKINGS Biringan School';
+      return 'Admission Approved & Assessment Ready - BSLA Admissions';
     case 'enrollment':
-      return 'Official Certificate of Registration (COR) - JJKINGS Biringan School';
+      return 'Official Certificate of Registration (COR) - BSLA Admissions';
     default:
-      return 'SMTP Test Notification - JJKINGS Biringan School';
+      return 'SMTP Test Notification - BSLA Admissions';
   }
 });
 

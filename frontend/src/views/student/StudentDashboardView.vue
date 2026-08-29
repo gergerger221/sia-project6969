@@ -1,38 +1,38 @@
 <template>
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-    <!-- TOP WELCOME & SECTION BADGE HERO BANNER -->
-    <div class="no-print bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
-      <div class="relative z-10">
-        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 text-xs font-bold uppercase tracking-wider mb-3">
-          <Sparkles class="w-3.5 h-3.5 text-emerald-400" />
+    <!-- TOP WELCOME & SECTION BADGE HEADER -->
+    <div class="no-print bg-white rounded-2xl p-6 sm:p-7 border border-slate-200 shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div>
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold uppercase tracking-wider mb-2.5">
+          <Sparkles class="w-3.5 h-3.5 text-emerald-600" />
           <span>Student Portal • {{ dashboardData.enrollment?.school_year_name || 'SY 2026-2027' }}</span>
         </div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
           Welcome, {{ studentDisplayName }}!
         </h1>
-        <p class="text-xs text-slate-400 mt-1.5 flex flex-wrap items-center gap-2">
-          <span>Student ID: <strong class="text-emerald-400 font-mono font-bold">{{ studentDisplayId }}</strong></span>
-          <span class="text-slate-600">•</span>
-          <span>LRN: <strong class="text-slate-300 font-mono">{{ studentDisplayLrn }}</strong></span>
-          <span v-if="dashboardData.enrollment?.enrollment_no" class="text-slate-600">•</span>
-          <span v-if="dashboardData.enrollment?.enrollment_no">Enr Ref: <strong class="text-slate-400 font-mono">{{ dashboardData.enrollment.enrollment_no }}</strong></span>
+        <p class="text-xs text-slate-500 mt-1 flex flex-wrap items-center gap-2">
+          <span>Student ID: <strong class="text-emerald-700 font-mono font-bold">{{ studentDisplayId }}</strong></span>
+          <span class="text-slate-300">•</span>
+          <span>LRN: <strong class="text-slate-700 font-mono">{{ studentDisplayLrn }}</strong></span>
+          <span v-if="dashboardData.enrollment?.enrollment_no" class="text-slate-300">•</span>
+          <span v-if="dashboardData.enrollment?.enrollment_no">Enr Ref: <strong class="text-slate-600 font-mono">{{ dashboardData.enrollment.enrollment_no }}</strong></span>
         </p>
       </div>
 
       <!-- ASSIGNED SECTION & CLASSROOM BADGE -->
-      <div class="relative z-10 text-left md:text-right bg-slate-800/90 backdrop-blur-sm p-4 sm:p-5 rounded-2xl border border-slate-700/80 min-w-[240px] shadow-lg">
-        <div class="text-[10px] uppercase font-extrabold text-emerald-400 tracking-wider mb-1 flex items-center md:justify-end space-x-1">
-          <Layers class="w-3 h-3" />
+      <div class="text-left md:text-right bg-slate-50 p-4 sm:p-4.5 rounded-xl border border-slate-200 min-w-[240px] shrink-0">
+        <div class="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-0.5 flex items-center md:justify-end space-x-1">
+          <Layers class="w-3.5 h-3.5 text-emerald-600" />
           <span>Assigned Class Section</span>
         </div>
-        <div class="text-base font-extrabold text-white">
+        <div class="text-base font-bold text-slate-900">
           {{ dashboardData.enrollment?.section_name || 'Class Section Pending' }}
         </div>
-        <div class="text-xs text-emerald-300 font-semibold mt-0.5">
+        <div class="text-xs text-emerald-700 font-semibold mt-0.5">
           {{ dashboardData.enrollment?.grade_level_name || 'Grade Level' }}
           <span v-if="dashboardData.enrollment?.strand_code"> • {{ dashboardData.enrollment.strand_code }}</span>
         </div>
-        <div class="text-[11px] text-slate-400 mt-1.5 flex items-center md:justify-end space-x-1">
+        <div class="text-[11px] text-slate-500 mt-1 flex items-center md:justify-end space-x-1">
           <MapPin class="w-3.5 h-3.5 text-slate-400 shrink-0" />
           <span>{{ dashboardData.enrollment?.section_room || 'Designated Homeroom' }}</span>
         </div>
@@ -42,7 +42,7 @@
     <!-- MAIN DASHBOARD CONTENT GRID -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- LEFT COLUMN: ENROLLED SUBJECTS & TIMETABLE (2 Cols on lg) -->
-      <div class="lg:col-span-2 space-y-6">
+      <div v-show="activeTab === 'all' || activeTab === 'schedule'" class="space-y-6" :class="activeTab === 'schedule' ? 'lg:col-span-3' : 'lg:col-span-2'">
         <div class="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm space-y-5">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
@@ -128,9 +128,12 @@
       </div>
 
       <!-- RIGHT COLUMN: FINANCIAL SOA, EVENTS CALENDAR & DRS (1 Col on lg) -->
-      <div class="space-y-6">
+      <div 
+        class="space-y-6" 
+        :class="activeTab === 'schedule' ? 'hidden' : (activeTab !== 'all' ? 'lg:col-span-3' : 'lg:col-span-1')"
+      >
         <!-- STATEMENT OF ACCOUNT (SOA) -->
-        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm text-xs space-y-4">
+        <div v-show="activeTab === 'all' || activeTab === 'account'" class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm text-xs space-y-4">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <h2 class="text-base font-bold text-slate-900">Statement of Account</h2>
             <span class="px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase" :class="getPaymentBadge(dashboardData.enrollment?.payment_status)">
@@ -181,7 +184,7 @@
         </div>
 
         <!-- SCHOOL EVENTS & ACADEMIC CALENDAR -->
-        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm text-xs space-y-4">
+        <div v-show="activeTab === 'all' || activeTab === 'events'" class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm text-xs space-y-4">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <h2 class="text-base font-bold text-slate-900 flex items-center space-x-1.5">
               <Calendar class="w-4 h-4 text-purple-700" />
@@ -219,81 +222,93 @@
         </div>
 
         <!-- OFFICIAL DOCUMENT REQUESTS (DRS) -->
-        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm text-xs space-y-4">
+        <div v-show="activeTab === 'all' || activeTab === 'records'" class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm text-xs space-y-4">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <h2 class="text-base font-bold text-slate-900 flex items-center space-x-1.5">
-              <FileText class="w-4 h-4 text-cyan-700" />
+              <FileText class="w-4 h-4 text-blue-900" />
               <span>Official Document Requests</span>
             </h2>
             <button 
-              @click="showStudentDocModal = true" 
-              class="px-2.5 py-1 rounded-lg bg-cyan-50 hover:bg-cyan-100 text-cyan-700 font-bold text-[10px] border border-cyan-200 transition"
+              @click="showStudentDocModal = true"
+              class="px-3.5 py-1.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white font-semibold text-[11px] transition shadow-xs cursor-pointer"
             >
-              + Request Certificate
+              + Request Document
             </button>
           </div>
 
-          <!-- Student Request List -->
-          <div class="space-y-2">
+          <!-- Requests List -->
+          <div class="space-y-2.5">
             <div 
               v-for="dr in myDocRequests" 
-              :key="dr.id"
-              class="p-3 rounded-2xl border border-slate-200 bg-slate-50/70 flex items-center justify-between text-xs"
+              :key="dr.id" 
+              class="p-3 rounded-2xl border border-slate-200 bg-slate-50/70 flex items-center justify-between text-xs hover:bg-slate-50 transition"
             >
               <div>
                 <div class="font-bold text-slate-900">{{ dr.document_type }}</div>
-                <div class="text-[10px] text-slate-400 font-mono">{{ dr.control_number }} • {{ dr.purpose }}</div>
+                <div class="text-[10px] text-slate-400 font-mono">Control #: {{ dr.control_number || 'Pending' }} • {{ dr.copies }} Copy/Copies</div>
+                <div v-if="dr.purpose" class="text-[10px] text-slate-500 italic mt-0.5">Purpose: {{ dr.purpose }}</div>
               </div>
-              <span class="px-2.5 py-0.5 rounded text-[10px] font-bold" :class="getDRSBadge(dr.status)">
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold" :class="getDRSBadge(dr.status)">
                 {{ dr.status }}
               </span>
             </div>
 
-            <div v-if="myDocRequests.length === 0" class="text-center py-4 text-slate-400 text-xs italic">
-              No document requests on file.
+            <div v-if="myDocRequests.length === 0" class="text-center py-6 text-slate-400 text-xs">
+              You have no active document requests.
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- MODAL: STUDENT REQUEST CERTIFICATE -->
-    <div v-if="showStudentDocModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in">
-      <div class="bg-white rounded-3xl p-6 max-w-md w-full border border-slate-200 shadow-2xl space-y-4 text-xs">
+    <!-- MODAL: SUBMIT NEW DOCUMENT REQUEST -->
+    <div v-if="showStudentDocModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 text-xs space-y-4">
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 class="font-extrabold text-sm text-slate-900">Request Official Certificate</h3>
-          <button @click="showStudentDocModal = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+          <div>
+            <h3 class="text-base font-extrabold text-slate-900">Request Official Document</h3>
+            <p class="text-[11px] text-slate-500">Submitted directly to the School Records Custodian.</p>
+          </div>
+          <button @click="showStudentDocModal = false" class="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold">✕</button>
         </div>
 
         <form @submit.prevent="submitStudentDocRequest" class="space-y-3">
           <div>
-            <label class="block font-bold text-slate-700 mb-1">Document / Certificate Required *</label>
+            <label class="block font-semibold text-slate-700 mb-1">Document Type *</label>
             <select v-model="studentDocForm.document_type" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white" required>
-              <option value="Certificate of Enrollment">Certificate of Enrollment & Registration</option>
+              <option value="Certificate of Enrollment">Certificate of Enrollment (COE)</option>
               <option value="Good Moral Character">Certificate of Good Moral Character</option>
-              <option value="GWA and Class Ranking">Certificate of GWA & Class Ranking (DOST/CHED)</option>
-              <option value="Certificate of Completion">Certificate of Completion / Moving Up</option>
-              <option value="Certified True Copy SF9">Certified True Copy (CTC) SF9 Report Card</option>
-              <option value="Certified True Copy SF10">Certified True Copy (CTC) SF10 Transcript</option>
+              <option value="Certified True Copy of SF9 / Form 138">Certified True Copy of SF9 (Report Card)</option>
+              <option value="Certificate of Academic Ranking">Certificate of Academic Ranking</option>
             </select>
           </div>
 
           <div>
-            <label class="block font-bold text-slate-700 mb-1">Purpose / Intended Use *</label>
+            <label class="block font-semibold text-slate-700 mb-1">Purpose / Intended Use *</label>
             <input 
               v-model="studentDocForm.purpose" 
               type="text" 
-              placeholder="e.g. Scholarship Application / Visa Requirement / SSS"
+              placeholder="e.g. Scholarship Application / Passport Renewal / Transfer" 
               class="w-full px-3 py-2 rounded-xl border border-slate-300"
-              required
+              required 
             />
           </div>
 
-          <div class="pt-3 border-t border-slate-100 flex items-center justify-end space-x-2">
-            <button type="button" @click="showStudentDocModal = false" class="px-4 py-2 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">
-              Cancel
-            </button>
-            <button type="submit" class="px-5 py-2 rounded-xl font-bold bg-cyan-600 hover:bg-cyan-500 text-white shadow-md">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Number of Copies *</label>
+            <input 
+              v-model.number="studentDocForm.copies" 
+              type="number" 
+              min="1" 
+              max="5" 
+              class="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono"
+              required 
+            />
+          </div>
+
+          <div class="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
+            <button type="button" @click="showStudentDocModal = false" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold cursor-pointer">Cancel</button>
+            <button type="submit" class="px-5 py-2.5 rounded-xl font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs transition cursor-pointer">
               Submit Request
             </button>
           </div>
@@ -304,9 +319,19 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { Calendar, MapPin, FileText, Clock, User, BookOpen, Layers, Sparkles } from 'lucide-vue-next';
+import { ref, computed, watch, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { Calendar, MapPin, FileText, Clock, User, BookOpen, Layers, Sparkles, CreditCard } from 'lucide-vue-next';
 import api from '../../services/api';
+
+const route = useRoute();
+const activeTab = ref('all');
+
+watch(() => route.query.tab, (tab) => {
+  if (tab && ['all', 'schedule', 'account', 'events', 'records'].includes(tab)) {
+    activeTab.value = tab;
+  }
+}, { immediate: true });
 
 const dashboardData = ref({
   user: null,

@@ -1,33 +1,36 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Top Header Banner -->
-    <div class="no-print bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div class="no-print bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-2xs mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
       <div>
-        <div class="flex items-center space-x-3">
-          <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-950 text-emerald-400 border border-emerald-500/30">
-            Application No: {{ application?.application_no || 'Loading...' }}
-          </span>
-          <span :class="statusBadgeClass" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+        <div class="flex items-center space-x-2.5 flex-wrap gap-y-2">
+          <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-blue-50 text-blue-950 border border-blue-200 shadow-2xs">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+            <span>Application No: {{ application?.application_no || 'Loading...' }}</span>
+          </div>
+          <span :class="statusBadgeClass" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-2xs">
             {{ application?.status || 'Pending' }}
           </span>
+          <span class="text-xs text-slate-400 font-medium hidden sm:inline">•</span>
+          <span class="text-xs text-slate-500 font-medium hidden sm:inline">S.Y. 2026-2027</span>
         </div>
-        <h1 class="text-2xl sm:text-3xl font-black text-white mt-2 tracking-tight">JJKINGS Biringan School Admission & Enrollment Wizard</h1>
-        <p class="text-xs text-slate-400 mt-1">
-          Complete the steps below, upload your DepEd credentials, settle your downpayment, and secure your official Certificate of Registration.
+        <h1 class="text-2xl sm:text-3xl font-black text-[#0c2340] mt-2 tracking-tight font-serif">BSLA Admission & Enrollment Portal</h1>
+        <p class="text-xs text-slate-600 mt-1 max-w-2xl">
+          Complete the required demographic information, select your academic strand, upload your DepEd credentials, and finalize your enrollment.
         </p>
       </div>
 
-      <div v-if="application?.status === 'Enrolled'" class="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 text-left shrink-0">
-        <div class="text-[10px] uppercase font-bold text-emerald-400">Enrollment Completed!</div>
-        <div class="text-sm font-bold text-white mt-0.5">Permanent ID: {{ application?.student_no || application?.assessment_info?.student_number || 'Generated' }}</div>
-        <router-link to="/student" class="inline-block mt-2 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition">
+      <div v-if="application?.status === 'Enrolled'" class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-left shrink-0 shadow-2xs">
+        <div class="text-[10px] uppercase font-bold text-emerald-800 tracking-wider">Enrollment Completed!</div>
+        <div class="text-sm font-bold text-slate-900 mt-0.5">Permanent ID: <span class="font-mono text-emerald-700">{{ application?.student_no || application?.assessment_info?.student_number || 'Generated' }}</span></div>
+        <router-link to="/student" class="inline-block mt-2 px-4 py-1.5 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-600 text-white transition shadow-2xs">
           Go to Student Portal →
         </router-link>
       </div>
     </div>
 
     <!-- OFFICIALLY ENROLLED CELEBRATORY BANNER -->
-    <div v-if="application?.status === 'Enrolled' || application?.assessment_info?.enrollment_status === 'Officially Enrolled'" class="no-print p-6 rounded-3xl bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 border-2 border-emerald-500 text-white shadow-2xl mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
+    <div v-if="application?.status === 'Enrolled' || application?.assessment_info?.enrollment_status === 'Officially Enrolled'" class="no-print p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 border-2 border-emerald-500 text-white shadow-2xl mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
       <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div class="flex items-start space-x-4">
           <div class="w-14 h-14 rounded-2xl bg-emerald-500 text-slate-950 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/30">
@@ -71,9 +74,9 @@
     </div>
 
     <!-- DEFICIENT DOCUMENTS ALERT BANNER -->
-    <div v-if="deficientDocs.length > 0" class="no-print p-4 rounded-2xl bg-rose-50 border-2 border-rose-300 text-rose-950 text-xs mb-6 shadow-sm flex items-center justify-between gap-4">
-      <div class="flex items-center space-x-3">
-        <div class="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+    <div v-if="deficientDocs.length > 0" class="no-print p-4 sm:p-5 rounded-2xl bg-rose-50 border-2 border-rose-300 text-rose-950 text-xs mb-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div class="flex items-start space-x-3.5">
+        <div class="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
           <AlertTriangle class="w-5 h-5 animate-pulse" />
         </div>
         <div>
@@ -90,308 +93,367 @@
     </div>
 
     <!-- Alert / Notifications (Hidden in Print) -->
-    <div v-if="successMessage" class="no-print p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500 text-emerald-300 text-xs mb-6 flex items-center justify-between">
+    <div v-if="successMessage" class="no-print p-4 rounded-2xl bg-emerald-950/90 border border-emerald-500 text-emerald-300 text-xs mb-6 flex items-center justify-between shadow-md">
       <div class="flex items-center space-x-2">
-        <CheckCircle class="w-4 h-4 text-emerald-400" />
+        <CheckCircle class="w-4 h-4 text-emerald-400 shrink-0" />
         <span>{{ successMessage }}</span>
       </div>
-      <button @click="successMessage = ''" class="text-emerald-400 hover:text-white font-bold">✕</button>
+      <button @click="successMessage = ''" class="text-emerald-400 hover:text-white font-bold text-xs cursor-pointer">✕</button>
     </div>
 
-    <div v-if="errorMessage" class="no-print p-4 rounded-2xl bg-rose-950/80 border border-rose-800 text-rose-300 text-xs mb-6 flex items-center justify-between">
+    <div v-if="errorMessage" class="no-print p-4 rounded-2xl bg-rose-950/90 border border-rose-800 text-rose-300 text-xs mb-6 flex items-center justify-between shadow-md">
       <div class="flex items-center space-x-2">
-        <AlertCircle class="w-4 h-4 text-rose-400" />
+        <AlertCircle class="w-4 h-4 text-rose-400 shrink-0" />
         <span>{{ errorMessage }}</span>
       </div>
-      <button @click="errorMessage = ''" class="text-rose-400 hover:text-white font-bold">✕</button>
+      <button @click="errorMessage = ''" class="text-rose-400 hover:text-white font-bold text-xs cursor-pointer">✕</button>
     </div>
 
-    <!-- MAIN RESPONSIVE TWO-COLUMN WIZARD LAYOUT -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <!-- ========================================================================= -->
+    <!-- VIEW A: ADMISSION APPLICATION WIZARD (Steps 1 to 5)                       -->
+    <!-- ========================================================================= -->
+    <div v-if="currentApplicantTab === 'wizard'">
+      <!-- HORIZONTAL PROGRESS STEPPER BAR (Full-Width, Responsive & Intuitive) -->
+      <div class="no-print bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-2xs mb-8">
+        <div class="flex items-center justify-between pb-3.5 mb-4 border-b border-slate-100 flex-wrap gap-2">
+          <div class="flex items-center space-x-2">
+            <div class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
+            <span class="text-xs font-black uppercase tracking-wider text-slate-900">Admission Process Stepper</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-blue-50 text-blue-950 border border-blue-200">
+              Step {{ activeStep }} of 5: {{ steps.find(s => s.id === activeStep)?.title }}
+            </span>
+          </div>
+        </div>
+
+      <!-- Linear Step Nodes Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+        <button
+          v-for="st in steps"
+          :key="st.id"
+          type="button"
+          @click="selectStep(st.id)"
+          :class="[
+            'p-3 sm:p-3.5 rounded-2xl text-left transition-all border flex items-center space-x-3 group',
+            activeStep === st.id 
+              ? 'bg-[#08182b] text-white border-blue-900 shadow-md ring-2 ring-blue-900/20 cursor-default' 
+              : isStepDone(st.id) 
+                ? 'bg-emerald-50/70 hover:bg-emerald-100/70 border-emerald-300 text-slate-900 cursor-pointer' 
+                : 'bg-slate-50 border-slate-200 text-slate-400 cursor-default opacity-80'
+          ]"
+        >
+          <!-- Step Icon or Number -->
+          <div 
+            :class="[
+              'w-8 h-8 rounded-xl flex items-center justify-center font-extrabold text-xs shrink-0 transition',
+              activeStep === st.id 
+                ? 'bg-blue-600 text-white shadow-sm' 
+                : isStepDone(st.id) 
+                  ? 'bg-emerald-500 text-white shadow-xs' 
+                  : 'bg-slate-200 text-slate-500'
+            ]"
+          >
+            <Check v-if="isStepDone(st.id) && activeStep !== st.id" class="w-4 h-4 stroke-[3]" />
+            <Lock v-else-if="!canAccessStep(st.id)" class="w-3.5 h-3.5" />
+            <span v-else>{{ st.id }}</span>
+          </div>
+
+          <!-- Step Info -->
+          <div class="min-w-0 flex-1">
+            <div class="font-bold text-xs truncate leading-tight" :class="activeStep === st.id ? 'text-white' : 'text-slate-800'">
+              {{ st.title }}
+            </div>
+            <div class="text-[10px] truncate leading-tight mt-0.5" :class="activeStep === st.id ? 'text-blue-200' : (isStepDone(st.id) ? 'text-emerald-700 font-semibold' : 'text-slate-400')">
+              {{ isStepDone(st.id) && activeStep !== st.id ? '✓ Completed (Click to Edit)' : (activeStep === st.id ? 'Currently Active' : 'Upcoming') }}
+            </div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- DOCUMENT REQUIREMENTS GUIDE MODAL / OVERLAY (When tab=checklist is clicked in Sidebar) -->
+    <div v-if="route.query.tab === 'checklist'" class="no-print bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-lg mb-8 animate-in fade-in duration-200">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-900 border border-blue-200 flex items-center justify-center font-bold">
+            <FileCheck class="w-5 h-5" />
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900">DepEd Admission Requirements Guide</h3>
+            <p class="text-xs text-slate-500">Official checklist of credentials required by the Registrar for S.Y. 2026-2027.</p>
+          </div>
+        </div>
+        <router-link to="/admission" class="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">
+          ✕ Close Guide
+        </router-link>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div v-for="req in requiredDocsList" :key="req.type" class="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 flex items-start space-x-3.5">
+          <div class="w-8 h-8 rounded-xl bg-blue-100 text-blue-900 flex items-center justify-center shrink-0 mt-0.5">
+            <FileText class="w-4 h-4" />
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h4 class="font-bold text-xs text-slate-900">{{ req.type }}</h4>
+              <span v-if="req.required" class="px-2 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-900">Required</span>
+            </div>
+            <p class="text-[11px] text-slate-600 mt-0.5">{{ req.desc }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HELPDESK & HOTLINES CARD (When tab=hotlines is clicked in Sidebar) -->
+    <div v-if="route.query.tab === 'hotlines'" class="no-print bg-[#08182b] text-white rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl mb-8 animate-in fade-in duration-200">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-2xl bg-blue-950 text-blue-300 border border-blue-500/30 flex items-center justify-center font-bold">
+            <Phone class="w-5 h-5" />
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Admissions Helpdesk & Contact Center</h3>
+            <p class="text-xs text-slate-400">Direct communication lines for admission assistance and inquiries.</p>
+          </div>
+        </div>
+        <router-link to="/admission" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">
+          ✕ Close
+        </router-link>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
+          <div class="font-bold text-blue-300 text-xs uppercase font-mono">Admissions Office</div>
+          <div class="text-slate-200 font-bold text-sm">(055) 888-7766</div>
+          <div class="text-slate-400 text-[11px]">Mon–Fri, 8:00 AM – 5:00 PM</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
+          <div class="font-bold text-blue-300 text-xs uppercase font-mono">Mobile / SMS Support</div>
+          <div class="text-slate-200 font-bold text-sm">0917-111-0001</div>
+          <div class="text-slate-400 text-[11px]">Globe / TM SMS Inquiry Line</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
+          <div class="font-bold text-blue-300 text-xs uppercase font-mono">Admissions Email</div>
+          <div class="text-slate-200 font-bold text-sm">admissions@student.bsla.edu.ph</div>
+          <div class="text-slate-400 text-[11px]">Online document validation support</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN FULL-WIDTH WIZARD WORKSPACE -->
+    <main class="space-y-6">
       
-      <!-- LEFT SIDEBAR: STEP NAVIGATION & ADMISSION SUMMARY (4 cols on lg) -->
-      <aside class="no-print lg:col-span-4 space-y-5 lg:sticky lg:top-6">
-        <!-- Sidebar Step Stepper Card -->
-        <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4">
-          <!-- Stepper Header -->
-          <div class="border-b border-slate-100 pb-3.5">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-extrabold uppercase tracking-wider text-slate-900 flex items-center space-x-1.5">
-                <Activity class="w-4 h-4 text-emerald-600" />
-                <span>Admission Steps</span>
-              </span>
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold font-mono bg-emerald-100 text-emerald-900">
-                Step {{ activeStep }} of 5
-              </span>
-            </div>
-            <!-- Animated Progress Bar -->
-            <div class="w-full h-2 rounded-full bg-slate-100 mt-3 overflow-hidden">
-              <div 
-                class="h-full rounded-full bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 transition-all duration-500 shadow-sm"
-                :style="{ width: ((activeStep / 5) * 100) + '%' }"
-              ></div>
-            </div>
-          </div>
-
-          <!-- Step Lock Notice (If User Clicked A Locked Step) -->
-          <div v-if="stepLockNotice" class="p-3 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-start space-x-2 animate-in fade-in duration-200 shadow-sm">
-            <AlertCircle class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-            <div class="flex-1">
-              <span class="font-bold block text-amber-950">Step Locked:</span>
-              <span class="text-[11px] leading-tight text-amber-900">{{ stepLockNotice }}</span>
-            </div>
-            <button @click="stepLockNotice = ''" class="font-bold text-amber-700 hover:text-amber-950 text-xs">✕</button>
-          </div>
-
-          <!-- Vertical Step List -->
-          <div class="space-y-2">
-            <button 
-              v-for="st in steps" 
-              :key="st.id"
-              type="button"
-              @click="selectStep(st.id)"
-              :class="getSidebarStepClass(st.id)"
-              class="w-full p-3 rounded-2xl transition flex items-center justify-between text-left group"
-            >
-              <div class="flex items-center space-x-3 min-w-0">
-                <!-- Step Number / Status Icon -->
-                <div 
-                  class="w-8 h-8 rounded-xl flex items-center justify-center font-extrabold text-xs shrink-0 transition"
-                  :class="getSidebarIconClass(st.id)"
-                >
-                  <Check v-if="isStepDone(st.id) && activeStep !== st.id" class="w-4 h-4 text-emerald-600 stroke-[3]" />
-                  <Lock v-else-if="!canAccessStep(st.id)" class="w-3.5 h-3.5 text-slate-400" />
-                  <span v-else>{{ st.id }}</span>
-                </div>
-
-                <!-- Step Text -->
-                <div class="min-w-0 flex-1">
-                  <div class="font-bold text-xs truncate leading-tight" :class="activeStep === st.id ? 'text-white' : 'text-slate-800'">
-                    {{ st.title }}
-                  </div>
-                  <div class="text-[10px] truncate leading-tight mt-0.5" :class="activeStep === st.id ? 'text-emerald-300' : 'text-slate-400'">
-                    {{ getStepSubtitle(st.id) }}
-                  </div>
-                </div>
-              </div>
-
-              <!-- Right Arrow Indicator -->
-              <ChevronRight 
-                class="w-4 h-4 shrink-0 transition" 
-                :class="activeStep === st.id ? 'text-emerald-400 translate-x-0.5' : 'text-slate-300 group-hover:text-slate-500'" 
-              />
-            </button>
-          </div>
-        </div>
-
-        <!-- Mini Application Summary Widget -->
-        <div class="bg-slate-900 rounded-3xl p-5 border border-slate-800 text-white shadow-md text-xs space-y-3 font-mono">
-          <div class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider flex items-center justify-between border-b border-slate-800 pb-2">
-            <span>Application Summary</span>
-            <span class="w-2 h-2 rounded-full" :class="application?.status === 'Enrolled' ? 'bg-emerald-400' : 'bg-blue-400 animate-pulse'"></span>
-          </div>
-
-          <div class="space-y-2 text-[11px]">
-            <div class="flex justify-between">
-              <span class="text-slate-400">Reference No:</span>
-              <strong class="text-white font-bold">{{ application?.application_no || 'Pending' }}</strong>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-slate-400">Program:</span>
-              <strong class="text-emerald-300 font-bold">
-                {{ isStep2Completed && application?.grade_level_name ? (application.grade_level_name + (isSHS && application.strand_code ? ' (' + application.strand_code + ')' : '')) : 'Not Selected' }}
-              </strong>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-slate-400">Status:</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase" :class="statusBadgeClass">
-                {{ application?.status || 'Draft' }}
-              </span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-slate-400">School Year:</span>
-              <span class="text-slate-300">{{ application?.school_year_name || 'SY 2026-2027' }}</span>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <!-- RIGHT WORKSPACE: ACTIVE STEP FORM (8 cols on lg) -->
-      <main class="lg:col-span-8 space-y-6">
-        
-        <!-- STEP 1: PERSONAL & DEMOGRAPHIC DETAILS -->
-        <div v-if="activeStep === 1" class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
-          <div class="border-b border-slate-100 pb-4 mb-6">
-            <h2 class="text-lg font-bold text-slate-800">Step 1: Student Demographics & Learner Reference Number (LRN)</h2>
-            <p class="text-xs text-slate-500 mt-1">Please provide complete and accurate information matching your PSA Birth Certificate.</p>
-          </div>
-
+      <!-- STEP 1: PERSONAL & DEMOGRAPHIC DETAILS -->
+      <div v-if="activeStep === 1" class="space-y-6">
+          
           <form @submit.prevent="saveApplicationDetails(false)" class="space-y-6">
-            <!-- LRN & Basic Info -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">12-Digit DepEd LRN *</label>
-                <input 
-                  v-model="form.lrn" 
-                  type="text" 
-                  maxlength="12" 
-                  required 
-                  @keydown="blockNonNumeric($event)"
-                  @input="handleNumericInput('lrn', $event, 12)"
-                  placeholder="e.g. 102938475611" 
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-mono font-bold focus:ring-2 focus:ring-emerald-500" 
-                />
+
+            <!-- Card A: Learner Identification & LRN -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-5">
+              <div class="flex items-center space-x-3 pb-3 border-b border-slate-100">
+                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-900 flex items-center justify-center font-bold text-xs shrink-0 border border-blue-200">
+                  1A
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">Learner Identification & Contact</h3>
+                  <p class="text-[11px] text-slate-500">Official DepEd LRN and active mobile contact number for SMS updates.</p>
+                </div>
               </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Applicant Type *</label>
-                <select v-model="form.applicant_type" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white">
-                  <option value="New Student">New Student (Fresh Enrollee)</option>
-                  <option value="Transferee">Transferee from Other School</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Contact Mobile Number *</label>
-                <input 
-                  v-model="form.contact_number" 
-                  type="tel" 
-                  required 
-                  maxlength="11"
-                  @keydown="blockNonNumeric($event)"
-                  @input="handleNumericInput('contact_number', $event, 11)"
-                  placeholder="09171234567" 
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-mono" 
-                />
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">12-Digit DepEd LRN *</label>
+                  <input 
+                    v-model="form.lrn" 
+                    type="text" 
+                    maxlength="12" 
+                    required 
+                    @keydown="blockNonNumeric($event)"
+                    @input="handleNumericInput('lrn', $event, 12)"
+                    placeholder="e.g. 102938475611" 
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                  />
+                  <span class="text-[10px] text-slate-500 block mt-1">Found on Form 137 / 138 report card</span>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Applicant Type *</label>
+                  <select v-model="form.applicant_type" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition">
+                    <option value="New Student">New Student (Fresh Enrollee)</option>
+                    <option value="Transferee">Transferee from Other School</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Contact Mobile Number *</label>
+                  <input 
+                    v-model="form.contact_number" 
+                    type="tel" 
+                    required 
+                    maxlength="11"
+                    @keydown="blockNonNumeric($event)"
+                    @input="handleNumericInput('contact_number', $event, 11)"
+                    placeholder="09171234567" 
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                  />
+                  <span class="text-[10px] text-slate-500 block mt-1">11-digit mobile (e.g. 0917XXXXXXX)</span>
+                </div>
               </div>
             </div>
 
-            <!-- Full Name -->
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">First Name *</label>
-                <input 
-                  v-model="form.first_name" 
-                  type="text" 
-                  required 
-                  @keydown="blockNonAlphabetic($event)"
-                  @input="handleAlphabeticInput('first_name', $event)"
-                  placeholder="Given Name" 
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-medium" 
-                />
+            <!-- Card B: Student Personal Information & Residence -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-5">
+              <div class="flex items-center space-x-3 pb-3 border-b border-slate-100">
+                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-900 flex items-center justify-center font-bold text-xs shrink-0 border border-blue-200">
+                  1B
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">Student Personal & Demographic Details</h3>
+                  <p class="text-[11px] text-slate-500">Must strictly match the student's PSA Birth Certificate copy.</p>
+                </div>
               </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Middle Name</label>
-                <input 
-                  v-model="form.middle_name" 
-                  type="text" 
-                  @keydown="blockNonAlphabetic($event)"
-                  @input="handleAlphabeticInput('middle_name', $event)"
-                  placeholder="Middle Name" 
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-medium" 
-                />
+
+              <!-- Full Name Fields -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">First Name *</label>
+                  <input 
+                    v-model="form.first_name" 
+                    type="text" 
+                    required 
+                    @keydown="blockNonAlphabetic($event)"
+                    @input="handleAlphabeticInput('first_name', $event)"
+                    placeholder="Given Name" 
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Middle Name</label>
+                  <input 
+                    v-model="form.middle_name" 
+                    type="text" 
+                    @keydown="blockNonAlphabetic($event)"
+                    @input="handleAlphabeticInput('middle_name', $event)"
+                    placeholder="Middle Name" 
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Last Name *</label>
+                  <input 
+                    v-model="form.last_name" 
+                    type="text" 
+                    required 
+                    @keydown="blockNonAlphabetic($event)"
+                    @input="handleAlphabeticInput('last_name', $event)"
+                    placeholder="Family Name" 
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Suffix</label>
+                  <input 
+                    v-model="form.suffix" 
+                    type="text" 
+                    @keydown="blockNonAlphabetic($event)"
+                    @input="handleAlphabeticInput('suffix', $event)"
+                    placeholder="Jr., III (Optional)" 
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                  />
+                </div>
               </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Last Name *</label>
-                <input 
-                  v-model="form.last_name" 
-                  type="text" 
-                  required 
-                  @keydown="blockNonAlphabetic($event)"
-                  @input="handleAlphabeticInput('last_name', $event)"
-                  placeholder="Family Name" 
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-medium" 
-                />
+
+              <!-- Gender & Birth Details -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Biological Gender *</label>
+                  <select v-model="form.gender" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Date of Birth (Min 11 y/o) *</label>
+                  <input v-model="form.birthdate" type="date" :min="minBirthdate" :max="maxBirthdate" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Place of Birth *</label>
+                  <input v-model="form.birthplace" type="text" placeholder="City / Municipality" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" />
+                </div>
               </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Suffix</label>
-                <input 
-                  v-model="form.suffix" 
-                  type="text" 
-                  @keydown="blockNonAlphabetic($event)"
-                  @input="handleAlphabeticInput('suffix', $event)"
-                  placeholder="Jr., III (Optional)" 
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs" 
-                />
+
+              <!-- Address Fields -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Barangay *</label>
+                  <input v-model="form.address_barangay" type="text" required placeholder="e.g. Barangay 405" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">City / Municipality *</label>
+                  <input v-model="form.address_city" type="text" required placeholder="e.g. Biringan City" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Province *</label>
+                  <input v-model="form.address_province" type="text" required placeholder="e.g. Samar" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" />
+                </div>
               </div>
             </div>
 
-            <!-- Gender & Birth Details -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Biological Gender *</label>
-                <select v-model="form.gender" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white">
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
+            <!-- Card C: Parent / Guardian & Emergency Contact -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-5">
+              <div class="flex items-center space-x-3 pb-3 border-b border-slate-100">
+                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-900 flex items-center justify-center font-bold text-xs shrink-0 border border-blue-200">
+                  1C
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">Parent / Guardian & Emergency Information</h3>
+                  <p class="text-[11px] text-slate-500">Contact information for official school notifications and academic notices.</p>
+                </div>
               </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Date of Birth (Min 11 y/o) *</label>
-                <input v-model="form.birthdate" type="date" :min="minBirthdate" :max="maxBirthdate" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Place of Birth *</label>
-                <input v-model="form.birthplace" type="text" placeholder="City / Municipality" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs" />
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Parent / Guardian Full Name *</label>
+                  <input 
+                    v-model="form.guardian_name" 
+                    type="text" 
+                    required 
+                    @keydown="blockNonAlphabetic($event)"
+                    @input="handleAlphabeticInput('guardian_name', $event)"
+                    placeholder="Guardian's Name" 
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Relationship to Student *</label>
+                  <input 
+                    v-model="form.guardian_relationship" 
+                    type="text" 
+                    required 
+                    @keydown="blockNonAlphabetic($event)"
+                    @input="handleAlphabeticInput('guardian_relationship', $event)"
+                    placeholder="e.g. Mother, Father, Aunt" 
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Guardian Contact Number *</label>
+                  <input 
+                    v-model="form.guardian_contact" 
+                    type="tel" 
+                    required 
+                    maxlength="11"
+                    @keydown="blockNonNumeric($event)"
+                    @input="handleNumericInput('guardian_contact', $event, 11)"
+                    placeholder="09171234567" 
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                  />
+                </div>
               </div>
             </div>
 
-            <!-- Address Fields -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Barangay *</label>
-                <input v-model="form.address_barangay" type="text" required placeholder="e.g. Barangay 405" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">City / Municipality *</label>
-                <input v-model="form.address_city" type="text" required placeholder="e.g. Manila" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Province *</label>
-                <input v-model="form.address_province" type="text" required placeholder="e.g. Metro Manila" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs" />
-              </div>
-            </div>
-
-            <!-- Guardian Info -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Parent / Guardian Full Name *</label>
-                <input 
-                  v-model="form.guardian_name" 
-                  type="text" 
-                  required 
-                  @keydown="blockNonAlphabetic($event)"
-                  @input="handleAlphabeticInput('guardian_name', $event)"
-                  placeholder="Guardian's Name" 
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs" 
-                />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Relationship to Student *</label>
-                <input 
-                  v-model="form.guardian_relationship" 
-                  type="text" 
-                  required 
-                  @keydown="blockNonAlphabetic($event)"
-                  @input="handleAlphabeticInput('guardian_relationship', $event)"
-                  placeholder="e.g. Mother, Father, Aunt" 
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs" 
-                />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Guardian Contact Number *</label>
-                <input 
-                  v-model="form.guardian_contact" 
-                  type="tel" 
-                  required 
-                  maxlength="11"
-                  @keydown="blockNonNumeric($event)"
-                  @input="handleNumericInput('guardian_contact', $event, 11)"
-                  placeholder="09171234567" 
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-mono" 
-                />
-              </div>
-            </div>
-
-            <div class="flex justify-end pt-4 border-t border-slate-100">
-              <button type="submit" class="px-6 py-2.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white text-sm shadow-md transition flex items-center space-x-2 cursor-pointer">
+            <!-- Submit Button Area -->
+            <div class="flex justify-end pt-2">
+              <button type="submit" class="px-8 py-3.5 rounded-xl font-bold bg-blue-900 hover:bg-blue-800 text-white text-xs sm:text-sm shadow-md hover:scale-[1.01] active:scale-[0.99] transition flex items-center space-x-2 cursor-pointer border border-blue-800">
                 <span>Save Demographics & Proceed to Step 2</span>
                 <ArrowRight class="w-4 h-4" />
               </button>
@@ -421,43 +483,51 @@
               </select>
             </div>
 
-            <!-- Track & Strand (If SHS) -->
-            <div v-if="isSHS" class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200 animate-in fade-in duration-200">
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Senior High Track *</label>
-                <select v-model="form.track_id" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white">
-                  <option :value="null">-- Select Track --</option>
-                  <option v-for="tr in academicOptions.tracks" :key="tr.id" :value="tr.id">{{ tr.name }} ({{ tr.code }})</option>
-                </select>
+            <!-- Track, Strand & Voucher Subsidy (ONLY IF SENIOR HIGH SCHOOL: GRADE 11 & 12) -->
+            <div v-if="isSHS" class="space-y-4 p-5 rounded-2xl bg-blue-50/60 border border-blue-200 animate-in fade-in duration-200">
+              <div class="flex items-center space-x-2 text-xs font-bold text-blue-950 border-b border-blue-200/60 pb-2">
+                <GraduationCap class="w-4 h-4 text-blue-900" />
+                <span>Senior High School Track, Strand & DepEd Voucher Subsidy</span>
               </div>
 
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Senior High Academic Strand *</label>
-                <select v-model="form.strand_id" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white font-medium">
-                  <option :value="null">-- Select Strand --</option>
-                  <option v-for="st in filteredStrands" :key="st.id" :value="st.id">{{ st.name }} ({{ st.code }})</option>
-                </select>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Senior High Track *</label>
+                  <select v-model="form.track_id" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-blue-900">
+                    <option :value="null">-- Select Track --</option>
+                    <option v-for="tr in academicOptions.tracks" :key="tr.id" :value="tr.id">{{ tr.name }} ({{ tr.code }})</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Senior High Strand *</label>
+                  <select v-model="form.strand_id" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white font-medium focus:ring-2 focus:ring-blue-900">
+                    <option :value="null">-- Select Strand --</option>
+                    <option v-for="st in filteredStrands" :key="st.id" :value="st.id">{{ st.name }} ({{ st.code }})</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">DepEd Voucher Category *</label>
+                  <select v-model="form.voucher_status" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-blue-900">
+                    <option value="None">None (Regular Full Tuition)</option>
+                    <option value="Public JHS Completer (100%)">Public JHS Completer (100% Voucher)</option>
+                    <option value="Private ESC Grantee (80%)">Private ESC Grantee (80% Voucher)</option>
+                    <option value="Private Non-ESC Voucher (50%)">Private Non-ESC Voucher (50% Subsidy)</option>
+                  </select>
+                </div>
               </div>
             </div>
 
-            <!-- Voucher Status & Previous School -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <!-- Previous School History (Common to All Grades) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">DepEd Voucher Category *</label>
-                <select v-model="form.voucher_status" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white">
-                  <option value="None">None (Regular Full Tuition)</option>
-                  <option value="Public JHS Completer (100%)">Public JHS Completer (100% Voucher)</option>
-                  <option value="Private ESC Grantee (80%)">Private ESC Grantee (80% Voucher)</option>
-                  <option value="Private Non-ESC Voucher (50%)">Private Non-ESC Voucher (50% Subsidy)</option>
-                </select>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Last School Attended *</label>
+                <input v-model="form.last_school_attended" type="text" required placeholder="Name of previous school" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-blue-900" />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Last School Attended *</label>
-                <input v-model="form.last_school_attended" type="text" required placeholder="Name of previous school" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Previous School Type *</label>
-                <select v-model="form.last_school_type" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white">
+                <label class="block text-xs font-bold text-slate-700 mb-1">Previous School Type *</label>
+                <select v-model="form.last_school_type" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-blue-900">
                   <option value="Public">Public School</option>
                   <option value="Private">Private Institution</option>
                 </select>
@@ -613,8 +683,8 @@
             <!-- Header -->
             <div class="text-center border-b-2 border-slate-800 pb-3 mb-4">
               <div class="text-[10px] font-bold tracking-widest uppercase text-slate-600">Department of Education • Republic of the Philippines</div>
-              <h2 class="text-lg font-black tracking-tight uppercase mt-0.5 text-slate-950">JJKINGS BIRINGAN SCHOOL (JHS & SHS)</h2>
-              <p class="text-[11px] text-slate-600">Academic Boulevard, Biringan City, Samar • DepEd School ID: 405621</p>
+              <h2 class="text-lg font-black tracking-tight uppercase mt-0.5 text-slate-950">BIRINGAN SCIENCE & LEADERSHIP ACADEMY (BSLA)</h2>
+              <p class="text-[11px] text-slate-600">"Innovating for the Nation" • Academic Boulevard, Biringan City, Samar • DepEd ID: 405621</p>
               <div class="inline-block mt-2 px-3 py-0.5 rounded-full bg-slate-900 text-white text-[11px] font-extrabold font-mono uppercase tracking-wider">
                 OFFICIAL ASSESSMENT & ENROLLMENT SLIP (SY 2026-2027)
               </div>
@@ -1063,8 +1133,8 @@
             <!-- Institutional Header -->
             <div class="text-center border-b-2 border-slate-900 pb-4 mb-4">
               <div class="text-[10px] font-bold uppercase tracking-widest text-slate-600">Department of Education • Region VIII (Eastern Visayas)</div>
-              <h2 class="text-xl font-black uppercase text-slate-950">JJKINGS BIRINGAN SCHOOL (JHS & SHS)</h2>
-              <p class="text-xs text-slate-600 font-medium">Academic Boulevard, Biringan City, Samar • DepEd ID: 405621</p>
+              <h2 class="text-xl font-black uppercase text-slate-950">BIRINGAN SCIENCE & LEADERSHIP ACADEMY</h2>
+              <p class="text-xs text-slate-600 font-medium">"Innovating for the Nation" • Junior & Senior High School (DepEd ID: 405621)</p>
               <div class="inline-block mt-2.5 px-4 py-1 rounded-full bg-slate-900 text-white text-xs font-black font-mono uppercase tracking-widest">
                 OFFICIAL CERTIFICATE OF REGISTRATION (COR)
               </div>
@@ -1133,6 +1203,392 @@
           </div>
         </div>
       </main>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW B: DEDICATED FULL-PAGE DOCUMENT REQUIREMENTS GUIDE (tab=checklist)   -->
+    <!-- ========================================================================= -->
+    <div v-else-if="currentApplicantTab === 'checklist'" class="space-y-8 animate-in fade-in duration-200">
+      
+      <!-- Top Guide Header -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-2xs flex items-start space-x-4">
+        <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-900 border border-blue-200 flex items-center justify-center font-bold shrink-0 shadow-sm">
+          <FileCheck class="w-7 h-7" />
+        </div>
+        <div>
+          <div class="inline-flex items-center space-x-1.5 px-3 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-950 text-[10px] font-bold uppercase tracking-wider mb-1.5">
+            <span>Registrar Compliance Catalog</span>
+          </div>
+          <h2 class="text-2xl font-black text-[#0c2340] tracking-tight font-serif">DepEd Admission Requirements & Credentials Guide</h2>
+          <p class="text-xs text-slate-600 mt-1 max-w-2xl">
+            Official catalog of required academic records, PSA documents, and certificates required by the Office of the Registrar for S.Y. 2026-2027 admission.
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Upload Standards Alert -->
+      <div class="p-5 rounded-3xl bg-blue-50/80 border border-blue-200 text-slate-900 text-xs grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="flex items-start space-x-3">
+          <div class="w-8 h-8 rounded-xl bg-blue-900 text-white flex items-center justify-center shrink-0 mt-0.5">
+            <Check class="w-4 h-4" />
+          </div>
+          <div>
+            <div class="font-bold text-slate-900 text-xs">Accepted File Formats</div>
+            <p class="text-[11px] text-slate-600 mt-0.5">PDF documents, high-res JPG, PNG, or WEBP scans up to 10MB per file.</p>
+          </div>
+        </div>
+        <div class="flex items-start space-x-3">
+          <div class="w-8 h-8 rounded-xl bg-blue-900 text-white flex items-center justify-center shrink-0 mt-0.5">
+            <Eye class="w-4 h-4" />
+          </div>
+          <div>
+            <div class="font-bold text-slate-900 text-xs">Clear & Readable Scans</div>
+            <p class="text-[11px] text-slate-600 mt-0.5">Ensure all student details, LRN digits, grades, and school seals are sharp and legible.</p>
+          </div>
+        </div>
+        <div class="flex items-start space-x-3">
+          <div class="w-8 h-8 rounded-xl bg-blue-900 text-white flex items-center justify-center shrink-0 mt-0.5">
+            <ShieldCheck class="w-4 h-4" />
+          </div>
+          <div>
+            <div class="font-bold text-slate-900 text-xs">Authenticity Check</div>
+            <p class="text-[11px] text-slate-600 mt-0.5">All credentials are cross-referenced with DepEd Learner Information System (LIS).</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Credential Breakdown Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- PSA Birth Certificate -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-2xl bg-slate-100 text-blue-900 flex items-center justify-center font-bold shrink-0">
+                1
+              </div>
+              <div>
+                <h4 class="font-bold text-slate-900 text-sm">PSA Birth Certificate</h4>
+                <span class="inline-block px-2 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-900">Mandatory for All</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Original copy issued by the Philippine Statistics Authority (PSA) with official barcode and dry seal clearly visible.
+          </p>
+          <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-[11px] space-y-1.5">
+            <div class="font-bold text-slate-800">Why it is required:</div>
+            <div class="text-slate-600">• Used to legally verify applicant's full name, exact date of birth, and biological parentage in DepEd LIS.</div>
+            <div class="text-rose-700 font-medium pt-1">• <strong>Avoid Rejection:</strong> Do not upload cropped photos where the PSA Registry Number or Barcode is cut off.</div>
+          </div>
+        </div>
+
+        <!-- Form 138 / SF9 -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-2xl bg-slate-100 text-blue-900 flex items-center justify-center font-bold shrink-0">
+                2
+              </div>
+              <div>
+                <h4 class="font-bold text-slate-900 text-sm">SF9 / Form 138 (Report Card)</h4>
+                <span class="inline-block px-2 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-900">Mandatory for All</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Official Grade Report Card from the previous school year signed by the Class Adviser and Principal/School Head.
+          </p>
+          <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-[11px] space-y-1.5">
+            <div class="font-bold text-slate-800">Why it is required:</div>
+            <div class="text-slate-600">• Evaluates academic eligibility, general weighted average (GWA), and promotes the student to the enrolled grade level.</div>
+            <div class="text-rose-700 font-medium pt-1">• <strong>Avoid Rejection:</strong> Must show the final rating and promotion status signed by the school head.</div>
+          </div>
+        </div>
+
+        <!-- Good Moral Certificate -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-2xl bg-slate-100 text-blue-900 flex items-center justify-center font-bold shrink-0">
+                3
+              </div>
+              <div>
+                <h4 class="font-bold text-slate-900 text-sm">Certificate of Good Moral Character</h4>
+                <span class="inline-block px-2 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-900">Mandatory for All</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Official certificate issued by the Guidance Office or Principal of the previous school certifying conduct.
+          </p>
+          <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-[11px] space-y-1.5">
+            <div class="font-bold text-slate-800">Why it is required:</div>
+            <div class="text-slate-600">• Required institutional character clearance for enrollment in BSLA junior and senior high programs.</div>
+            <div class="text-rose-700 font-medium pt-1">• <strong>Avoid Rejection:</strong> Must be issued within the current academic year and bear the school dry seal.</div>
+          </div>
+        </div>
+
+        <!-- 2x2 ID Photo -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-2xl bg-slate-100 text-blue-900 flex items-center justify-center font-bold shrink-0">
+                4
+              </div>
+              <div>
+                <h4 class="font-bold text-slate-900 text-sm">2x2 ID Picture with White Background</h4>
+                <span class="inline-block px-2 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-900">Mandatory for All</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Recent colored photograph in formal school or collared attire with white background and name tag.
+          </p>
+          <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-[11px] space-y-1.5">
+            <div class="font-bold text-slate-800">Why it is required:</div>
+            <div class="text-slate-600">• Used for printing the official BSLA Student ID Card and Permanent School Form 10 (SF10).</div>
+            <div class="text-rose-700 font-medium pt-1">• <strong>Avoid Rejection:</strong> No selfies, side angles, filters, or dark background photos.</div>
+          </div>
+        </div>
+
+        <!-- JHS Completion Diploma (For SHS) -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-2xl bg-slate-100 text-blue-900 flex items-center justify-center font-bold shrink-0">
+                5
+              </div>
+              <div>
+                <h4 class="font-bold text-slate-900 text-sm">Certificate of JHS Completion</h4>
+                <span class="inline-block px-2 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-900">SHS Enrollees (Grades 11–12)</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Official Junior High School Completion Diploma / Certificate awarded upon completing Grade 10.
+          </p>
+          <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-[11px] space-y-1.5">
+            <div class="font-bold text-slate-800">Why it is required:</div>
+            <div class="text-slate-600">• Proves complete secondary basic education graduation prerequisite for Senior High tracks.</div>
+          </div>
+        </div>
+
+        <!-- ESC / SHS Voucher Certificate -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-2xl bg-slate-100 text-blue-900 flex items-center justify-center font-bold shrink-0">
+                6
+              </div>
+              <div>
+                <h4 class="font-bold text-slate-900 text-sm">DepEd ESC / SHS Voucher Certificate</h4>
+                <span class="inline-block px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-900">Voucher Applicants</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            DepEd PEAC ESC Certificate or Qualified Voucher Applicant (QVR) certificate downloaded from the PEAC OVAP portal.
+          </p>
+          <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-[11px] space-y-1.5">
+            <div class="font-bold text-slate-800">Why it is required:</div>
+            <div class="text-slate-600">• Validates government tuition subsidy (100% for Public JHS completers, 80% for Private ESC grantees).</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW C: DEDICATED FULL-PAGE ENROLLMENT ROADMAP & HELPDESK (tab=process)   -->
+    <!-- ========================================================================= -->
+    <div v-else-if="currentApplicantTab === 'process'" class="space-y-8 animate-in fade-in duration-200">
+      
+      <!-- Top Guide Header -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-2xs flex items-start space-x-4">
+        <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-900 border border-blue-200 flex items-center justify-center font-bold shrink-0 shadow-sm">
+          <Compass class="w-7 h-7" />
+        </div>
+        <div>
+          <div class="inline-flex items-center space-x-1.5 px-3 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-950 text-[10px] font-bold uppercase tracking-wider mb-1.5">
+            <span>Institutional Admissions Lifecycle</span>
+          </div>
+          <h2 class="text-2xl font-black text-[#0c2340] tracking-tight font-serif">Comprehensive Enrollment Process & Roadmap</h2>
+          <p class="text-xs text-slate-600 mt-1 max-w-2xl">
+            Step-by-step guide explaining how your application moves from initial registration to Registrar authentication, Treasury cashier assessment, and official Certificate of Registration issuance.
+          </p>
+        </div>
+      </div>
+
+      <!-- 5-STAGE INSTITUTIONAL ENROLLMENT LIFECYCLE ROADMAP -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+        <div class="border-b border-slate-100 pb-4">
+          <h3 class="text-base font-black text-slate-900 font-serif">The 5 Stages of BSLA Admission & Enrollment</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Understanding the behind-the-scenes evaluation before official student onboarding.</p>
+        </div>
+
+        <div class="space-y-6">
+          
+          <!-- Stage 1 -->
+          <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col md:flex-row items-start gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-blue-900 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-md">
+              01
+            </div>
+            <div class="space-y-1.5 flex-1">
+              <div class="flex items-center space-x-2">
+                <h4 class="font-bold text-slate-900 text-sm">Stage 1: Student Demographics Encoding & 12-Digit LRN Verification</h4>
+                <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-950">Applicant Action</span>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                The student fills out their full legal name, PSA birth details, address, and 12-digit Learner Reference Number (LRN). The system validates LRN format and creates an active applicant record (e.g. <code class="font-mono font-bold text-blue-900">ADM-2026-0009</code>).
+              </p>
+            </div>
+          </div>
+
+          <!-- Stage 2 -->
+          <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col md:flex-row items-start gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-blue-900 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-md">
+              02
+            </div>
+            <div class="space-y-1.5 flex-1">
+              <div class="flex items-center space-x-2">
+                <h4 class="font-bold text-slate-900 text-sm">Stage 2: Academic Track / Strand & DepEd Voucher Subsidy Selection</h4>
+                <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-950">Applicant Action</span>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                The applicant chooses their desired Grade Level (Junior High School Grades 7–10 or Senior High School Grades 11–12 STEM, ABM, HUMSS, GAS, TVL-ICT, TVL-HE) and specifies their DepEd ESC/Voucher category to apply tuition discounts.
+              </p>
+            </div>
+          </div>
+
+          <!-- Stage 3 -->
+          <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col md:flex-row items-start gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-blue-900 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-md">
+              03
+            </div>
+            <div class="space-y-1.5 flex-1">
+              <div class="flex items-center space-x-2">
+                <h4 class="font-bold text-slate-900 text-sm">Stage 3: Requirement Submission & Office of the Registrar Authentication</h4>
+                <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-900">Registrar Review</span>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                The applicant uploads clear scans of their PSA Birth Certificate, SF9 Form 138, Good Moral Certificate, and 2x2 Photo. Authorized Registrar Evaluators inspect the documents, authenticate school seals, and change status to <strong class="text-emerald-700">Approved for Enrollment</strong>. If a file is blurry, it is flagged as <strong class="text-rose-700">Deficient</strong> with feedback.
+              </p>
+            </div>
+          </div>
+
+          <!-- Stage 4 -->
+          <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col md:flex-row items-start gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-blue-900 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-md">
+              04
+            </div>
+            <div class="space-y-1.5 flex-1">
+              <div class="flex items-center space-x-2">
+                <h4 class="font-bold text-slate-900 text-sm">Stage 4: Tuition Fee Assessment & Downpayment Settlement</h4>
+                <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-900">Treasury & Cashier</span>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Once approved by the Registrar, the Treasury generates the official Assessment Slip showing net payable fees after voucher subsidies. The applicant can choose between:
+              </p>
+              <ul class="text-xs text-slate-600 list-disc pl-5 space-y-1 pt-1">
+                <li><strong>Walk-in Cashier Ticket:</strong> Schedule a morning or afternoon appointment to pay at the school cashiers.</li>
+                <li><strong>Online PayMongo:</strong> Submit real-time GCash, Maya, or Card reference numbers for immediate queue verification.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Stage 5 -->
+          <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col md:flex-row items-start gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-md">
+              05
+            </div>
+            <div class="space-y-1.5 flex-1">
+              <div class="flex items-center space-x-2">
+                <h4 class="font-bold text-slate-900 text-sm">Stage 5: Official Enrollment Confirmation & Certificate of Registration (COR)</h4>
+                <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-900">Final System Handover</span>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Upon Treasury verification, the system automatically assigns the student's permanent institutional ID (e.g. <code class="font-mono font-bold text-emerald-700">2026-SHS-0005</code>), assigns class sectioning & classroom timetable, and generates the printable <strong>Official Certificate of Registration (COR)</strong>.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- APPLICANT FREQUENTLY ASKED QUESTIONS (FAQS) -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4">
+        <div class="border-b border-slate-100 pb-3.5 flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Frequently Asked Questions (FAQs)</h3>
+            <p class="text-xs text-slate-500">Quick answers to common admission and enrollment queries.</p>
+          </div>
+          <HelpCircle class="w-5 h-5 text-blue-900" />
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+            <h5 class="font-bold text-slate-900">Can I change my strand after applying?</h5>
+            <p class="text-slate-600 leading-relaxed">
+              Yes, before your application is finalized by the Registrar, you can return to Step 2 anytime to modify your track or strand.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+            <h5 class="font-bold text-slate-900">What happens if a document is marked "Deficient"?</h5>
+            <p class="text-slate-600 leading-relaxed">
+              The system will notify you on your dashboard. Simply click "Fix Deficient Files" in Step 3 and upload a clearer scan.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+            <h5 class="font-bold text-slate-900">How do I qualify for the 100% DepEd Voucher?</h5>
+            <p class="text-slate-600 leading-relaxed">
+              All Grade 10 completers from Public Junior High Schools automatically receive the 100% full voucher subsidy for Senior High School.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+            <h5 class="font-bold text-slate-900">How do I access my official schedule after enrolling?</h5>
+            <p class="text-slate-600 leading-relaxed">
+              Once officially enrolled in Step 5, you can log in to the <strong>Student Portal</strong> using your permanent Student ID.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMISSIONS HELPDESK & CONTACT CARDS -->
+      <div class="bg-[#08182b] text-white rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl space-y-6">
+        <div class="flex items-center space-x-3 border-b border-slate-800 pb-4">
+          <div class="w-10 h-10 rounded-2xl bg-blue-950 text-blue-300 border border-blue-500/30 flex items-center justify-center font-bold">
+            <Phone class="w-5 h-5" />
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Admissions Helpdesk & Contact Center</h3>
+            <p class="text-xs text-slate-400">Direct communication lines for admission assistance and inquiries.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+          <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
+            <div class="font-bold text-blue-300 text-xs uppercase font-mono">Admissions Office</div>
+            <div class="text-slate-200 font-bold text-sm">(055) 888-7766</div>
+            <div class="text-slate-400 text-[11px]">Mon–Fri, 8:00 AM – 5:00 PM</div>
+          </div>
+          <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
+            <div class="font-bold text-blue-300 text-xs uppercase font-mono">Mobile / SMS Support</div>
+            <div class="text-slate-200 font-bold text-sm">0917-111-0001</div>
+            <div class="text-slate-400 text-[11px]">Globe / TM SMS Inquiry Line</div>
+          </div>
+          <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
+            <div class="font-bold text-blue-300 text-xs uppercase font-mono">Admissions Email</div>
+            <div class="text-slate-200 font-bold text-sm">admissions@student.bsla.edu.ph</div>
+            <div class="text-slate-400 text-[11px]">Online document validation support</div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- SUBMIT FOR REVIEW CONFIRMATION MODAL -->
@@ -1410,15 +1866,17 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { 
   CheckCircle, AlertCircle, FileText, Upload, Check, Printer, Eye, Trash2, Download,
   AlertTriangle, Clock, ArrowRight, FileCheck, GraduationCap, CreditCard,
-  Lock, ChevronRight, User, BookOpen, UploadCloud, Activity, Building, Ticket
+  Lock, ChevronRight, User, BookOpen, UploadCloud, Activity, Building, Ticket,
+  Compass, HelpCircle, ShieldCheck, Phone, Mail, Sparkles, MapPin, Calendar, Layers
 } from 'lucide-vue-next';
 import api, { getFileUrl } from '../../services/api';
 
 const router = useRouter();
+const route = useRoute();
 const activeStep = ref(1);
 const stepLockNotice = ref('');
 const application = ref(null);
@@ -1431,6 +1889,18 @@ const paymongoError = ref('');
 const walkinTicket = ref(null);
 const successMessage = ref('');
 const errorMessage = ref('');
+
+const currentApplicantTab = computed(() => {
+  const tab = route.query.tab;
+  if (tab === 'checklist') return 'checklist';
+  if (tab === 'process' || tab === 'hotlines') return 'process';
+  return 'wizard';
+});
+
+const navigateToStep = (stepNumber) => {
+  activeStep.value = stepNumber;
+  router.push({ path: '/admission', query: { tab: 'wizard' } });
+};
 
 const walkinForm = ref({
   scheduled_date: '',
@@ -1654,10 +2124,10 @@ const selectStep = (stepNumber) => {
 
 const getSidebarStepClass = (stepId) => {
   if (activeStep.value === stepId) {
-    return 'bg-slate-900 text-white border-2 border-emerald-500 shadow-md ring-2 ring-emerald-500/20';
+    return 'bg-slate-900 text-white border-2 border-blue-500 shadow-md ring-2 ring-blue-500/20';
   }
   if (isStepDone(stepId)) {
-    return 'bg-white text-slate-800 border border-emerald-200 hover:bg-emerald-50/40 hover:border-emerald-300 cursor-pointer shadow-sm';
+    return 'bg-white text-slate-800 border border-slate-200 hover:bg-slate-50 cursor-pointer shadow-xs';
   }
   if (!canAccessStep(stepId)) {
     return 'bg-slate-50 text-slate-400 border border-slate-200 opacity-60 cursor-not-allowed';
@@ -1667,7 +2137,7 @@ const getSidebarStepClass = (stepId) => {
 
 const getSidebarIconClass = (stepId) => {
   if (activeStep.value === stepId) {
-    return 'bg-emerald-500 text-slate-950 shadow-sm';
+    return 'bg-blue-500 text-white shadow-sm';
   }
   if (isStepDone(stepId)) {
     return 'bg-emerald-100 text-emerald-800';
@@ -1783,6 +2253,18 @@ const maxBirthdate = computed(() => {
 const isSHS = computed(() => {
   const gl = academicOptions.value.grade_levels.find(g => g.id === form.value.grade_level_id);
   return gl?.category === 'SHS' || (form.value.grade_level_id && form.value.grade_level_id >= 5);
+});
+
+watch(() => form.value.grade_level_id, (newGlId) => {
+  if (newGlId) {
+    const gl = academicOptions.value.grade_levels.find(g => g.id === newGlId);
+    const isSHSLevel = gl?.category === 'SHS' || (newGlId >= 5);
+    if (!isSHSLevel) {
+      form.value.track_id = null;
+      form.value.strand_id = null;
+      form.value.voucher_status = 'None';
+    }
+  }
 });
 
 const jhsLevels = computed(() => {
@@ -2169,6 +2651,19 @@ const handleDeleteDocument = async (doc) => {
     errorMessage.value = err.message || 'Failed to remove document.';
   }
 };
+
+watch(() => route.query.tab, (tab) => {
+  if (!tab) return;
+  if (tab === 'demographics') selectStep(1);
+  else if (tab === 'strand') selectStep(2);
+  else if (tab === 'documents') selectStep(3);
+  else if (tab === 'payment') selectStep(4);
+  else if (tab === 'overview' || tab === 'status') {
+    if (canAccessStep(5)) selectStep(5);
+    else if (canAccessStep(4)) selectStep(4);
+    else selectStep(1);
+  }
+}, { immediate: true });
 
 onMounted(() => {
   loadData();

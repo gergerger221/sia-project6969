@@ -672,7 +672,7 @@ class TreasuryController {
             // 5. Create / update dedicated Official Student Account
             $rawPassword = strtoupper(trim($sub['last_name']));
             $hashedPassword = password_hash($rawPassword, PASSWORD_BCRYPT);
-            $studentEmail = strtolower(str_replace('-', '', $studentNo)) . '@student.jjkings.edu.ph';
+            $studentEmail = strtolower(str_replace('-', '', $studentNo)) . '@student.bsla.edu.ph';
 
             $chkUser = $db->prepare("
                 SELECT u.id FROM users u

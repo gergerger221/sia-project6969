@@ -43,13 +43,17 @@ function simulateLogin($identity, $password, $portalType = '') {
         FROM users u
         JOIN roles r ON u.role_id = r.id
         LEFT JOIN user_profiles p ON u.id = p.user_id
-        WHERE u.username = :ident1 OR u.email = :ident2 OR u.student_id = :ident3
+        WHERE u.username = :ident1 
+           OR u.email = :ident2 
+           OR u.student_id = :ident3
+           OR (r.slug = :ident4 AND r.slug IN ('admin', 'coordinator', 'registrar', 'treasury', 'records'))
         LIMIT 1
     ");
     $stmt->execute([
         'ident1' => $identity,
         'ident2' => $identity,
-        'ident3' => $identity
+        'ident3' => $identity,
+        'ident4' => $identity
     ]);
     $user = $stmt->fetch();
 

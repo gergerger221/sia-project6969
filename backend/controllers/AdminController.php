@@ -30,7 +30,7 @@ class AdminController {
             FROM audit_logs al
             LEFT JOIN users u ON al.user_id = u.id
             ORDER BY al.id DESC
-            LIMIT 15
+            LIMIT 50
         ")->fetchAll();
 
         Response::success('Dashboard statistics loaded', [

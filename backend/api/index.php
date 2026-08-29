@@ -106,6 +106,9 @@ try {
         case 'admission/upload-document':
             (new AdmissionController())->uploadDocument();
             break;
+        case 'admission/set-document-mode':
+            (new AdmissionController())->setDocumentSubmissionMode();
+            break;
         case 'admission/delete-document':
             (new AdmissionController())->deleteDocument();
             break;

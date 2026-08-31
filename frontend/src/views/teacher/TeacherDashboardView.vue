@@ -83,25 +83,6 @@
       <button @click="errorMessage = ''" class="text-rose-500 hover:text-rose-700 font-bold cursor-pointer">✕</button>
     </div>
 
-    <!-- Secondary Nav Pills for Inside-Dashboard Quick Switching -->
-    <div class="no-print mb-6 flex items-center space-x-2 overflow-x-auto pb-1 custom-scrollbar">
-      <button 
-        v-for="t in tabs" 
-        :key="t.id"
-        @click="selectTab(t.id)"
-        type="button"
-        :class="[
-          'px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-2 shrink-0 cursor-pointer select-none',
-          activeTab === t.id 
-            ? 'bg-blue-900 text-white shadow-xs font-bold' 
-            : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
-        ]"
-      >
-        <component :is="t.icon" class="w-3.5 h-3.5" />
-        <span>{{ t.label }}</span>
-      </button>
-    </div>
-
     <!-- ======================================================== -->
     <!-- TAB 1: WEEKLY MASTER TIMETABLE & TEACHING LOADS          -->
     <!-- ======================================================== -->
@@ -761,19 +742,6 @@ const isLoading = ref(false);
 const isSavingGrades = ref(false);
 const feedbackMessage = ref('');
 const errorMessage = ref('');
-
-const tabs = [
-  { id: 'schedule', label: 'Weekly Schedule & Classes', icon: Clock },
-  { id: 'grading', label: 'Electronic Class Record', icon: FileSpreadsheet },
-  { id: 'roster', label: 'Class Masterlists', icon: Users },
-  { id: 'advisory', label: 'Advisory Section (SF9)', icon: Award },
-  { id: 'attendance', label: 'Attendance Sheet (SF2)', icon: Calendar }
-];
-
-const selectTab = (tabId) => {
-  activeTab.value = tabId;
-  router.push({ query: { tab: tabId } });
-};
 
 watch(() => route.query.tab, (newTab) => {
   if (newTab && ['schedule', 'grading', 'roster', 'advisory', 'attendance'].includes(newTab)) {

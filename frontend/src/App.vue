@@ -517,9 +517,10 @@ const isPortalRoute = computed(() => {
     'CoordinatorDashboard', 
     'RecordsDashboard', 
     'StudentDashboard', 
-    'AdminDashboard'
+    'AdminDashboard',
+    'TeacherDashboard'
   ];
-  return portalRoutes.includes(route.name) || ['/admission', '/registrar', '/treasury', '/coordinator', '/records', '/student', '/admin'].some(p => route.path.startsWith(p));
+  return portalRoutes.includes(route.name) || ['/admission', '/registrar', '/treasury', '/coordinator', '/records', '/student', '/admin', '/teacher'].some(p => route.path.startsWith(p));
 });
 
 const isStandaloneAuthRoute = computed(() => {
@@ -536,6 +537,7 @@ const breadcrumbPortalName = computed(() => {
   if (path.startsWith('/treasury')) return 'Treasury & Cashier';
   if (path.startsWith('/records')) return 'Records & DepEd Archives';
   if (path.startsWith('/student')) return 'Student Portal';
+  if (path.startsWith('/teacher')) return 'Teacher & Faculty';
   if (path.startsWith('/admission')) return 'Admission Procedure';
   return 'School Portal';
 });
@@ -578,6 +580,13 @@ const breadcrumbActiveTabName = computed(() => {
     if (tab === 'events') return 'School Events Calendar';
     if (tab === 'records') return 'Academic Records & Grades';
     return 'Class Schedule & Subject Timetable';
+  }
+  if (path.startsWith('/teacher')) {
+    if (tab === 'grading') return 'Electronic Class Record (E-Class Record)';
+    if (tab === 'roster') return 'Class Masterlists & Student Directory';
+    if (tab === 'advisory') return 'Advisory Section (SF9 Core Values)';
+    if (tab === 'attendance') return 'Attendance Sheet (SF2 Daily Log)';
+    return 'Weekly Schedule & Teaching Load';
   }
   if (path.startsWith('/admission')) {
     if (tab === 'demographics') return 'Step 1: Personal & PSA Demographics';

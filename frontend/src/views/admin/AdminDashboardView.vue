@@ -109,7 +109,6 @@
                 <th class="p-3">User</th>
                 <th class="p-3">Security Action</th>
                 <th class="p-3">Activity Details</th>
-                <th class="p-3 font-mono">IP Address</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -127,10 +126,9 @@
                   </span>
                 </td>
                 <td class="p-3 text-slate-700 font-medium max-w-md">{{ log.details }}</td>
-                <td class="p-3 font-mono text-slate-400 text-[11px] whitespace-nowrap">{{ log.ip_address || '127.0.0.1' }}</td>
               </tr>
               <tr v-if="filteredLogs.length === 0">
-                <td colspan="5" class="p-8 text-center text-slate-400 text-xs">
+                <td colspan="4" class="p-8 text-center text-slate-400 text-xs">
                   <ShieldAlert class="w-8 h-8 text-slate-300 mx-auto mb-2" />
                   <div>No matching system audit logs found.</div>
                 </td>

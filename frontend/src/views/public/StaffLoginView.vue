@@ -190,7 +190,8 @@ const fillCredentials = (role) => {
     coordinator: { identity: 'coordinator', password: 'password123' },
     registrar: { identity: 'registrar', password: 'password123' },
     treasury: { identity: 'treasury', password: 'password123' },
-    records: { identity: 'records', password: 'password123' }
+    records: { identity: 'records', password: 'password123' },
+    teacher: { identity: 'teacher', password: 'password123' }
   };
 
   if (credentialsMap[role]) {

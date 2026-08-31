@@ -140,49 +140,172 @@
     </div>
 
     <!-- TAB 2: STAFF & USER MANAGEMENT -->
-    <div v-if="activeTab === 'users'" class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+    <div v-if="activeTab === 'users'" class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-5">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 class="text-base font-bold text-slate-800">Staff & System Accounts</h2>
-          <p class="text-xs text-slate-500">Manage credentials and roles for Administrator, Coordinator, Registrar, Treasury, and Records.</p>
+          <div class="flex items-center space-x-2">
+            <h2 class="text-base font-bold text-slate-800">Staff & System Accounts</h2>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-900 border border-blue-200 font-mono">
+              {{ filteredUsers.length }} of {{ usersList.users?.length || 0 }} Accounts
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 mt-0.5">Manage credentials, roles, and access for Administrator, Coordinator, Registrar, Treasury, Records, and Faculty.</p>
         </div>
-        <button @click="openUserModal()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs transition flex items-center space-x-1.5 cursor-pointer">
+        <button @click="openUserModal()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-900 hover:bg-blue-800 text-white shadow-xs transition flex items-center space-x-1.5 shrink-0 cursor-pointer">
           <Plus class="w-4 h-4" />
           <span>Create User Account</span>
         </button>
       </div>
 
+      <!-- Search & Filters Toolbar -->
+      <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-slate-50/90 p-3.5 rounded-2xl border border-slate-200">
+        <!-- Search Input -->
+        <div class="relative flex-1 min-w-[240px]">
+          <Search class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input 
+            v-model="searchUserQuery" 
+            type="text" 
+            placeholder="Search by name, @username, email, or role..." 
+            class="w-full pl-9 pr-8 py-2 rounded-xl bg-white border border-slate-300 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-900 focus:ring-1 focus:ring-blue-900"
+          />
+          <button 
+            v-if="searchUserQuery" 
+            @click="searchUserQuery = ''" 
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
+            title="Clear search"
+          >
+            <X class="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <!-- Role Filter Dropdown -->
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+          <div class="flex items-center space-x-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-300 text-xs text-slate-700">
+            <Filter class="w-3.5 h-3.5 text-slate-400" />
+            <select v-model="selectedRoleFilter" class="bg-transparent font-medium focus:outline-none cursor-pointer">
+              <option value="">All Roles</option>
+              <option v-for="r in usersList.roles" :key="r.id" :value="r.slug">
+                {{ r.name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Status Filter Dropdown -->
+          <div class="flex items-center space-x-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-300 text-xs text-slate-700">
+            <select v-model="selectedStatusFilter" class="bg-transparent font-medium focus:outline-none cursor-pointer">
+              <option value="">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+
+          <!-- Sort Selector -->
+          <div class="flex items-center space-x-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-300 text-xs text-slate-700">
+            <span class="text-slate-400 font-normal">Sort:</span>
+            <select v-model="userSortField" class="bg-transparent font-medium focus:outline-none cursor-pointer">
+              <option value="name">Name (A-Z)</option>
+              <option value="username">Username (@)</option>
+              <option value="role">Role</option>
+              <option value="status">Status</option>
+              <option value="id_desc">Newest First</option>
+              <option value="id_asc">Oldest First</option>
+            </select>
+            <button 
+              type="button" 
+              @click="toggleUserSortDirection" 
+              class="p-1 rounded-md hover:bg-slate-100 text-slate-600 cursor-pointer"
+              :title="userSortOrder === 'asc' ? 'Ascending (Click for Descending)' : 'Descending (Click for Ascending)'"
+            >
+              <ArrowUp v-if="userSortOrder === 'asc'" class="w-3.5 h-3.5 text-blue-900" />
+              <ArrowDown v-else class="w-3.5 h-3.5 text-blue-900" />
+            </button>
+          </div>
+
+          <!-- Refresh Button -->
+          <button 
+            type="button" 
+            @click="loadUsers()" 
+            class="p-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-semibold flex items-center shrink-0 cursor-pointer shadow-2xs"
+            title="Refresh user accounts"
+          >
+            <RefreshCw class="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Accounts Table with Clickable Sort Headers -->
       <div class="overflow-x-auto">
         <table class="w-full text-xs text-left border-collapse">
           <thead>
             <tr class="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
-              <th class="p-3.5">Name / Username</th>
-              <th class="p-3.5">Email</th>
-              <th class="p-3.5">Role</th>
-              <th class="p-3.5">Status</th>
+              <th @click="setUserSort('name')" class="p-3.5 cursor-pointer hover:text-blue-900 select-none transition">
+                <div class="flex items-center space-x-1.5">
+                  <span>Name / Username</span>
+                  <ArrowUpDown v-if="userSortField !== 'name' && userSortField !== 'username'" class="w-3 h-3 text-slate-300" />
+                  <ArrowUp v-else-if="userSortOrder === 'asc'" class="w-3 h-3 text-blue-900" />
+                  <ArrowDown v-else class="w-3 h-3 text-blue-900" />
+                </div>
+              </th>
+              <th @click="setUserSort('email')" class="p-3.5 cursor-pointer hover:text-blue-900 select-none transition">
+                <div class="flex items-center space-x-1.5">
+                  <span>Email</span>
+                  <ArrowUpDown v-if="userSortField !== 'email'" class="w-3 h-3 text-slate-300" />
+                  <ArrowUp v-else-if="userSortOrder === 'asc'" class="w-3 h-3 text-blue-900" />
+                  <ArrowDown v-else class="w-3 h-3 text-blue-900" />
+                </div>
+              </th>
+              <th @click="setUserSort('role')" class="p-3.5 cursor-pointer hover:text-blue-900 select-none transition">
+                <div class="flex items-center space-x-1.5">
+                  <span>Role</span>
+                  <ArrowUpDown v-if="userSortField !== 'role'" class="w-3 h-3 text-slate-300" />
+                  <ArrowUp v-else-if="userSortOrder === 'asc'" class="w-3 h-3 text-blue-900" />
+                  <ArrowDown v-else class="w-3 h-3 text-blue-900" />
+                </div>
+              </th>
+              <th @click="setUserSort('status')" class="p-3.5 cursor-pointer hover:text-blue-900 select-none transition">
+                <div class="flex items-center space-x-1.5">
+                  <span>Status</span>
+                  <ArrowUpDown v-if="userSortField !== 'status'" class="w-3 h-3 text-slate-300" />
+                  <ArrowUp v-else-if="userSortOrder === 'asc'" class="w-3 h-3 text-blue-900" />
+                  <ArrowDown v-else class="w-3 h-3 text-blue-900" />
+                </div>
+              </th>
               <th class="p-3.5 text-right">Action</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            <tr v-for="u in usersList.users" :key="u.id" class="hover:bg-slate-50 transition">
+            <tr v-for="u in filteredUsers" :key="u.id" class="hover:bg-slate-50 transition">
               <td class="p-3.5">
                 <div class="font-bold text-slate-900">{{ u.first_name }} {{ u.last_name }}</div>
                 <div class="text-[11px] font-mono text-slate-400">@{{ u.username }}</div>
               </td>
-              <td class="p-3.5 text-slate-600">{{ u.email }}</td>
+              <td class="p-3.5 text-slate-600 font-mono">{{ u.email }}</td>
               <td class="p-3.5">
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase" :class="getRoleClass(u.role_slug)">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider" :class="getRoleClass(u.role_slug)">
                   {{ u.role_name }}
                 </span>
               </td>
               <td class="p-3.5">
-                <span :class="u.status === 'Active' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase">
+                <span :class="u.status === 'Active' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-800 border border-rose-200'" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
                   {{ u.status }}
                 </span>
               </td>
               <td class="p-3.5 text-right">
                 <button @click="openUserModal(u)" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-900 hover:bg-blue-50 cursor-pointer">
                   Edit
+                </button>
+              </td>
+            </tr>
+            <tr v-if="filteredUsers.length === 0">
+              <td colspan="5" class="p-8 text-center text-slate-400 text-xs">
+                <Users class="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                <div class="font-semibold text-slate-600">No matching staff or system accounts found.</div>
+                <button 
+                  v-if="searchUserQuery || selectedRoleFilter || selectedStatusFilter" 
+                  @click="searchUserQuery = ''; selectedRoleFilter = ''; selectedStatusFilter = ''" 
+                  class="mt-2 text-blue-900 font-bold hover:underline cursor-pointer"
+                >
+                  Clear all filters
                 </button>
               </td>
             </tr>
@@ -561,7 +684,8 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { 
   Users, Key, ShieldCheck, Plus, CheckCircle2, Lock, Unlock, AlertCircle, 
-  RotateCcw, Sparkles, RefreshCw, Eye, BookOpen, Layers, Check, Search, ShieldAlert
+  RotateCcw, Sparkles, RefreshCw, Eye, BookOpen, Layers, Check, Search, ShieldAlert,
+  ArrowUpDown, ArrowUp, ArrowDown, Filter, X
 } from 'lucide-vue-next';
 import api from '../../services/api';
 
@@ -579,6 +703,86 @@ const usersList = ref({ users: [], roles: [] });
 const schoolYears = ref([]);
 const successMessage = ref('');
 const searchLogQuery = ref('');
+
+// Staff & System Accounts Search, Filter & Sort State
+const searchUserQuery = ref('');
+const selectedRoleFilter = ref('');
+const selectedStatusFilter = ref('');
+const userSortField = ref('name');
+const userSortOrder = ref('asc');
+
+const setUserSort = (field) => {
+  if (userSortField.value === field) {
+    userSortOrder.value = userSortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    userSortField.value = field;
+    userSortOrder.value = 'asc';
+  }
+};
+
+const toggleUserSortDirection = () => {
+  userSortOrder.value = userSortOrder.value === 'asc' ? 'desc' : 'asc';
+};
+
+const filteredUsers = computed(() => {
+  let list = usersList.value?.users || [];
+
+  // 1. Text Search Filter
+  if (searchUserQuery.value.trim()) {
+    const q = searchUserQuery.value.toLowerCase().trim();
+    list = list.filter(u => {
+      const fullName = `${u.first_name || ''} ${u.last_name || ''}`.toLowerCase();
+      const username = (u.username || '').toLowerCase();
+      const email = (u.email || '').toLowerCase();
+      const roleName = (u.role_name || '').toLowerCase();
+      const roleSlug = (u.role_slug || '').toLowerCase();
+      const status = (u.status || '').toLowerCase();
+
+      return fullName.includes(q) || 
+             username.includes(q) || 
+             email.includes(q) || 
+             roleName.includes(q) || 
+             roleSlug.includes(q) || 
+             status.includes(q);
+    });
+  }
+
+  // 2. Role Filter
+  if (selectedRoleFilter.value) {
+    list = list.filter(u => u.role_slug === selectedRoleFilter.value);
+  }
+
+  // 3. Status Filter
+  if (selectedStatusFilter.value) {
+    list = list.filter(u => u.status === selectedStatusFilter.value);
+  }
+
+  // 4. Multi-field Sorting
+  const sorted = [...list].sort((a, b) => {
+    let comparison = 0;
+    if (userSortField.value === 'name') {
+      const nameA = `${a.last_name || ''} ${a.first_name || ''}`.toLowerCase();
+      const nameB = `${b.last_name || ''} ${b.first_name || ''}`.toLowerCase();
+      comparison = nameA.localeCompare(nameB);
+    } else if (userSortField.value === 'username') {
+      comparison = (a.username || '').localeCompare(b.username || '');
+    } else if (userSortField.value === 'email') {
+      comparison = (a.email || '').localeCompare(b.email || '');
+    } else if (userSortField.value === 'role') {
+      comparison = (a.role_name || a.role_slug || '').localeCompare(b.role_name || b.role_slug || '');
+    } else if (userSortField.value === 'status') {
+      comparison = (a.status || '').localeCompare(b.status || '');
+    } else if (userSortField.value === 'id_desc') {
+      comparison = (b.id || 0) - (a.id || 0);
+    } else if (userSortField.value === 'id_asc') {
+      comparison = (a.id || 0) - (b.id || 0);
+    }
+
+    return userSortOrder.value === 'desc' ? -comparison : comparison;
+  });
+
+  return sorted;
+});
 
 const filteredLogs = computed(() => {
   const list = stats.value?.recent_logs || [];

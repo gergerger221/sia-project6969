@@ -31,7 +31,7 @@ class AuthController {
             WHERE u.username = :ident1 
                OR u.email = :ident2 
                OR u.student_id = :ident3
-               OR (r.slug = :ident4 AND r.slug IN ('admin', 'coordinator', 'registrar', 'treasury', 'records'))
+               OR (r.slug = :ident4 AND r.slug IN ('admin', 'coordinator', 'registrar', 'treasury', 'records', 'teacher'))
             LIMIT 1
         ");
         $stmt->execute([

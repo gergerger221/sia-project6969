@@ -47,6 +47,7 @@ use App\Controllers\RecordsController;
 use App\Controllers\StudentController;
 use App\Controllers\AdminController;
 use App\Controllers\ScheduleController;
+use App\Controllers\TeacherController;
 
 // Extract action / route
 $route = $_GET['route'] ?? $_GET['action'] ?? '';
@@ -282,6 +283,26 @@ try {
             break;
         case 'admin/save-user':
             (new AdminController())->saveUser();
+            break;
+
+        // --- TEACHER / FACULTY PORTAL ---
+        case 'teacher/dashboard':
+            (new TeacherController())->getDashboard();
+            break;
+        case 'teacher/class-students':
+            (new TeacherController())->getClassStudents();
+            break;
+        case 'teacher/save-grades':
+            (new TeacherController())->saveGrades();
+            break;
+        case 'teacher/advisory-section':
+            (new TeacherController())->getAdvisorySection();
+            break;
+        case 'teacher/save-values':
+            (new TeacherController())->saveAdvisoryValues();
+            break;
+        case 'teacher/save-attendance':
+            (new TeacherController())->saveAttendance();
             break;
 
         default:

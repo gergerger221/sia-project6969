@@ -145,6 +145,14 @@ export default {
   getUsers: (role = '') => apiRequest(`admin/users${role ? '&role=' + role : ''}`),
   saveUser: (data) => apiRequest('admin/save-user', { method: 'POST', body: data }),
 
+  // Teacher Portal
+  getTeacherDashboard: () => apiRequest('teacher/dashboard'),
+  getTeacherClassStudents: (sectionId, subjectId) => apiRequest(`teacher/class-students&section_id=${sectionId}&subject_id=${subjectId}`),
+  saveTeacherGrades: (data) => apiRequest('teacher/save-grades', { method: 'POST', body: data }),
+  getTeacherAdvisorySection: (sectionId = '') => apiRequest(`teacher/advisory-section${sectionId ? `&section_id=${sectionId}` : ''}`),
+  saveTeacherAdvisoryValues: (data) => apiRequest('teacher/save-values', { method: 'POST', body: data }),
+  saveTeacherAttendance: (data) => apiRequest('teacher/save-attendance', { method: 'POST', body: data }),
+
   // SMTP Testing Simulator
   getSmtpConfig: () => apiRequest('auth/smtp-config'),
   testSmtp: (data) => apiRequest('auth/test-smtp', { method: 'POST', body: data })

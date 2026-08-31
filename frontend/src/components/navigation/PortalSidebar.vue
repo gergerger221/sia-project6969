@@ -264,7 +264,7 @@ import {
   ShieldCheck, Activity, Users, Lock, BookOpen, Layers, Clock, Calendar,
   FileCheck, ListOrdered, FolderArchive, Receipt, CreditCard, Percent,
   Table, FileSpreadsheet, Award, User, Compass, UploadCloud, CheckCircle,
-  FileText, ChevronDown, ChevronRight
+  FileText, ChevronDown, ChevronRight, GraduationCap
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -354,6 +354,19 @@ const adminPortalGroups = [
       { id: 'school_forms', label: 'DepEd Forms (SF1 & SF5)', icon: Table, tab: 'school_forms' },
       { id: 'honors', label: 'Honors & Ranking Engine', icon: Award, tab: 'honors' },
       { id: 'transferees', label: 'Transferee F137 Tracker', icon: FileSpreadsheet, tab: 'transferees' }
+    ]
+  },
+  {
+    id: 'teacher',
+    label: 'Teacher & Faculty Portal',
+    basePath: '/teacher',
+    icon: GraduationCap,
+    children: [
+      { id: 'schedule', label: 'Weekly Schedule & Classes', icon: Clock, tab: 'schedule' },
+      { id: 'grading', label: 'Electronic Class Record', icon: FileSpreadsheet, tab: 'grading' },
+      { id: 'roster', label: 'Class Masterlists', icon: Users, tab: 'roster' },
+      { id: 'advisory', label: 'Advisory Section (SF9)', icon: Award, tab: 'advisory' },
+      { id: 'attendance', label: 'Attendance Sheet (SF2)', icon: Calendar, tab: 'attendance' }
     ]
   }
 ];
@@ -449,6 +462,7 @@ const currentRoleTitle = computed(() => {
     case 'registrar': return 'Registrar Portal';
     case 'treasury': return 'Treasury & Cashier';
     case 'records': return 'Records Custodian';
+    case 'teacher': return 'Teacher & Faculty Portal';
     case 'student': return 'Student Portal';
     case 'applicant': return 'Admission Portal';
     default: return 'Institutional Portal';
@@ -457,6 +471,7 @@ const currentRoleTitle = computed(() => {
 
 const activeSectionLabel = computed(() => {
   const slug = props.currentUser?.role_slug;
+  if (slug === 'teacher') return 'Faculty Instruction & Grading';
   if (slug === 'student') return 'Student Services';
   if (slug === 'applicant') return 'Admission Services';
   if (slug === 'coordinator') return 'Curriculum & Scheduling';
@@ -471,7 +486,18 @@ const activeNavItems = computed(() => {
   const slug = props.currentUser?.role_slug;
   const currentPath = route.path;
 
-  // 1. Coordinator Navigation
+  // 1. Teacher / Faculty Navigation
+  if (currentPath === '/teacher' || slug === 'teacher') {
+    return [
+      { id: 'schedule', label: 'Weekly Schedule & Classes', icon: Clock, path: '/teacher', tab: 'schedule' },
+      { id: 'grading', label: 'Electronic Class Record', icon: FileSpreadsheet, path: '/teacher', tab: 'grading' },
+      { id: 'roster', label: 'Class Masterlists', icon: Users, path: '/teacher', tab: 'roster' },
+      { id: 'advisory', label: 'Advisory Section (SF9)', icon: Award, path: '/teacher', tab: 'advisory' },
+      { id: 'attendance', label: 'Attendance Sheet (SF2)', icon: Calendar, path: '/teacher', tab: 'attendance' }
+    ];
+  }
+
+  // 2. Coordinator Navigation
   if (currentPath === '/coordinator' || slug === 'coordinator') {
     return [
       { id: 'curriculum', label: 'DepEd Curriculum', icon: BookOpen, path: '/coordinator', tab: 'curriculum' },
@@ -482,7 +508,7 @@ const activeNavItems = computed(() => {
     ];
   }
 
-  // 2. Registrar Navigation
+  // 3. Registrar Navigation
   if (currentPath === '/registrar' || slug === 'registrar') {
     return [
       { id: 'applications', label: 'Admission Review', icon: FileCheck, path: '/registrar', tab: 'applications' },
@@ -491,7 +517,7 @@ const activeNavItems = computed(() => {
     ];
   }
 
-  // 3. Treasury Navigation
+  // 4. Treasury Navigation
   if (currentPath === '/treasury' || slug === 'treasury') {
     return [
       { id: 'assessments', label: 'Billing Assessments & OR', icon: Receipt, path: '/treasury', tab: 'assessments' },
@@ -500,7 +526,7 @@ const activeNavItems = computed(() => {
     ];
   }
 
-  // 4. Records Custodian Navigation
+  // 5. Records Custodian Navigation
   if (currentPath === '/records' || slug === 'records') {
     return [
       { id: 'records', label: 'Permanent Records & SF10', icon: FolderArchive, path: '/records', tab: 'records' },
@@ -511,7 +537,7 @@ const activeNavItems = computed(() => {
     ];
   }
 
-  // 5. Student Navigation
+  // 6. Student Navigation
   if (slug === 'student' || currentPath === '/student') {
     return [
       { id: 'schedule', label: 'My Timetable & Schedule', icon: BookOpen, path: '/student', tab: 'schedule' },
@@ -521,7 +547,7 @@ const activeNavItems = computed(() => {
     ];
   }
 
-  // 6. Applicant Admission Services
+  // 7. Applicant Admission Services
   if (slug === 'applicant' || currentPath === '/admission') {
     return [
       { id: 'wizard', label: 'Admission Application', icon: FileText, path: '/admission', tab: 'wizard' },

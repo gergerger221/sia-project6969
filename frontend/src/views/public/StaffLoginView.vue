@@ -131,12 +131,19 @@
             </div>
             <CreditCard class="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition" />
           </button>
-          <button @click="fillCredentials('records')" type="button" class="col-span-2 p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 hover:border-blue-500 text-left transition flex items-center justify-between cursor-pointer group shadow-2xs">
+          <button @click="fillCredentials('records')" type="button" class="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 hover:border-blue-500 text-left transition flex items-center justify-between cursor-pointer group shadow-2xs">
             <div>
-              <span class="font-bold text-white block text-[11px]">School Records Custodian</span>
+              <span class="font-bold text-white block text-[11px]">School Records</span>
               <span class="text-[10px] text-slate-400 font-mono">records</span>
             </div>
             <FolderArchive class="w-3.5 h-3.5 text-blue-300 group-hover:scale-110 transition" />
+          </button>
+          <button @click="fillCredentials('teacher')" type="button" class="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 hover:border-blue-500 text-left transition flex items-center justify-between cursor-pointer group shadow-2xs">
+            <div>
+              <span class="font-bold text-white block text-[11px]">Teacher / Faculty</span>
+              <span class="text-[10px] text-slate-400 font-mono">teacher</span>
+            </div>
+            <GraduationCap class="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition" />
           </button>
         </div>
       </div>
@@ -157,7 +164,7 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { 
   User, Eye, EyeOff, AlertCircle, ShieldCheck, 
-  ArrowRight, ArrowLeft, Key, Shield, Calendar, FileCheck, CreditCard, FolderArchive 
+  ArrowRight, ArrowLeft, Key, Shield, Calendar, FileCheck, CreditCard, FolderArchive, GraduationCap 
 } from 'lucide-vue-next';
 import api from '../../services/api';
 import { getRoleRouteName } from '../../router';

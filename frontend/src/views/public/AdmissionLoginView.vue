@@ -153,8 +153,10 @@ const handleLogin = async () => {
     });
 
     if (res.data && res.data.token) {
-      localStorage.setItem('sia_auth_token', res.data.token);
-      localStorage.setItem('sia_auth_user', JSON.stringify(res.data));
+      sessionStorage.setItem('sia_auth_token', res.data.token);
+      sessionStorage.setItem('sia_auth_user', JSON.stringify(res.data));
+      localStorage.removeItem('sia_auth_token');
+      localStorage.removeItem('sia_auth_user');
       window.dispatchEvent(new Event('auth-changed'));
 
       const targetRoute = getRoleRouteName(res.data.role_slug);

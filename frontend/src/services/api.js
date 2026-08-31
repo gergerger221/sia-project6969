@@ -17,7 +17,7 @@ export const BASE_URL = `${window.location.origin}/${rootFolder}/backend/`;
 
 
 export async function apiRequest(endpoint, options = {}) {
-  const token = localStorage.getItem('sia_auth_token');
+  const token = sessionStorage.getItem('sia_auth_token') || localStorage.getItem('sia_auth_token');
   const headers = {
     ...(options.headers || {})
   };
@@ -43,6 +43,8 @@ export async function apiRequest(endpoint, options = {}) {
 
     if (!response.ok || !data.success) {
       if (response.status === 401) {
+        sessionStorage.removeItem('sia_auth_token');
+        sessionStorage.removeItem('sia_auth_user');
         localStorage.removeItem('sia_auth_token');
         localStorage.removeItem('sia_auth_user');
       }

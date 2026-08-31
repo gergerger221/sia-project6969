@@ -1973,6 +1973,8 @@ const switchToOnlineMode = async () => {
 };
 
 const goToStudentLogin = () => {
+  sessionStorage.removeItem('sia_auth_token');
+  sessionStorage.removeItem('sia_auth_user');
   localStorage.removeItem('sia_auth_token');
   localStorage.removeItem('sia_auth_user');
   window.dispatchEvent(new Event('auth-changed'));

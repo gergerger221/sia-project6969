@@ -518,8 +518,8 @@ const enrollInStrand = async (strand) => {
 
   closeStrandModal();
 
-  const token = localStorage.getItem('sia_auth_token');
-  const userJson = localStorage.getItem('sia_auth_user');
+  const token = sessionStorage.getItem('sia_auth_token') || localStorage.getItem('sia_auth_token');
+  const userJson = sessionStorage.getItem('sia_auth_user') || localStorage.getItem('sia_auth_user');
 
   if (token && userJson) {
     try {
@@ -552,8 +552,8 @@ const enrollInStrand = async (strand) => {
 };
 
 onMounted(() => {
-  const token = localStorage.getItem('sia_auth_token');
-  const userJson = localStorage.getItem('sia_auth_user');
+  const token = sessionStorage.getItem('sia_auth_token') || localStorage.getItem('sia_auth_token');
+  const userJson = sessionStorage.getItem('sia_auth_user') || localStorage.getItem('sia_auth_user');
   if (token && userJson) {
     try {
       const user = JSON.parse(userJson);

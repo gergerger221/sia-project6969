@@ -346,8 +346,10 @@ const handleRegister = async () => {
     sessionStorage.removeItem(DRAFT_KEY);
     localStorage.removeItem(DRAFT_KEY);
 
-    localStorage.setItem('sia_auth_token', user.token);
-    localStorage.setItem('sia_auth_user', JSON.stringify(user));
+    sessionStorage.setItem('sia_auth_token', user.token);
+    sessionStorage.setItem('sia_auth_user', JSON.stringify(user));
+    localStorage.removeItem('sia_auth_token');
+    localStorage.removeItem('sia_auth_user');
     window.dispatchEvent(new Event('auth-changed'));
 
     router.push('/admission');

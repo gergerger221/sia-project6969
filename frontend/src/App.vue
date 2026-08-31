@@ -601,7 +601,7 @@ const userInitials = computed(() => {
 });
 
 const loadCurrentUser = () => {
-  const userJson = localStorage.getItem('sia_auth_user');
+  const userJson = sessionStorage.getItem('sia_auth_user') || localStorage.getItem('sia_auth_user');
   if (userJson) {
     try {
       currentUser.value = JSON.parse(userJson);
@@ -621,6 +621,8 @@ const confirmLogout = async () => {
   } catch (e) {
     // Ignore error on logout
   }
+  sessionStorage.removeItem('sia_auth_token');
+  sessionStorage.removeItem('sia_auth_user');
   localStorage.removeItem('sia_auth_token');
   localStorage.removeItem('sia_auth_user');
   currentUser.value = null;

@@ -76,8 +76,8 @@ export const getRoleRoutePath = (roleSlug) => {
 };
 
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('sia_auth_token');
-  const userJson = localStorage.getItem('sia_auth_user');
+  const token = sessionStorage.getItem('sia_auth_token') || localStorage.getItem('sia_auth_token');
+  const userJson = sessionStorage.getItem('sia_auth_user') || localStorage.getItem('sia_auth_user');
   const user = userJson ? JSON.parse(userJson) : null;
 
   // 1. If logged in and trying to access public landing / auth pages (Home, Login, StaffLogin, Register)

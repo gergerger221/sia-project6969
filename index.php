@@ -1,7 +1,7 @@
 <?php
 // Root entry point: Redirect to built offline frontend or serve directly
 if (file_exists(__DIR__ . '/frontend/dist/index.html')) {
-    header('Location: frontend/dist/index.html');
+    header('Location: frontend/dist/');
     exit;
 } else {
     echo "<h1>SIA High School Admission & Enrollment Portal</h1>";

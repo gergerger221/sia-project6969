@@ -2,6 +2,11 @@
 // backend/api/index.php
 declare(strict_types=1);
 
+// Start output buffering to capture any accidental warnings or notices
+if (!ob_get_level()) {
+    ob_start();
+}
+
 // Set header defaults
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');

@@ -93,6 +93,14 @@ class TeacherController {
         $advStmt->execute(['teacher_id' => $teacherId]);
         $advisorySections = $advStmt->fetchAll();
 
+        // Calculate Totals
+        $totalClasses = count($teachingClasses);
+        $totalPeriods = count($weeklySchedules);
+        $totalStudents = 0;
+        foreach ($teachingClasses as $c) {
+            $totalStudents += (int)($c['enrolled_count'] ?? 0);
+        }
+
         // Calculate Workload Hours per Semester (DepEd Magna Carta RA 4670 & DO 005, s. 2024: max 30 hrs/week)
         $workload1stSem = 0;
         $workload2ndSem = 0;

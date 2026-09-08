@@ -623,7 +623,7 @@ const loadCurrentUser = () => {
 };
 
 const confirmLogout = async () => {
-  const isStaff = currentUser.value && ['admin', 'registrar', 'treasury', 'coordinator', 'records'].includes(currentUser.value.role_slug);
+  const isStaff = (currentUser.value && ['admin', 'registrar', 'treasury', 'coordinator', 'records', 'teacher'].includes(currentUser.value.role_slug)) || route.path.startsWith('/teacher');
   showLogoutConfirm.value = false;
   try {
     await api.logout();

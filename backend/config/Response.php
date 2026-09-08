@@ -13,6 +13,11 @@ class Response {
             http_response_code($statusCode);
         }
 
+        // Clear any previous output or stray PHP warning buffer to prevent JSON corruption
+        if (ob_get_length()) {
+            ob_clean();
+        }
+
         echo json_encode([
             'success' => $success,
             'message' => $message,

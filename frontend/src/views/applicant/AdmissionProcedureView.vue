@@ -86,7 +86,7 @@
           </p>
         </div>
       </div>
-      <button @click="activeStep = 3" class="whitespace-nowrap px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-sm transition flex items-center space-x-1.5 shrink-0 cursor-pointer">
+      <button @click="selectStep(3)" class="whitespace-nowrap px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-sm transition flex items-center space-x-1.5 shrink-0 cursor-pointer">
         <span>Fix Deficient Files</span>
         <ArrowRight class="w-3.5 h-3.5" />
       </button>
@@ -133,9 +133,11 @@
           v-for="st in steps"
           :key="st.id"
           type="button"
+          :disabled="isSaving"
           @click="selectStep(st.id)"
           :class="[
             'p-3 sm:p-3.5 rounded-2xl text-left transition-all border flex items-center space-x-3 group',
+            isSaving ? 'cursor-wait opacity-80' : '',
             activeStep === st.id 
               ? 'bg-[#08182b] text-white border-blue-900 shadow-md ring-2 ring-blue-900/20 cursor-default' 
               : isStepDone(st.id) 
@@ -154,7 +156,8 @@
                   : 'bg-slate-200 text-slate-500'
             ]"
           >
-            <Check v-if="isStepDone(st.id) && activeStep !== st.id" class="w-4 h-4 stroke-[3]" />
+            <span v-if="isSaving && activeStep === st.id" class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+            <Check v-else-if="isStepDone(st.id) && activeStep !== st.id" class="w-4 h-4 stroke-[3]" />
             <Lock v-else-if="!canAccessStep(st.id)" class="w-3.5 h-3.5" />
             <span v-else>{{ st.id }}</span>
           </div>
@@ -165,10 +168,21 @@
               {{ st.title }}
             </div>
             <div class="text-[10px] truncate leading-tight mt-0.5" :class="activeStep === st.id ? 'text-blue-200' : (isStepDone(st.id) ? 'text-emerald-700 font-semibold' : 'text-slate-400')">
-              {{ isStepDone(st.id) && activeStep !== st.id ? '✓ Completed (Click to Edit)' : (activeStep === st.id ? 'Currently Active' : 'Upcoming') }}
+              {{ isSaving && activeStep === st.id ? 'Saving changes...' : (isStepDone(st.id) && activeStep !== st.id ? '✓ Completed (Click to Edit)' : (activeStep === st.id ? 'Currently Active' : 'Upcoming')) }}
             </div>
           </div>
         </button>
+      </div>
+
+      <!-- Step Lock / Incomplete Warning Notice -->
+      <div v-if="stepLockNotice" class="mt-4 p-3.5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-950 text-xs flex items-center justify-between shadow-2xs animate-in fade-in duration-200">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-7 h-7 rounded-lg bg-amber-200 text-amber-900 flex items-center justify-center shrink-0">
+            <Lock class="w-4 h-4 text-amber-800" />
+          </div>
+          <span class="font-semibold">{{ stepLockNotice }}</span>
+        </div>
+        <button @click="stepLockNotice = ''" class="text-amber-700 hover:text-amber-950 text-xs font-bold px-2 py-1 rounded cursor-pointer">✕</button>
       </div>
     </div>
 
@@ -256,7 +270,7 @@
               </div>
               <div>
                 <h4 class="font-extrabold text-sm text-rose-950">Incomplete Required Fields</h4>
-                <p class="text-xs text-rose-800 mt-0.5 font-medium">Please correct the highlighted fields marked with an asterisk <span class="font-bold text-rose-600">(*)</span> before proceeding to Step 2.</p>
+                <p class="text-xs text-rose-800 mt-0.5 font-medium">Please correct the highlighted fields marked with an asterisk <span class="font-bold text-rose-600">(*)</span> before proceeding or switching steps in the admission process.</p>
               </div>
             </div>
 
@@ -589,9 +603,19 @@
 
             <!-- Submit Button Area -->
             <div class="flex justify-end pt-2">
-              <button type="submit" class="px-8 py-3.5 rounded-xl font-bold bg-blue-900 hover:bg-blue-800 text-white text-xs sm:text-sm shadow-md hover:scale-[1.01] active:scale-[0.99] transition flex items-center space-x-2 cursor-pointer border border-blue-800">
-                <span>Save Demographics & Proceed to Step 2</span>
-                <ArrowRight class="w-4 h-4" />
+              <button 
+                type="submit" 
+                :disabled="isSaving"
+                class="px-8 py-3.5 rounded-xl font-bold bg-blue-900 hover:bg-blue-800 text-white text-xs sm:text-sm shadow-md hover:scale-[1.01] active:scale-[0.99] transition flex items-center space-x-2 cursor-pointer border border-blue-800 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <span v-if="isSaving && activeStep === 1" class="flex items-center space-x-2">
+                  <span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  <span>Saving Demographics...</span>
+                </span>
+                <span v-else class="flex items-center space-x-2">
+                  <span>Save Demographics & Proceed to Step 2</span>
+                  <ArrowRight class="w-4 h-4" />
+                </span>
               </button>
             </div>
           </form>
@@ -611,7 +635,7 @@
             </div>
             <div>
               <h4 class="font-extrabold text-sm text-rose-950">Incomplete Academic Details</h4>
-              <p class="text-xs text-rose-800 mt-0.5 font-medium">Please review and complete the highlighted required fields marked with <span class="font-bold text-rose-600">*</span> before proceeding to Step 3.</p>
+              <p class="text-xs text-rose-800 mt-0.5 font-medium">Please review and complete the highlighted required fields marked with <span class="font-bold text-rose-600">*</span> before proceeding or switching steps in the admission process.</p>
             </div>
           </div>
 
@@ -744,12 +768,27 @@
             </div>
 
             <div class="flex items-center justify-between pt-4 border-t border-slate-100">
-              <button type="button" @click="activeStep = 1" class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 text-sm transition">
+              <button 
+                type="button" 
+                @click="goBackToStep1" 
+                :disabled="isSaving"
+                class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 text-sm transition cursor-pointer disabled:opacity-50"
+              >
                 ← Back to Step 1
               </button>
-              <button type="submit" class="px-6 py-2.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white text-sm shadow-md transition flex items-center space-x-2 cursor-pointer">
-                <span>Save Program & Proceed to Step 3</span>
-                <ArrowRight class="w-4 h-4" />
+              <button 
+                type="submit" 
+                :disabled="isSaving"
+                class="px-6 py-2.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white text-sm shadow-md transition flex items-center space-x-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <span v-if="isSaving && activeStep === 2" class="flex items-center space-x-2">
+                  <span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  <span>Saving Academic Program...</span>
+                </span>
+                <span v-else class="flex items-center space-x-2">
+                  <span>Save Program & Proceed to Step 3</span>
+                  <ArrowRight class="w-4 h-4" />
+                </span>
               </button>
             </div>
           </form>
@@ -2092,6 +2131,7 @@ const application = ref(null);
 const academicOptions = ref({ grade_levels: [], tracks: [], strands: [] });
 const isLoading = ref(false);
 const isSubmitting = ref(false);
+const isSaving = ref(false);
 const isPayingOnline = ref(false);
 const showPaymongoModal = ref(false);
 const paymongoError = ref('');
@@ -2404,16 +2444,33 @@ const missingMandatoryDocs = computed(() => {
 });
 
 const isStep1Completed = computed(() => {
-  return !!(application.value?.lrn && application.value?.first_name && application.value?.last_name);
+  const app = application.value;
+  if (!app) return false;
+  return !!(
+    app.lrn && String(app.lrn).trim().length === 12 &&
+    app.first_name?.trim() &&
+    app.last_name?.trim() &&
+    app.gender &&
+    app.birthdate &&
+    app.birthplace?.trim() &&
+    app.address_barangay?.trim() &&
+    app.address_city?.trim() &&
+    app.address_province?.trim() &&
+    app.guardian_name?.trim() &&
+    app.guardian_relationship?.trim() &&
+    app.contact_number?.trim()
+  );
 });
 
 const isStep2Completed = computed(() => {
   if (!isStep1Completed.value) return false;
-  if (!application.value?.grade_level_id) return false;
-  const gl = academicOptions.value.grade_levels.find(g => g.id === application.value.grade_level_id);
-  const isSHSLevel = gl?.category === 'SHS' || (application.value.grade_level_id >= 5);
+  const app = application.value;
+  if (!app?.grade_level_id) return false;
+  if (!app.last_school_attended?.trim() || !app.last_school_type) return false;
+  const gl = academicOptions.value.grade_levels.find(g => g.id === app.grade_level_id);
+  const isSHSLevel = gl?.category === 'SHS' || (app.grade_level_id >= 5);
   if (isSHSLevel) {
-    return !!application.value?.strand_id;
+    return !!(app.track_id && app.strand_id);
   }
   return true;
 });
@@ -2450,10 +2507,81 @@ const canAccessStep = (stepNumber) => {
   return false;
 };
 
-const selectStep = (stepNumber) => {
+const selectStep = async (stepNumber) => {
+  if (isSaving.value) return;
+  if (stepNumber === activeStep.value) return;
+
+  // 1. If currently on Step 1 (Personal Demographics)
+  if (activeStep.value === 1) {
+    const isValid = validateStep1();
+    if (!isValid) {
+      errorMessage.value = 'Please complete all required demographic fields highlighted in red below before navigating to another step.';
+      scrollToFirstError();
+      return; // CANNOT go to other forms in process stepper when a field is incomplete!
+    }
+
+    // Automatically save Step 1 info
+    isSaving.value = true;
+    errorMessage.value = '';
+    try {
+      const payload = {
+        ...form.value,
+        step: 1
+      };
+      await api.updateApplication(payload);
+      fieldErrors.value = {};
+      successMessage.value = 'Demographics saved successfully!';
+      await loadData();
+    } catch (err) {
+      if (err.data && err.data.errors) {
+        fieldErrors.value = err.data.errors;
+        scrollToFirstError();
+      }
+      errorMessage.value = err.message || 'Failed to save demographics.';
+      return; // Stop and do not switch steps
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
+  // 2. If currently on Step 2 (Academic Program & Strand)
+  else if (activeStep.value === 2) {
+    const isValid = validateStep2();
+    if (!isValid) {
+      errorMessage.value = 'Please complete all required academic program details highlighted below before navigating to another step.';
+      scrollToFirstError();
+      return; // CANNOT go to other forms in process stepper when a field is incomplete!
+    }
+
+    // Automatically save Step 2 info
+    isSaving.value = true;
+    errorMessage.value = '';
+    try {
+      const payload = {
+        ...form.value,
+        step: 2
+      };
+      await api.updateApplication(payload);
+      fieldErrors.value = {};
+      successMessage.value = 'Academic program details saved successfully!';
+      await loadData();
+    } catch (err) {
+      if (err.data && err.data.errors) {
+        fieldErrors.value = err.data.errors;
+        scrollToFirstError();
+      }
+      errorMessage.value = err.message || 'Failed to save academic program details.';
+      return; // Stop and do not switch steps
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
+  // 3. Now verify if target step is accessible
   if (canAccessStep(stepNumber)) {
     activeStep.value = stepNumber;
     stepLockNotice.value = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   } else {
     if (stepNumber === 2) {
       stepLockNotice.value = 'Please complete Demographics (Step 1) first.';
@@ -2475,6 +2603,26 @@ const selectStep = (stepNumber) => {
       }
     }
   }
+};
+
+const goBackToStep1 = async () => {
+  if (isSaving.value) return;
+  // If Step 2 happens to be valid, auto-save it
+  if (validateStep2()) {
+    try {
+      isSaving.value = true;
+      await api.updateApplication({ ...form.value, step: 2 });
+      await loadData();
+    } catch (e) {
+      // Ignore background save errors when user deliberately presses back
+    } finally {
+      isSaving.value = false;
+    }
+  }
+  fieldErrors.value = {};
+  errorMessage.value = '';
+  activeStep.value = 1;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 const getSidebarStepClass = (stepId) => {
@@ -2804,35 +2952,7 @@ const loadData = async () => {
 };
 
 const saveApplicationDetails = async (isStep2 = false) => {
-  errorMessage.value = '';
-  fieldErrors.value = {};
-
-  const isValid = isStep2 ? validateStep2() : validateStep1();
-  if (!isValid) {
-    errorMessage.value = isStep2 
-      ? 'Please complete all required academic program details highlighted below.' 
-      : 'Please complete all required demographic fields highlighted in red below.';
-    scrollToFirstError();
-    return;
-  }
-
-  try {
-    const payload = {
-      ...form.value,
-      step: isStep2 ? 2 : 1
-    };
-    await api.updateApplication(payload);
-    successMessage.value = 'Application saved successfully!';
-    activeStep.value = isStep2 ? 3 : 2;
-    await loadData();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  } catch (err) {
-    if (err.data && err.data.errors) {
-      fieldErrors.value = err.data.errors;
-      scrollToFirstError();
-    }
-    errorMessage.value = err.message || 'Failed to save application.';
-  }
+  await selectStep(isStep2 ? 3 : 2);
 };
 
 const handleFileUpload = async (event, docType) => {

@@ -103,32 +103,85 @@ class AdmissionController {
             Response::error('Your application has already been processed and cannot be edited directly.');
         }
 
-        // Strict Mobile number validation
+        $validationErrors = [];
+
+        // Demographic & Identification Fields
+        $firstName = trim($input['first_name'] ?? '');
+        $lastName = trim($input['last_name'] ?? '');
+        $gender = trim($input['gender'] ?? '');
+        $birthdate = trim($input['birthdate'] ?? '');
+        $birthplace = trim($input['birthplace'] ?? '');
         $rawContact = trim($input['contact_number'] ?? '');
         $cleanContact = preg_replace('/\D/', '', $rawContact);
-        if (!preg_match('/^09\d{9}$/', $cleanContact)) {
-            Response::error('Must be an 11-digit Philippine mobile number starting with 09.');
-        }
-
-        // Guardian mobile number validation if provided
+        $barangay = trim($input['address_barangay'] ?? '');
+        $city = trim($input['address_city'] ?? '');
+        $province = trim($input['address_province'] ?? '');
+        $guardianName = trim($input['guardian_name'] ?? '');
+        $guardianRel = trim($input['guardian_relationship'] ?? '');
         $rawGuardianContact = trim($input['guardian_contact'] ?? '');
-        if (!empty($rawGuardianContact)) {
-            $cleanGuardianContact = preg_replace('/\D/', '', $rawGuardianContact);
-            if (!preg_match('/^09\d{9}$/', $cleanGuardianContact)) {
-                Response::error('Guardian contact must be an 11-digit Philippine mobile number starting with 09.');
-            }
-        } else {
-            $cleanGuardianContact = $cleanContact;
-        }
-
-        // Global LRN Normalization and Uniqueness Check
+        $cleanGuardianContact = preg_replace('/\D/', '', $rawGuardianContact);
         $rawLrn = trim($input['lrn'] ?? '');
         $cleanLrn = preg_replace('/\D/', '', $rawLrn);
-        if (!empty($cleanLrn)) {
-            if (strlen($cleanLrn) !== 12) {
-                Response::error('DepEd Learner Reference Number (LRN) must be exactly 12 numeric digits.');
+
+        if (mb_strlen($firstName) < 2) {
+            $validationErrors['first_name'] = 'First name is required (minimum 2 letters).';
+        }
+        if (mb_strlen($lastName) < 2) {
+            $validationErrors['last_name'] = 'Last name is required (minimum 2 letters).';
+        }
+        if (!in_array($gender, ['Male', 'Female'])) {
+            $validationErrors['gender'] = 'Biological gender is required.';
+        }
+        if (empty($birthdate)) {
+            $validationErrors['birthdate'] = 'Date of birth is required.';
+        } else {
+            try {
+                $bdate = new \DateTime($birthdate);
+                $now = new \DateTime();
+                $age = $now->diff($bdate)->y;
+                if ($age < 11) {
+                    $validationErrors['birthdate'] = 'Applicant must be at least 11 years old for high school admission.';
+                } elseif ($age > 40) {
+                    $validationErrors['birthdate'] = 'Please check date of birth.';
+                }
+            } catch (\Exception $e) {
+                $validationErrors['birthdate'] = 'Invalid date format.';
             }
-            // Check global uniqueness across all other applications and enrollments
+        }
+        if (mb_strlen($birthplace) < 2) {
+            $validationErrors['birthplace'] = 'Place of birth is required as per PSA certificate.';
+        }
+        if (!preg_match('/^09\d{9}$/', $cleanContact)) {
+            $validationErrors['contact_number'] = 'Must be an 11-digit Philippine mobile number starting with 09.';
+        }
+        if (empty($barangay)) {
+            $validationErrors['address_barangay'] = 'Barangay is required.';
+        }
+        if (empty($city)) {
+            $validationErrors['address_city'] = 'City / Municipality is required.';
+        }
+        if (empty($province)) {
+            $validationErrors['address_province'] = 'Province is required.';
+        }
+        if (mb_strlen($guardianName) < 2) {
+            $validationErrors['guardian_name'] = 'Parent / Guardian full name is required.';
+        }
+        if (mb_strlen($guardianRel) < 2) {
+            $validationErrors['guardian_relationship'] = 'Relationship to student is required (e.g. Mother, Father, Guardian).';
+        }
+        if (empty($cleanGuardianContact)) {
+            $cleanGuardianContact = $cleanContact;
+        } elseif (!preg_match('/^09\d{9}$/', $cleanGuardianContact)) {
+            $validationErrors['guardian_contact'] = 'Guardian contact must be an 11-digit Philippine mobile number starting with 09.';
+        }
+
+        // LRN validation
+        if (empty($cleanLrn)) {
+            $validationErrors['lrn'] = 'DepEd 12-digit LRN is required.';
+        } elseif (strlen($cleanLrn) !== 12) {
+            $validationErrors['lrn'] = 'DepEd Learner Reference Number (LRN) must be exactly 12 numeric digits.';
+        } else {
+            // Check global uniqueness across other applications/enrollments
             $chkLrn = $db->prepare("
                 SELECT id FROM admission_applications WHERE lrn = :lrn1 AND id != :curr_app_id
                 UNION
@@ -142,58 +195,78 @@ class AdmissionController {
                 'curr_app_id2'  => $app['id']
             ]);
             if ($chkLrn->fetch()) {
-                Response::error('This LRN is already registered in the system. Please verify your LRN.');
+                $validationErrors['lrn'] = 'This LRN is already registered in the system. Please verify your LRN.';
             }
+        }
+
+        // Academic fields validation if Step 2 is submitted
+        $isStep2 = isset($input['step']) && (int)$input['step'] === 2;
+        $gradeLevelId = !empty($input['grade_level_id']) ? (int)$input['grade_level_id'] : null;
+        if ($isStep2 || $gradeLevelId !== null) {
+            if (!$gradeLevelId) {
+                $validationErrors['grade_level_id'] = 'Please select a grade level.';
+            } else {
+                $glStmt = $db->prepare("SELECT id, name, category FROM grade_levels WHERE id = :id LIMIT 1");
+                $glStmt->execute(['id' => $gradeLevelId]);
+                $gl = $glStmt->fetch();
+                $isShs = $gl && ($gl['category'] === 'SHS' || $gradeLevelId >= 5);
+                if ($isShs) {
+                    if (empty($input['track_id'])) {
+                        $validationErrors['track_id'] = 'Please select a Senior High academic track.';
+                    }
+                    if (empty($input['strand_id'])) {
+                        $validationErrors['strand_id'] = 'Please select a Senior High strand.';
+                    }
+                }
+            }
+
+            if (empty(trim($input['last_school_attended'] ?? ''))) {
+                $validationErrors['last_school_attended'] = 'Please provide the name of the last school attended.';
+            }
+            if (!in_array($input['last_school_type'] ?? '', ['Public', 'Private'])) {
+                $validationErrors['last_school_type'] = 'Please select previous school type.';
+            }
+        }
+
+        if (!empty($validationErrors)) {
+            $firstError = reset($validationErrors);
+            Response::error($firstError, 422, ['errors' => $validationErrors]);
         }
 
         $fields = [
             'applicant_type'        => in_array($input['applicant_type'] ?? '', ['New Student', 'Transferee']) ? $input['applicant_type'] : 'New Student',
             'lrn'                   => $cleanLrn,
-            'first_name'            => trim($input['first_name'] ?? ''),
+            'first_name'            => $firstName,
             'middle_name'           => trim($input['middle_name'] ?? ''),
-            'last_name'             => trim($input['last_name'] ?? ''),
+            'last_name'             => $lastName,
             'suffix'                => trim($input['suffix'] ?? ''),
-            'gender'                => $input['gender'] ?? 'Male',
-            'birthdate'             => $input['birthdate'] ?? '2010-01-01',
-            'birthplace'            => trim($input['birthplace'] ?? ''),
+            'gender'                => $gender,
+            'birthdate'             => $birthdate,
+            'birthplace'            => $birthplace,
             'civil_status'          => $input['civil_status'] ?? 'Single',
             'nationality'           => $input['nationality'] ?? 'Filipino',
             'religion'              => trim($input['religion'] ?? ''),
             'contact_number'        => $cleanContact,
             'email'                 => $user['email'], // Locked to the user's login account email
             'address_street'        => trim($input['address_street'] ?? ''),
-            'address_barangay'      => trim($input['address_barangay'] ?? ''),
-            'address_city'          => trim($input['address_city'] ?? ''),
-            'address_province'      => trim($input['address_province'] ?? ''),
+            'address_barangay'      => $barangay,
+            'address_city'          => $city,
+            'address_province'      => $province,
             'address_zip'           => trim($input['address_zip'] ?? ''),
-            'guardian_name'         => trim($input['guardian_name'] ?? ''),
-            'guardian_relationship' => trim($input['guardian_relationship'] ?? ''),
+            'guardian_name'         => $guardianName,
+            'guardian_relationship' => $guardianRel,
             'guardian_contact'      => $cleanGuardianContact,
             'guardian_occupation'   => trim($input['guardian_occupation'] ?? ''),
             'last_school_attended'  => trim($input['last_school_attended'] ?? ''),
             'last_school_type'      => $input['last_school_type'] ?? 'Public',
             'last_school_year'      => trim($input['last_school_year'] ?? ''),
             'last_grade_completed'  => trim($input['last_grade_completed'] ?? ''),
-            'grade_level_id'        => !empty($input['grade_level_id']) ? (int)$input['grade_level_id'] : null,
+            'grade_level_id'        => $gradeLevelId,
             'track_id'              => !empty($input['track_id']) ? (int)$input['track_id'] : null,
             'strand_id'             => !empty($input['strand_id']) ? (int)$input['strand_id'] : null,
             'voucher_status'        => $input['voucher_status'] ?? 'None',
             'id'                    => (int)$app['id']
         ];
-
-        // Minimum age validation (High school applicants must be at least 11 years old)
-        if (!empty($fields['birthdate'])) {
-            try {
-                $bdate = new \DateTime($fields['birthdate']);
-                $now = new \DateTime();
-                $age = $now->diff($bdate)->y;
-                if ($age < 11) {
-                    Response::error('Applicant must be at least 11 years old for high school admission.');
-                }
-            } catch (\Exception $e) {
-                Response::error('Invalid birthdate format.');
-            }
-        }
 
         $updateQuery = "
             UPDATE admission_applications SET

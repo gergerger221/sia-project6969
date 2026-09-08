@@ -247,7 +247,18 @@
       <!-- STEP 1: PERSONAL & DEMOGRAPHIC DETAILS -->
       <div v-if="activeStep === 1" class="space-y-6">
           
-          <form @submit.prevent="saveApplicationDetails(false)" class="space-y-6">
+          <form @submit.prevent="saveApplicationDetails(false)" novalidate class="space-y-6">
+
+            <!-- Validation Error Summary Banner -->
+            <div v-if="Object.keys(fieldErrors).length > 0" class="p-4 sm:p-5 rounded-2xl bg-rose-50 border-2 border-rose-300 text-rose-950 text-xs mb-4 shadow-sm flex items-start space-x-3.5 animate-in fade-in duration-200">
+              <div class="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                <AlertTriangle class="w-5 h-5 animate-pulse" />
+              </div>
+              <div>
+                <h4 class="font-extrabold text-sm text-rose-950">Incomplete Required Fields</h4>
+                <p class="text-xs text-rose-800 mt-0.5 font-medium">Please correct the highlighted fields marked with an asterisk <span class="font-bold text-rose-600">(*)</span> before proceeding to Step 2.</p>
+              </div>
+            </div>
 
             <!-- Card A: Learner Identification & LRN -->
             <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-5">
@@ -262,40 +273,60 @@
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">12-Digit DepEd LRN *</label>
+                <div :class="{ 'has-field-error': fieldErrors.lrn }" data-field-error="true">
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                    12-Digit DepEd LRN <span class="text-rose-500 font-bold">*</span>
+                  </label>
                   <input 
                     v-model="form.lrn" 
                     type="text" 
                     maxlength="12" 
-                    required 
                     @keydown="blockNonNumeric($event)"
-                    @input="handleNumericInput('lrn', $event, 12)"
+                    @input="handleNumericInput('lrn', $event, 12); clearFieldError('lrn')"
                     placeholder="e.g. 102938475611" 
-                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                    :class="fieldErrors.lrn ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border bg-slate-50/60 focus:bg-white text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
                   />
-                  <span class="text-[10px] text-slate-500 block mt-1">Found on Form 137 / 138 report card</span>
+                  <p v-if="fieldErrors.lrn" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1.5 font-semibold">
+                    <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.lrn }}
+                  </p>
+                  <span v-else class="text-[10px] text-slate-500 block mt-1">Found on Form 137 / 138 report card</span>
                 </div>
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Applicant Type *</label>
-                  <select v-model="form.applicant_type" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition">
+                <div :class="{ 'has-field-error': fieldErrors.applicant_type }">
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                    Applicant Type <span class="text-rose-500 font-bold">*</span>
+                  </label>
+                  <select 
+                    v-model="form.applicant_type" 
+                    @change="clearFieldError('applicant_type')"
+                    :class="fieldErrors.applicant_type ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20' : 'border-slate-300'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border bg-slate-50/60 focus:bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition"
+                  >
                     <option value="New Student">New Student (Fresh Enrollee)</option>
                     <option value="Transferee">Transferee from Other School</option>
                   </select>
+                  <p v-if="fieldErrors.applicant_type" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1.5 font-semibold">
+                    <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.applicant_type }}
+                  </p>
                 </div>
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Contact Mobile Number *</label>
+                <div :class="{ 'has-field-error': fieldErrors.contact_number }">
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                    Contact Mobile Number <span class="text-rose-500 font-bold">*</span>
+                  </label>
                   <input 
                     v-model="form.contact_number" 
                     type="tel" 
-                    required 
                     maxlength="11"
                     @keydown="blockNonNumeric($event)"
-                    @input="handleNumericInput('contact_number', $event, 11)"
+                    @input="handleNumericInput('contact_number', $event, 11); clearFieldError('contact_number')"
                     placeholder="09171234567" 
-                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                    :class="fieldErrors.contact_number ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border bg-slate-50/60 focus:bg-white text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
                   />
-                  <span class="text-[10px] text-slate-500 block mt-1">11-digit mobile (e.g. 0917XXXXXXX)</span>
+                  <p v-if="fieldErrors.contact_number" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1.5 font-semibold">
+                    <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.contact_number }}
+                  </p>
+                  <span v-else class="text-[10px] text-slate-500 block mt-1">11-digit mobile (e.g. 0917XXXXXXX)</span>
                 </div>
               </div>
             </div>
@@ -314,17 +345,22 @@
 
               <!-- Full Name Fields -->
               <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">First Name *</label>
+                <div :class="{ 'has-field-error': fieldErrors.first_name }">
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                    First Name <span class="text-rose-500 font-bold">*</span>
+                  </label>
                   <input 
                     v-model="form.first_name" 
                     type="text" 
-                    required 
                     @keydown="blockNonAlphabetic($event)"
-                    @input="handleAlphabeticInput('first_name', $event)"
+                    @input="handleAlphabeticInput('first_name', $event); clearFieldError('first_name')"
                     placeholder="Given Name" 
-                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                    :class="fieldErrors.first_name ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border bg-slate-50/60 focus:bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
                   />
+                  <p v-if="fieldErrors.first_name" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
+                    <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.first_name }}
+                  </p>
                 </div>
                 <div>
                   <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Middle Name</label>
@@ -337,17 +373,22 @@
                     class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
                   />
                 </div>
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Last Name *</label>
+                <div :class="{ 'has-field-error': fieldErrors.last_name }">
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                    Last Name <span class="text-rose-500 font-bold">*</span>
+                  </label>
                   <input 
                     v-model="form.last_name" 
                     type="text" 
-                    required 
                     @keydown="blockNonAlphabetic($event)"
-                    @input="handleAlphabeticInput('last_name', $event)"
+                    @input="handleAlphabeticInput('last_name', $event); clearFieldError('last_name')"
                     placeholder="Family Name" 
-                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                    :class="fieldErrors.last_name ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border bg-slate-50/60 focus:bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
                   />
+                  <p v-if="fieldErrors.last_name" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
+                    <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.last_name }}
+                  </p>
                 </div>
                 <div>
                   <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Suffix</label>
@@ -364,36 +405,116 @@
 
               <!-- Gender & Birth Details -->
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Biological Gender *</label>
-                  <select v-model="form.gender" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition">
+                <div :class="{ 'has-field-error': fieldErrors.gender }">
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                    Biological Gender <span class="text-rose-500 font-bold">*</span>
+                  </label>
+                  <select 
+                    v-model="form.gender" 
+                    @change="clearFieldError('gender')"
+                    :class="fieldErrors.gender ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition"
+                  >
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                   </select>
+                  <p v-if="fieldErrors.gender" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
+                    <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.gender }}
+                  </p>
                 </div>
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Date of Birth (Min 11 y/o) *</label>
-                  <input v-model="form.birthdate" type="date" :min="minBirthdate" :max="maxBirthdate" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" />
+                <div :class="{ 'has-field-error': fieldErrors.birthdate }">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Date of Birth <span class="text-rose-500 font-bold">*</span>
+                    </label>
+                    <span 
+                      v-if="applicantAge !== null" 
+                      class="text-[10px] font-bold px-2 py-0.5 rounded-md"
+                      :class="applicantAge >= 11 && applicantAge <= 40 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
+                    >
+                      Age: {{ applicantAge }} y/o {{ applicantAge >= 11 && applicantAge <= 40 ? '✓' : '(Min 11 y/o)' }}
+                    </span>
+                  </div>
+                  <input 
+                    v-model="form.birthdate" 
+                    type="date" 
+                    :min="minBirthdate" 
+                    :max="maxBirthdate" 
+                    @input="clearFieldError('birthdate')"
+                    :class="fieldErrors.birthdate ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                  />
+                  <p v-if="fieldErrors.birthdate" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
+                    <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.birthdate }}
+                  </p>
                 </div>
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Place of Birth *</label>
-                  <input v-model="form.birthplace" type="text" placeholder="City / Municipality" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" />
+                <div :class="{ 'has-field-error': fieldErrors.birthplace }">
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                    Place of Birth <span class="text-rose-500 font-bold">*</span>
+                  </label>
+                  <input 
+                    v-model="form.birthplace" 
+                    type="text" 
+                    @input="clearFieldError('birthplace')"
+                    placeholder="City / Municipality" 
+                    :class="fieldErrors.birthplace ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                  />
+                  <p v-if="fieldErrors.birthplace" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
+                    <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.birthplace }}
+                  </p>
                 </div>
               </div>
 
               <!-- Address Fields -->
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Barangay *</label>
-                  <input v-model="form.address_barangay" type="text" required placeholder="e.g. Barangay 405" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" />
+                <div :class="{ 'has-field-error': fieldErrors.address_barangay }">
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                    Barangay <span class="text-rose-500 font-bold">*</span>
+                  </label>
+                  <input 
+                    v-model="form.address_barangay" 
+                    type="text" 
+                    @input="clearFieldError('address_barangay')"
+                    placeholder="e.g. Barangay 405" 
+                    :class="fieldErrors.address_barangay ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                  />
+                  <p v-if="fieldErrors.address_barangay" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
+                    <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.address_barangay }}
+                  </p>
                 </div>
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">City / Municipality *</label>
-                  <input v-model="form.address_city" type="text" required placeholder="e.g. Biringan City" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" />
+                <div :class="{ 'has-field-error': fieldErrors.address_city }">
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                    City / Municipality <span class="text-rose-500 font-bold">*</span>
+                  </label>
+                  <input 
+                    v-model="form.address_city" 
+                    type="text" 
+                    @input="clearFieldError('address_city')"
+                    placeholder="e.g. Biringan City" 
+                    :class="fieldErrors.address_city ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                  />
+                  <p v-if="fieldErrors.address_city" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
+                    <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.address_city }}
+                  </p>
                 </div>
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Province *</label>
-                  <input v-model="form.address_province" type="text" required placeholder="e.g. Samar" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" />
+                <div :class="{ 'has-field-error': fieldErrors.address_province }">
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                    Province <span class="text-rose-500 font-bold">*</span>
+                  </label>
+                  <input 
+                    v-model="form.address_province" 
+                    type="text" 
+                    @input="clearFieldError('address_province')"
+                    placeholder="e.g. Samar" 
+                    :class="fieldErrors.address_province ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                  />
+                  <p v-if="fieldErrors.address_province" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
+                    <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.address_province }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -411,42 +532,57 @@
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Parent / Guardian Full Name *</label>
+                <div :class="{ 'has-field-error': fieldErrors.guardian_name }">
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                    Parent / Guardian Full Name <span class="text-rose-500 font-bold">*</span>
+                  </label>
                   <input 
                     v-model="form.guardian_name" 
                     type="text" 
-                    required 
                     @keydown="blockNonAlphabetic($event)"
-                    @input="handleAlphabeticInput('guardian_name', $event)"
+                    @input="handleAlphabeticInput('guardian_name', $event); clearFieldError('guardian_name')"
                     placeholder="Guardian's Name" 
-                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                    :class="fieldErrors.guardian_name ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
                   />
+                  <p v-if="fieldErrors.guardian_name" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
+                    <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.guardian_name }}
+                  </p>
                 </div>
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Relationship to Student *</label>
+                <div :class="{ 'has-field-error': fieldErrors.guardian_relationship }">
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                    Relationship to Student <span class="text-rose-500 font-bold">*</span>
+                  </label>
                   <input 
                     v-model="form.guardian_relationship" 
                     type="text" 
-                    required 
                     @keydown="blockNonAlphabetic($event)"
-                    @input="handleAlphabeticInput('guardian_relationship', $event)"
+                    @input="handleAlphabeticInput('guardian_relationship', $event); clearFieldError('guardian_relationship')"
                     placeholder="e.g. Mother, Father, Aunt" 
-                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                    :class="fieldErrors.guardian_relationship ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border bg-slate-50/60 focus:bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
                   />
+                  <p v-if="fieldErrors.guardian_relationship" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
+                    <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.guardian_relationship }}
+                  </p>
                 </div>
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Guardian Contact Number *</label>
+                <div :class="{ 'has-field-error': fieldErrors.guardian_contact }">
+                  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+                    Guardian Contact Number <span class="text-rose-500 font-bold">*</span>
+                  </label>
                   <input 
                     v-model="form.guardian_contact" 
                     type="tel" 
-                    required 
                     maxlength="11"
                     @keydown="blockNonNumeric($event)"
-                    @input="handleNumericInput('guardian_contact', $event, 11)"
+                    @input="handleNumericInput('guardian_contact', $event, 11); clearFieldError('guardian_contact')"
                     placeholder="09171234567" 
-                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50/60 focus:bg-white text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
+                    :class="fieldErrors.guardian_contact ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border bg-slate-50/60 focus:bg-white text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 transition" 
                   />
+                  <p v-if="fieldErrors.guardian_contact" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
+                    <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.guardian_contact }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -462,17 +598,35 @@
         </div>
 
         <!-- STEP 2: GRADE LEVEL & ACADEMIC STRAND -->
-        <div v-if="activeStep === 2" class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
-          <div class="border-b border-slate-100 pb-4 mb-6">
+        <div v-if="activeStep === 2" class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+          <div class="border-b border-slate-100 pb-4 mb-2">
             <h2 class="text-lg font-bold text-slate-800">Step 2: Academic Program & DepEd Voucher Subsidy</h2>
             <p class="text-xs text-slate-500 mt-1">Select your desired Junior High School grade or Senior High School strand.</p>
           </div>
 
-          <form @submit.prevent="saveApplicationDetails(true)" class="space-y-6">
-            <!-- Grade Level Selector -->
+          <!-- Validation Error Summary Banner -->
+          <div v-if="Object.keys(fieldErrors).length > 0" class="p-4 sm:p-5 rounded-2xl bg-rose-50 border-2 border-rose-300 text-rose-950 text-xs shadow-sm flex items-start space-x-3.5 animate-in fade-in duration-200">
+            <div class="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+              <AlertTriangle class="w-5 h-5 animate-pulse" />
+            </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Grade Level *</label>
-              <select v-model="form.grade_level_id" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white font-medium">
+              <h4 class="font-extrabold text-sm text-rose-950">Incomplete Academic Details</h4>
+              <p class="text-xs text-rose-800 mt-0.5 font-medium">Please review and complete the highlighted required fields marked with <span class="font-bold text-rose-600">*</span> before proceeding to Step 3.</p>
+            </div>
+          </div>
+
+          <form @submit.prevent="saveApplicationDetails(true)" novalidate class="space-y-6">
+            <!-- Grade Level Selector -->
+            <div :class="{ 'has-field-error': fieldErrors.grade_level_id }" data-field-error="true">
+              <label class="block text-xs font-semibold text-slate-700 mb-1">
+                Grade Level <span class="text-rose-500 font-bold">*</span>
+              </label>
+              <select 
+                v-model="form.grade_level_id" 
+                @change="clearFieldError('grade_level_id')"
+                :class="fieldErrors.grade_level_id ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                class="w-full px-3.5 py-2.5 rounded-xl border text-xs bg-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-900 transition"
+              >
                 <option :value="null">-- Select Grade Level --</option>
                 <optgroup label="Junior High School (JHS)">
                   <option v-for="gl in jhsLevels" :key="gl.id" :value="gl.id">{{ gl.name }} ({{ gl.code }})</option>
@@ -481,6 +635,9 @@
                   <option v-for="gl in shsLevels" :key="gl.id" :value="gl.id">{{ gl.name }} ({{ gl.code }})</option>
                 </optgroup>
               </select>
+              <p v-if="fieldErrors.grade_level_id" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1.5 font-semibold">
+                <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.grade_level_id }}
+              </p>
             </div>
 
             <!-- Track, Strand & Voucher Subsidy (ONLY IF SENIOR HIGH SCHOOL: GRADE 11 & 12) -->
@@ -491,46 +648,98 @@
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Senior High Track *</label>
-                  <select v-model="form.track_id" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-blue-900">
+                <div :class="{ 'has-field-error': fieldErrors.track_id }">
+                  <label class="block text-xs font-bold text-slate-700 mb-1">
+                    Senior High Track <span class="text-rose-500 font-bold">*</span>
+                  </label>
+                  <select 
+                    v-model="form.track_id" 
+                    @change="clearFieldError('track_id')"
+                    :class="fieldErrors.track_id ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-900 transition"
+                  >
                     <option :value="null">-- Select Track --</option>
                     <option v-for="tr in academicOptions.tracks" :key="tr.id" :value="tr.id">{{ tr.name }} ({{ tr.code }})</option>
                   </select>
+                  <p v-if="fieldErrors.track_id" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
+                    <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.track_id }}
+                  </p>
                 </div>
 
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Senior High Strand *</label>
-                  <select v-model="form.strand_id" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white font-medium focus:ring-2 focus:ring-blue-900">
+                <div :class="{ 'has-field-error': fieldErrors.strand_id }">
+                  <label class="block text-xs font-bold text-slate-700 mb-1">
+                    Senior High Strand <span class="text-rose-500 font-bold">*</span>
+                  </label>
+                  <select 
+                    v-model="form.strand_id" 
+                    @change="clearFieldError('strand_id')"
+                    :class="fieldErrors.strand_id ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border text-xs bg-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-900 transition"
+                  >
                     <option :value="null">-- Select Strand --</option>
                     <option v-for="st in filteredStrands" :key="st.id" :value="st.id">{{ st.name }} ({{ st.code }})</option>
                   </select>
+                  <p v-if="fieldErrors.strand_id" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
+                    <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.strand_id }}
+                  </p>
                 </div>
 
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">DepEd Voucher Category *</label>
-                  <select v-model="form.voucher_status" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-blue-900">
+                <div :class="{ 'has-field-error': fieldErrors.voucher_status }">
+                  <label class="block text-xs font-bold text-slate-700 mb-1">
+                    DepEd Voucher Category <span class="text-rose-500 font-bold">*</span>
+                  </label>
+                  <select 
+                    v-model="form.voucher_status" 
+                    @change="clearFieldError('voucher_status')"
+                    :class="fieldErrors.voucher_status ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                    class="w-full px-3.5 py-2.5 rounded-xl border text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-900 transition"
+                  >
                     <option value="None">None (Regular Full Tuition)</option>
                     <option value="Public JHS Completer (100%)">Public JHS Completer (100% Voucher)</option>
                     <option value="Private ESC Grantee (80%)">Private ESC Grantee (80% Voucher)</option>
                     <option value="Private Non-ESC Voucher (50%)">Private Non-ESC Voucher (50% Subsidy)</option>
                   </select>
+                  <p v-if="fieldErrors.voucher_status" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
+                    <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.voucher_status }}
+                  </p>
                 </div>
               </div>
             </div>
 
             <!-- Previous School History (Common to All Grades) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Last School Attended *</label>
-                <input v-model="form.last_school_attended" type="text" required placeholder="Name of previous school" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-blue-900" />
+              <div :class="{ 'has-field-error': fieldErrors.last_school_attended }">
+                <label class="block text-xs font-bold text-slate-700 mb-1">
+                  Last School Attended <span class="text-rose-500 font-bold">*</span>
+                </label>
+                <input 
+                  v-model="form.last_school_attended" 
+                  type="text" 
+                  @input="clearFieldError('last_school_attended')"
+                  placeholder="Name of previous school" 
+                  :class="fieldErrors.last_school_attended ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                  class="w-full px-3.5 py-2.5 rounded-xl border text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-900 transition" 
+                />
+                <p v-if="fieldErrors.last_school_attended" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
+                  <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.last_school_attended }}
+                </p>
               </div>
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Previous School Type *</label>
-                <select v-model="form.last_school_type" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-blue-900">
+              <div :class="{ 'has-field-error': fieldErrors.last_school_type }">
+                <label class="block text-xs font-bold text-slate-700 mb-1">
+                  Previous School Type <span class="text-rose-500 font-bold">*</span>
+                </label>
+                <select 
+                  v-model="form.last_school_type" 
+                  @change="clearFieldError('last_school_type')"
+                  :class="fieldErrors.last_school_type ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300'"
+                  class="w-full px-3.5 py-2.5 rounded-xl border text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-900 transition"
+                >
                   <option value="Public">Public School</option>
                   <option value="Private">Private Institution</option>
                 </select>
+                <p v-if="fieldErrors.last_school_type" class="text-[11px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
+                  <AlertCircle class="w-3.5 h-3.5 shrink-0" /> {{ fieldErrors.last_school_type }}
+                </p>
               </div>
             </div>
 
@@ -1889,6 +2098,150 @@ const paymongoError = ref('');
 const walkinTicket = ref(null);
 const successMessage = ref('');
 const errorMessage = ref('');
+const fieldErrors = ref({});
+
+const clearFieldError = (field) => {
+  if (fieldErrors.value[field]) {
+    delete fieldErrors.value[field];
+  }
+};
+
+const applicantAge = computed(() => {
+  if (!form.value.birthdate) return null;
+  const bdate = new Date(form.value.birthdate);
+  if (isNaN(bdate.getTime())) return null;
+  const today = new Date();
+  let age = today.getFullYear() - bdate.getFullYear();
+  const m = today.getMonth() - bdate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < bdate.getDate())) {
+    age--;
+  }
+  return age;
+});
+
+const validateStep1 = () => {
+  const errors = {};
+  const cleanLrn = (form.value.lrn || '').replace(/\D/g, '');
+  if (!cleanLrn) {
+    errors.lrn = 'DepEd 12-digit LRN is required.';
+  } else if (cleanLrn.length !== 12) {
+    errors.lrn = 'DepEd LRN must be exactly 12 numeric digits.';
+  }
+
+  if (!form.value.applicant_type) {
+    errors.applicant_type = 'Please select applicant type.';
+  }
+
+  const cleanContact = (form.value.contact_number || '').replace(/\D/g, '');
+  if (!cleanContact) {
+    errors.contact_number = 'Contact mobile number is required.';
+  } else if (!/^09\d{9}$/.test(cleanContact)) {
+    errors.contact_number = 'Must be an 11-digit Philippine mobile number starting with 09 (e.g. 09171234567).';
+  }
+
+  const firstName = (form.value.first_name || '').trim();
+  if (!firstName || firstName.length < 2) {
+    errors.first_name = 'First name is required (minimum 2 letters).';
+  }
+
+  const lastName = (form.value.last_name || '').trim();
+  if (!lastName || lastName.length < 2) {
+    errors.last_name = 'Last name is required (minimum 2 letters).';
+  }
+
+  if (!['Male', 'Female'].includes(form.value.gender)) {
+    errors.gender = 'Please select biological gender.';
+  }
+
+  if (!form.value.birthdate) {
+    errors.birthdate = 'Date of birth is required.';
+  } else if (applicantAge.value !== null && applicantAge.value < 11) {
+    errors.birthdate = 'Applicant must be at least 11 years old for high school admission.';
+  } else if (applicantAge.value !== null && applicantAge.value > 40) {
+    errors.birthdate = 'Please check date of birth.';
+  }
+
+  const birthplace = (form.value.birthplace || '').trim();
+  if (!birthplace || birthplace.length < 2) {
+    errors.birthplace = 'Place of birth is required as per PSA certificate.';
+  }
+
+  if (!(form.value.address_barangay || '').trim()) {
+    errors.address_barangay = 'Barangay is required.';
+  }
+  if (!(form.value.address_city || '').trim()) {
+    errors.address_city = 'City / Municipality is required.';
+  }
+  if (!(form.value.address_province || '').trim()) {
+    errors.address_province = 'Province is required.';
+  }
+
+  const guardianName = (form.value.guardian_name || '').trim();
+  if (!guardianName || guardianName.length < 2) {
+    errors.guardian_name = 'Parent / Guardian full name is required.';
+  }
+
+  const guardianRel = (form.value.guardian_relationship || '').trim();
+  if (!guardianRel || guardianRel.length < 2) {
+    errors.guardian_relationship = 'Relationship to student is required (e.g. Mother, Father, Guardian).';
+  }
+
+  const cleanGuardian = (form.value.guardian_contact || '').replace(/\D/g, '');
+  if (!cleanGuardian) {
+    errors.guardian_contact = 'Guardian contact number is required.';
+  } else if (!/^09\d{9}$/.test(cleanGuardian)) {
+    errors.guardian_contact = 'Guardian contact must be an 11-digit mobile number starting with 09.';
+  }
+
+  fieldErrors.value = errors;
+  return Object.keys(errors).length === 0;
+};
+
+const validateStep2 = () => {
+  const errors = {};
+  if (!form.value.grade_level_id) {
+    errors.grade_level_id = 'Please select your target grade level.';
+  } else {
+    const gl = academicOptions.value?.grade_levels?.find(g => g.id === form.value.grade_level_id);
+    const isSHSLevel = gl?.category === 'SHS' || (form.value.grade_level_id >= 5);
+    if (isSHSLevel) {
+      if (!form.value.track_id) {
+        errors.track_id = 'Please select a Senior High academic track.';
+      }
+      if (!form.value.strand_id) {
+        errors.strand_id = 'Please select a Senior High strand.';
+      }
+      if (!form.value.voucher_status) {
+        errors.voucher_status = 'Please select a DepEd voucher category.';
+      }
+    }
+  }
+
+  const lastSchool = (form.value.last_school_attended || '').trim();
+  if (!lastSchool || lastSchool.length < 2) {
+    errors.last_school_attended = 'Please provide the name of the last school attended.';
+  }
+
+  if (!['Public', 'Private'].includes(form.value.last_school_type)) {
+    errors.last_school_type = 'Please select previous school type.';
+  }
+
+  fieldErrors.value = errors;
+  return Object.keys(errors).length === 0;
+};
+
+const scrollToFirstError = () => {
+  setTimeout(() => {
+    const firstError = document.querySelector('.has-field-error, [data-field-error="true"]');
+    if (firstError) {
+      firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const inputEl = firstError.querySelector('input, select, textarea') || firstError;
+      if (inputEl && typeof inputEl.focus === 'function') {
+        inputEl.focus();
+      }
+    }
+  }, 100);
+};
 
 const currentApplicantTab = computed(() => {
   const tab = route.query.tab;
@@ -2452,51 +2805,32 @@ const loadData = async () => {
 
 const saveApplicationDetails = async (isStep2 = false) => {
   errorMessage.value = '';
+  fieldErrors.value = {};
 
-  if (!isStep2) {
-    const cleanContact = (form.value.contact_number || '').replace(/\D/g, '');
-    if (!/^09\d{9}$/.test(cleanContact)) {
-      errorMessage.value = 'Must be an 11-digit Philippine mobile number starting with 09 (e.g. 09123456789).';
-      return;
-    }
-
-    if (form.value.guardian_contact) {
-      const cleanGuardian = form.value.guardian_contact.replace(/\D/g, '');
-      if (!/^09\d{9}$/.test(cleanGuardian)) {
-        errorMessage.value = 'Guardian contact must be an 11-digit Philippine mobile number starting with 09.';
-        return;
-      }
-    }
-
-    if (form.value.lrn) {
-      const cleanLrn = form.value.lrn.replace(/\D/g, '');
-      if (cleanLrn.length !== 12) {
-        errorMessage.value = 'DepEd Learner Reference Number (LRN) must be exactly 12 numeric digits.';
-        return;
-      }
-    }
-
-    if (form.value.birthdate) {
-      const bdate = new Date(form.value.birthdate);
-      const today = new Date();
-      let age = today.getFullYear() - bdate.getFullYear();
-      const m = today.getMonth() - bdate.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < bdate.getDate())) {
-        age--;
-      }
-      if (age < 11) {
-        errorMessage.value = 'Applicant must be at least 11 years of age for secondary school admission.';
-        return;
-      }
-    }
+  const isValid = isStep2 ? validateStep2() : validateStep1();
+  if (!isValid) {
+    errorMessage.value = isStep2 
+      ? 'Please complete all required academic program details highlighted below.' 
+      : 'Please complete all required demographic fields highlighted in red below.';
+    scrollToFirstError();
+    return;
   }
 
   try {
-    await api.updateApplication(form.value);
+    const payload = {
+      ...form.value,
+      step: isStep2 ? 2 : 1
+    };
+    await api.updateApplication(payload);
     successMessage.value = 'Application saved successfully!';
     activeStep.value = isStep2 ? 3 : 2;
     await loadData();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch (err) {
+    if (err.data && err.data.errors) {
+      fieldErrors.value = err.data.errors;
+      scrollToFirstError();
+    }
     errorMessage.value = err.message || 'Failed to save application.';
   }
 };

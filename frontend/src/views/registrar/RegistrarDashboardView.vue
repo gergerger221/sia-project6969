@@ -292,17 +292,56 @@
             <div 
               v-for="doc in selectedApp.documents" 
               :key="doc.id"
-              class="p-3.5 rounded-xl border border-slate-200 bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs"
+              class="p-3.5 rounded-xl border bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs"
+              :class="[
+                doc.submission_mode === 'Physical Submission' ? 'border-indigo-200 bg-indigo-50/20' :
+                doc.submission_mode === 'To Follow Up' ? 'border-amber-200 bg-amber-50/20' :
+                'border-slate-200 bg-white'
+              ]"
             >
-              <div>
-                <div class="font-bold text-slate-800">{{ doc.document_type }}</div>
-                <div class="text-[11px] text-slate-400">{{ doc.original_filename }} ({{ (doc.file_size / 1024).toFixed(1) }} KB)</div>
-                <div v-if="doc.verification_notes" class="text-amber-600 text-[11px] mt-0.5">Note: {{ doc.verification_notes }}</div>
+              <div class="space-y-1">
+                <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                  <div class="font-bold text-slate-800">{{ doc.document_type }}</div>
+                  <!-- Mode Badge -->
+                  <span v-if="doc.submission_mode === 'Physical Submission'" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200 flex items-center space-x-1">
+                    <Building class="w-3 h-3 text-indigo-600" />
+                    <span>Physical Hard Copy</span>
+                  </span>
+                  <span v-else-if="doc.submission_mode === 'To Follow Up'" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-200 flex items-center space-x-1">
+                    <Clock class="w-3 h-3 text-amber-700" />
+                    <span>To Follow Up</span>
+                  </span>
+                  <span v-else class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center space-x-1">
+                    <FileText class="w-3 h-3 text-emerald-600" />
+                    <span>Digital File</span>
+                  </span>
+                </div>
+
+                <!-- Details based on submission mode -->
+                <div v-if="doc.submission_mode === 'Physical Submission'" class="text-[11px] text-indigo-900 flex items-center space-x-1.5">
+                  <Building class="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                  <span>Physical submission commitment on-campus (Window 3). Verify upon receiving hard copy.</span>
+                </div>
+                <div v-else-if="doc.submission_mode === 'To Follow Up'" class="space-y-0.5 text-[11px]">
+                  <div class="text-amber-900 font-semibold flex items-center space-x-1.5">
+                    <Calendar class="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                    <span>Promised Target Date: <strong class="underline font-bold text-amber-950">{{ formatDate(doc.target_date) }}</strong></span>
+                  </div>
+                  <div v-if="doc.promissory_note" class="text-slate-600 italic">
+                    Reason: "{{ doc.promissory_note }}"
+                  </div>
+                </div>
+                <div v-else class="text-[11px] text-slate-400">
+                  {{ doc.original_filename }} ({{ ((doc.file_size || 0) / 1024).toFixed(1) }} KB)
+                </div>
+
+                <div v-if="doc.verification_notes" class="text-amber-700 text-[11px] mt-0.5">Note: {{ doc.verification_notes }}</div>
               </div>
 
               <!-- Verification Actions -->
-              <div class="flex items-center space-x-2">
+              <div class="flex items-center space-x-2 shrink-0">
                 <button 
+                  v-if="doc.file_path"
                   type="button" 
                   @click="openPreviewDoc(doc)" 
                   class="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 flex items-center space-x-1"
@@ -1033,6 +1072,17 @@ const isSubmittingDeficiency = ref(false);
 const isUndoing = ref(false);
 const successMessage = ref('');
 const errorMessage = ref('');
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return 'N/A';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {
+    return dateStr;
+  }
+};
 
 const undoModal = ref({
   isOpen: false,

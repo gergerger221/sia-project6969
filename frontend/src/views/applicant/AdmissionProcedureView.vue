@@ -798,98 +798,231 @@
         <div v-if="activeStep === 3" class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
           <div class="border-b border-slate-100 pb-4 mb-6">
             <h2 class="text-lg font-bold text-slate-800">Step 3: Upload DepEd Admission Requirements</h2>
-            <p class="text-xs text-slate-500 mt-1">Upload clear PDF or Image copies (JPG/PNG). The Registrar will evaluate authenticity.</p>
+            <p class="text-xs text-slate-500 mt-1">Submit your official credentials via digital upload, on-campus physical submission, or a to follow up promissory note.</p>
+          </div>
+
+          <!-- Step 3 Info & Flexible Submission Notice -->
+          <div class="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex items-start space-x-3">
+              <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                <Sparkles class="w-4 h-4" />
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-blue-950 uppercase tracking-wider">Flexible DepEd Submission Options</h4>
+                <p class="text-xs text-blue-900/80 mt-0.5 leading-relaxed">
+                  You can <strong>Upload Digital Copies</strong> (PDF/PNG/JPG), pledge to <strong>Submit Physical Hard Copies</strong> on campus at the Registrar counter, or file a <strong>To Follow Up</strong> promissory note for pending credentials.
+                </p>
+              </div>
+            </div>
+            <button 
+              type="button" 
+              @click="markAllRemainingPhysical"
+              :disabled="missingMandatoryDocs.length === 0 || isSavingDocMode"
+              class="whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-bold border transition flex items-center space-x-1.5 shrink-0"
+              :class="missingMandatoryDocs.length > 0 && !isSavingDocMode ? 'bg-white border-indigo-300 text-indigo-800 hover:bg-indigo-50 shadow-2xs cursor-pointer' : 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'"
+              title="Pledge to submit all remaining required documents physically at the Registrar's Office"
+            >
+              <Building class="w-3.5 h-3.5 text-indigo-600" />
+              <span>Submit All Remaining Physically</span>
+            </button>
           </div>
 
           <div class="space-y-4">
             <div 
               v-for="req in requiredDocsList" 
               :key="req.type" 
-              class="p-4 rounded-2xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-              :class="getDocUploaded(req.type) ? 'border-emerald-200 bg-emerald-50/40' : (req.required ? 'border-amber-200 bg-amber-50/20' : 'border-slate-200 bg-white')"
+              class="p-4 sm:p-5 rounded-2xl border transition flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4"
+              :class="[
+                getDocUploaded(req.type)
+                  ? getDocUploaded(req.type).submission_mode === 'Physical Submission'
+                    ? 'border-indigo-200 bg-indigo-50/30'
+                    : getDocUploaded(req.type).submission_mode === 'To Follow Up'
+                      ? 'border-amber-200 bg-amber-50/30'
+                      : 'border-emerald-200 bg-emerald-50/40'
+                  : req.required ? 'border-amber-200 bg-amber-50/20' : 'border-slate-200 bg-white'
+              ]"
             >
-              <div class="flex items-start space-x-3.5">
+              <div class="flex items-start space-x-3.5 min-w-0">
                 <div 
-                  class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
-                  :class="getDocUploaded(req.type) ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'"
+                  class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 mt-0.5 shadow-2xs"
+                  :class="[
+                    getDocUploaded(req.type)
+                      ? getDocUploaded(req.type).submission_mode === 'Physical Submission'
+                        ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
+                        : getDocUploaded(req.type).submission_mode === 'To Follow Up'
+                          ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                          : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                      : 'bg-slate-100 text-slate-500 border border-slate-200'
+                  ]"
                 >
-                  <FileCheck v-if="getDocUploaded(req.type)" class="w-5 h-5" />
+                  <Building v-if="getDocUploaded(req.type)?.submission_mode === 'Physical Submission'" class="w-5 h-5" />
+                  <Clock v-else-if="getDocUploaded(req.type)?.submission_mode === 'To Follow Up'" class="w-5 h-5" />
+                  <FileCheck v-else-if="getDocUploaded(req.type)" class="w-5 h-5" />
                   <FileText v-else class="w-5 h-5" />
                 </div>
-                <div>
-                  <div class="flex items-center space-x-2">
+
+                <div class="min-w-0">
+                  <div class="flex items-center space-x-2 flex-wrap gap-y-1">
                     <h4 class="font-bold text-slate-800 text-xs sm:text-sm">{{ req.type }}</h4>
-                    <span v-if="req.required" class="px-2 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800">Required</span>
+                    <span v-if="req.required" class="px-2 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-900 border border-amber-200">Required</span>
                     <span v-else class="px-2 py-0.5 rounded text-[9px] font-medium bg-slate-100 text-slate-500">Optional</span>
+
+                    <!-- Submission Mode Badges -->
+                    <span v-if="getDocUploaded(req.type)?.submission_mode === 'Physical Submission'" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200 flex items-center space-x-1">
+                      <Building class="w-3 h-3 text-indigo-600" />
+                      <span>Physical Hard Copy</span>
+                    </span>
+                    <span v-else-if="getDocUploaded(req.type)?.submission_mode === 'To Follow Up'" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-200 flex items-center space-x-1">
+                      <Clock class="w-3 h-3 text-amber-700" />
+                      <span>To Follow Up</span>
+                    </span>
+                    <span v-else-if="getDocUploaded(req.type)" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center space-x-1">
+                      <Check class="w-3 h-3 text-emerald-600" />
+                      <span>Digital Upload</span>
+                    </span>
                   </div>
+                  
                   <p class="text-[11px] text-slate-500 mt-0.5">{{ req.desc }}</p>
 
-                  <!-- Document Verification Status if Uploaded -->
-                  <div v-if="getDocUploaded(req.type)" class="mt-2 flex items-center space-x-2">
-                    <span :class="getDocStatusBadge(getDocUploaded(req.type).status)" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase">
-                      {{ getDocUploaded(req.type).status }}
-                    </span>
-                    <span class="text-[10px] font-mono text-slate-400">
-                      {{ getDocUploaded(req.type).original_filename }} ({{ ((getDocUploaded(req.type).file_size || 0) / 1024).toFixed(0) }} KB)
-                    </span>
+                  <!-- Details when submitted -->
+                  <div v-if="getDocUploaded(req.type)" class="mt-2 text-xs">
+                    <!-- If Digital Upload -->
+                    <div v-if="getDocUploaded(req.type).file_path || getDocUploaded(req.type).submission_mode === 'Digital Upload'" class="flex items-center space-x-2 flex-wrap gap-y-1">
+                      <span :class="getDocStatusBadge(getDocUploaded(req.type).status)" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase">
+                        {{ getDocUploaded(req.type).status }}
+                      </span>
+                      <span class="text-[10px] font-mono text-slate-500 font-medium">
+                        {{ getDocUploaded(req.type).original_filename }} ({{ ((getDocUploaded(req.type).file_size || 0) / 1024).toFixed(0) }} KB)
+                      </span>
+                    </div>
+
+                    <!-- If Physical Submission -->
+                    <div v-else-if="getDocUploaded(req.type).submission_mode === 'Physical Submission'" class="flex items-center space-x-2 text-[11px] text-indigo-900 font-medium">
+                      <Building class="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                      <span>Pledged for in-person submission at Registrar Counter (Window 3).</span>
+                    </div>
+
+                    <!-- If To Follow Up -->
+                    <div v-else-if="getDocUploaded(req.type).submission_mode === 'To Follow Up'" class="space-y-0.5 text-[11px]">
+                      <div class="flex items-center space-x-1.5 text-amber-950 font-medium">
+                        <Calendar class="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                        <span>Promised Target Date: <strong class="underline font-bold text-amber-900">{{ formatDate(getDocUploaded(req.type).target_date) }}</strong></span>
+                      </div>
+                      <div v-if="getDocUploaded(req.type).promissory_note" class="text-slate-600 italic">
+                        Note: "{{ getDocUploaded(req.type).promissory_note }}"
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
               <!-- Action Controls -->
-              <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+              <div class="flex items-center space-x-2 w-full lg:w-auto justify-end flex-wrap gap-y-2 shrink-0">
+                <!-- If already submitted/uploaded -->
                 <template v-if="getDocUploaded(req.type)">
+                  <!-- View button if file uploaded -->
                   <button 
+                    v-if="getDocUploaded(req.type).file_path"
                     type="button" 
                     @click="openPreviewModal(getDocUploaded(req.type))" 
-                    class="px-3 py-2 rounded-xl text-xs font-bold bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-50 flex items-center space-x-1 shadow-sm transition cursor-pointer"
+                    class="px-3 py-2 rounded-xl text-xs font-bold bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-50 flex items-center space-x-1 shadow-2xs transition cursor-pointer"
                   >
                     <Eye class="w-3.5 h-3.5" />
                     <span>View</span>
                   </button>
 
-                  <label class="cursor-pointer inline-flex items-center justify-center px-3 py-2 rounded-xl text-xs font-bold bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 shadow-sm transition">
+                  <!-- Edit Date button if To Follow Up -->
+                  <button 
+                    v-if="getDocUploaded(req.type).submission_mode === 'To Follow Up'"
+                    type="button" 
+                    @click="openPromissoryModal(req.type, getDocUploaded(req.type))" 
+                    class="px-3 py-2 rounded-xl text-xs font-bold bg-white text-amber-800 border border-amber-300 hover:bg-amber-50 flex items-center space-x-1 shadow-2xs transition cursor-pointer"
+                  >
+                    <Clock class="w-3.5 h-3.5 text-amber-600" />
+                    <span>Edit Note</span>
+                  </button>
+
+                  <!-- Upload / Replace with digital file -->
+                  <label class="cursor-pointer inline-flex items-center justify-center px-3 py-2 rounded-xl text-xs font-bold bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 shadow-2xs transition">
                     <Upload class="w-3.5 h-3.5 mr-1 text-slate-500" />
-                    <span>Replace</span>
+                    <span>{{ getDocUploaded(req.type).file_path ? 'Replace' : 'Upload Digital Copy' }}</span>
                     <input type="file" @change="handleFileUpload($event, req.type)" class="hidden" accept=".pdf,.png,.jpg,.jpeg,.webp" />
                   </label>
 
+                  <!-- Delete / Remove button -->
                   <button 
                     type="button" 
                     @click="handleDeleteDocument(getDocUploaded(req.type))" 
-                    class="p-2 rounded-xl text-xs font-bold bg-white text-rose-700 border border-rose-200 hover:bg-rose-50 shadow-sm transition cursor-pointer"
-                    title="Remove file"
+                    class="p-2 rounded-xl text-xs font-bold bg-white text-rose-700 border border-rose-200 hover:bg-rose-50 shadow-2xs transition cursor-pointer"
+                    title="Remove requirement commitment"
                   >
                     <Trash2 class="w-4 h-4 text-rose-600" />
                   </button>
                 </template>
 
+                <!-- If unsubmitted: show 3 clear options -->
                 <template v-else>
-                  <label class="cursor-pointer inline-flex items-center justify-center w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 shadow-sm transition">
-                    <Upload class="w-4 h-4 mr-1.5 text-slate-500" />
+                  <label class="cursor-pointer inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-900 hover:bg-blue-800 text-white shadow-2xs transition">
+                    <Upload class="w-3.5 h-3.5 mr-1.5 text-blue-200" />
                     <span>Upload File</span>
                     <input type="file" @change="handleFileUpload($event, req.type)" class="hidden" accept=".pdf,.png,.jpg,.jpeg,.webp" />
                   </label>
+
+                  <button 
+                    type="button" 
+                    @click="openPhysicalModal(req.type)" 
+                    class="px-3 py-2 rounded-xl text-xs font-bold bg-white border border-indigo-200 hover:bg-indigo-50 text-indigo-700 shadow-2xs transition flex items-center space-x-1 cursor-pointer"
+                    title="Commit to bringing physical paper copy to Registrar counter"
+                  >
+                    <Building class="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Submit Physical</span>
+                  </button>
+
+                  <button 
+                    type="button" 
+                    @click="openPromissoryModal(req.type)" 
+                    class="px-3 py-2 rounded-xl text-xs font-bold bg-white border border-amber-300 hover:bg-amber-50 text-amber-800 shadow-2xs transition flex items-center space-x-1 cursor-pointer"
+                    title="Submit promissory note with promised target date"
+                  >
+                    <Clock class="w-3.5 h-3.5 text-amber-600" />
+                    <span>To Follow Up</span>
+                  </button>
                 </template>
               </div>
             </div>
           </div>
 
-          <!-- Mandatory Warning -->
-          <div v-if="!hasAllMandatoryDocs" class="mt-6 p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-start space-x-2.5 shadow-sm">
-            <AlertTriangle class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <!-- Mandatory Warning Banner -->
+          <div v-if="!hasAllMandatoryDocs" class="mt-6 p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-start space-x-3 shadow-sm">
+            <AlertTriangle class="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div>
-              <span class="font-bold block text-amber-950">Mandatory Documents Required:</span>
-              <p class="text-[11px] text-amber-800 mt-0.5">
-                Please upload clear copies of <strong class="underline">{{ missingMandatoryDocs.join(' and ') }}</strong> before submitting for Registrar review.
+              <span class="font-bold block text-amber-950 text-sm">Mandatory Requirements Pending:</span>
+              <p class="text-xs text-amber-800 mt-1 leading-relaxed">
+                Please complete <strong class="underline">{{ missingMandatoryDocs.join(', ') }}</strong> by <strong>uploading a digital file</strong>, selecting <strong>Submit Physical</strong> (for in-person submission on campus), or filing a <strong>To Follow Up</strong> promissory note.
               </p>
             </div>
           </div>
 
-          <div class="flex flex-col sm:flex-row items-center justify-between pt-6 mt-6 border-t border-slate-100 gap-3">
-            <button type="button" @click="activeStep = 2" class="w-full sm:w-auto px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 text-sm transition cursor-pointer">
-              ← Back to Step 2
-            </button>
+          <div class="flex flex-col sm:flex-row items-center justify-between pt-6 mt-6 border-t border-slate-100 gap-4">
+            <div class="flex items-center space-x-3 text-xs font-medium text-slate-500 flex-wrap gap-y-1">
+              <button type="button" @click="activeStep = 2" class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 text-sm transition cursor-pointer">
+                ← Back to Step 2
+              </button>
+              <span class="hidden sm:inline text-slate-300">•</span>
+              <span class="inline-flex items-center space-x-1 text-emerald-700 font-bold">
+                <Check class="w-3.5 h-3.5" />
+                <span>{{ digitalUploadedCount }} Uploaded</span>
+              </span>
+              <span class="inline-flex items-center space-x-1 text-indigo-700 font-bold">
+                <Building class="w-3.5 h-3.5" />
+                <span>{{ physicalCount }} Physical</span>
+              </span>
+              <span class="inline-flex items-center space-x-1 text-amber-700 font-bold">
+                <Clock class="w-3.5 h-3.5" />
+                <span>{{ promissoryCount }} To Follow Up</span>
+              </span>
+            </div>
+
             <button 
               @click="openSubmitReviewModal" 
               :disabled="isSubmitting || !hasAllMandatoryDocs"
@@ -1848,20 +1981,46 @@
         <div class="text-center">
           <h3 class="text-base font-extrabold text-slate-900">Submit Requirements for Review?</h3>
           <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
-            Your uploaded documents will be submitted to the Office of the Registrar for official authenticity and LRN validation.
+            Your admission credentials will be submitted to the Office of the Registrar for official evaluation and section assignment.
           </p>
         </div>
 
+        <!-- Summary Badges -->
+        <div class="grid grid-cols-3 gap-2 mt-4 text-center">
+          <div class="p-2 rounded-xl bg-emerald-50 border border-emerald-200">
+            <div class="text-xs font-bold text-emerald-800">{{ digitalUploadedCount }}</div>
+            <div class="text-[10px] text-emerald-600 font-medium">Digital Upload</div>
+          </div>
+          <div class="p-2 rounded-xl bg-indigo-50 border border-indigo-200">
+            <div class="text-xs font-bold text-indigo-800">{{ physicalCount }}</div>
+            <div class="text-[10px] text-indigo-600 font-medium">Physical Copy</div>
+          </div>
+          <div class="p-2 rounded-xl bg-amber-50 border border-amber-200">
+            <div class="text-xs font-bold text-amber-900">{{ promissoryCount }}</div>
+            <div class="text-[10px] text-amber-700 font-medium">To Follow Up</div>
+          </div>
+        </div>
+
         <!-- Checklist of Uploaded Docs -->
-        <div class="my-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2">
-          <div class="font-bold text-slate-700 uppercase tracking-wider text-[10px]">Attached Requirements:</div>
-          <div v-for="req in requiredDocsList" :key="req.type" class="flex items-center justify-between text-[11px]">
-            <span class="text-slate-600">{{ req.type }}:</span>
-            <span v-if="getDocUploaded(req.type)" class="text-emerald-700 font-bold flex items-center space-x-1">
-              <Check class="w-3.5 h-3.5" />
-              <span>Attached</span>
-            </span>
-            <span v-else class="text-slate-400 italic">Not Uploaded</span>
+        <div class="my-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2.5 max-h-56 overflow-y-auto">
+          <div class="font-bold text-slate-700 uppercase tracking-wider text-[10px]">DepEd Requirements Breakdown:</div>
+          <div v-for="req in requiredDocsList" :key="req.type" class="flex items-center justify-between text-[11px] py-1 border-b border-slate-100 last:border-b-0">
+            <span class="text-slate-700 font-medium truncate max-w-[180px]" :title="req.type">{{ req.type }}</span>
+            <template v-if="getDocUploaded(req.type)">
+              <span v-if="getDocUploaded(req.type).submission_mode === 'Physical Submission'" class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200 flex items-center space-x-1 shrink-0">
+                <Building class="w-3 h-3 text-indigo-600" />
+                <span>Physical</span>
+              </span>
+              <span v-else-if="getDocUploaded(req.type).submission_mode === 'To Follow Up'" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-200 flex items-center space-x-1 shrink-0" :title="'Target: ' + formatDate(getDocUploaded(req.type).target_date)">
+                <Clock class="w-3 h-3 text-amber-700" />
+                <span>Follow Up</span>
+              </span>
+              <span v-else class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center space-x-1 shrink-0">
+                <Check class="w-3 h-3 text-emerald-600" />
+                <span>Digital</span>
+              </span>
+            </template>
+            <span v-else class="text-slate-400 italic text-[10px]">Unsubmitted</span>
           </div>
         </div>
 
@@ -1883,6 +2042,169 @@
             <span v-else>Confirm & Submit</span>
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- MODAL: PHYSICAL SUBMISSION COMMITMENT -->
+    <div v-if="showPhysicalModal" class="no-print fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 text-slate-900">
+        <div class="w-12 h-12 rounded-2xl bg-indigo-100 border border-indigo-200 text-indigo-700 flex items-center justify-center mx-auto mb-4 shadow-sm">
+          <Building class="w-6 h-6" />
+        </div>
+        <div class="text-center">
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-800 border border-indigo-200 inline-block mb-1.5">
+            On-Campus Document Submission
+          </span>
+          <h3 class="text-base font-extrabold text-slate-900">Submit Physical Hard Copy</h3>
+          <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+            You are committing to submit original or certified hard copies of this credential directly to the school campus.
+          </p>
+        </div>
+
+        <div class="my-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+          <div class="flex items-center space-x-2">
+            <span class="text-xs text-slate-500">Document:</span>
+            <strong class="text-xs text-slate-800 font-bold">{{ selectedDocTypeForPhysical }}</strong>
+          </div>
+
+          <div class="p-3 rounded-xl bg-indigo-50/70 border border-indigo-200 text-xs text-indigo-950 space-y-1.5">
+            <div class="font-bold flex items-center space-x-1.5">
+              <MapPin class="w-3.5 h-3.5 text-indigo-700" />
+              <span>Drop-off Location & Schedule:</span>
+            </div>
+            <p class="text-[11px] text-indigo-900/80 leading-relaxed">
+              Office of the Registrar (Window 3 - Admissions Counter), Administration Hall. Monday to Friday, 8:00 AM – 4:30 PM.
+            </p>
+          </div>
+
+          <label class="flex items-start space-x-2.5 pt-1 cursor-pointer select-none">
+            <input 
+              type="checkbox" 
+              v-model="physicalConsent" 
+              class="mt-0.5 w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"
+            />
+            <span class="text-[11px] text-slate-600 leading-snug">
+              I understand that official enrollment and enrollment credentials remain subject to verification of this hard copy upon physical submission.
+            </span>
+          </label>
+        </div>
+
+        <div class="flex items-center space-x-2.5 mt-5">
+          <button 
+            type="button" 
+            @click="showPhysicalModal = false" 
+            class="w-1/2 py-2.5 px-4 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button 
+            type="button" 
+            @click="confirmPhysicalSubmission" 
+            :disabled="!physicalConsent || isSavingDocMode"
+            :class="[
+              physicalConsent && !isSavingDocMode
+                ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-md cursor-pointer'
+                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+            ]"
+            class="w-1/2 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5"
+          >
+            <span v-if="isSavingDocMode" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <span v-else>Confirm Physical</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: TO FOLLOW UP (PROMISSORY NOTE) -->
+    <div v-if="showPromissoryModal" class="no-print fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 text-slate-900">
+        <div class="w-12 h-12 rounded-2xl bg-amber-100 border border-amber-200 text-amber-700 flex items-center justify-center mx-auto mb-3.5 shadow-sm">
+          <Clock class="w-6 h-6" />
+        </div>
+        <div class="text-center">
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-200 inline-block mb-1.5">
+            DepEd Promissory Commitment
+          </span>
+          <h3 class="text-base font-extrabold text-slate-900">To Follow Up Document</h3>
+          <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">
+            Submit a formal promissory note with a promised target submission date so your admission evaluation can proceed.
+          </p>
+        </div>
+
+        <form @submit.prevent="confirmPromissorySubmission" class="mt-4 space-y-4 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+            <span class="text-slate-500">Requirement:</span>
+            <strong class="text-slate-800 font-bold">{{ selectedDocTypeForPromissory }}</strong>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">
+              Promised Submission Target Date <span class="text-rose-500">*</span>
+            </label>
+            <input 
+              type="date" 
+              v-model="promissoryForm.target_date" 
+              :min="minPromissoryDate"
+              required
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-xs font-semibold bg-white"
+            />
+            <p class="text-[10px] text-slate-400 mt-1">Select the realistic date by which you will submit this credential.</p>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1.5">
+              Reason / Circumstance (Choose preset or type below)
+            </label>
+            <div class="flex flex-wrap gap-1.5 mb-2">
+              <button 
+                type="button" 
+                v-for="preset in promissoryPresets" 
+                :key="preset"
+                @click="setPromissoryPreset(preset)"
+                class="px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition text-left cursor-pointer"
+                :class="promissoryForm.promissory_note === preset ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'"
+              >
+                {{ preset }}
+              </button>
+            </div>
+            <textarea 
+              v-model="promissoryForm.promissory_note" 
+              rows="3" 
+              placeholder="e.g. Currently awaiting official release from previous school's registrar, expected within 2 weeks."
+              class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-xs bg-white resize-none"
+            ></textarea>
+          </div>
+
+          <div class="p-3 rounded-xl bg-amber-50/60 border border-amber-200 text-[11px] text-amber-900 flex items-start space-x-2">
+            <AlertCircle class="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+            <p class="leading-relaxed">
+              Filing this promissory commitment fulfills the Step 3 requirement and allows the Registrar to review your application and queue you for enrollment.
+            </p>
+          </div>
+
+          <div class="flex items-center space-x-2.5 pt-2">
+            <button 
+              type="button" 
+              @click="showPromissoryModal = false" 
+              class="w-1/2 py-2.5 px-4 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              :disabled="!promissoryForm.target_date || isSavingDocMode"
+              :class="[
+                promissoryForm.target_date && !isSavingDocMode
+                  ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-md cursor-pointer'
+                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+              ]"
+              class="w-1/2 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5"
+            >
+              <span v-if="isSavingDocMode" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              <span v-else>Save Promissory Note</span>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -2443,6 +2765,27 @@ const missingMandatoryDocs = computed(() => {
   return mandatoryDocs.value.filter(m => !uploaded.includes(normalizeDocName(m)));
 });
 
+const digitalUploadedCount = computed(() => {
+  return (application.value?.documents || []).filter(d => 
+    d.status !== 'Rejected' && d.status !== 'Deficient' && 
+    (d.submission_mode === 'Digital Upload' || (!d.submission_mode && d.file_path))
+  ).length;
+});
+
+const physicalCount = computed(() => {
+  return (application.value?.documents || []).filter(d => 
+    d.status !== 'Rejected' && d.status !== 'Deficient' && 
+    d.submission_mode === 'Physical Submission'
+  ).length;
+});
+
+const promissoryCount = computed(() => {
+  return (application.value?.documents || []).filter(d => 
+    d.status !== 'Rejected' && d.status !== 'Deficient' && 
+    d.submission_mode === 'To Follow Up'
+  ).length;
+});
+
 const isStep1Completed = computed(() => {
   const app = application.value;
   if (!app) return false;
@@ -2973,6 +3316,135 @@ const handleFileUpload = async (event, docType) => {
   }
 };
 
+const formatDate = (dateStr) => {
+  if (!dateStr) return 'N/A';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {
+    return dateStr;
+  }
+};
+
+const minPromissoryDate = computed(() => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return tomorrow.toISOString().split('T')[0];
+});
+
+const defaultPromissoryTargetDate = () => {
+  const nextTwoWeeks = new Date();
+  nextTwoWeeks.setDate(nextTwoWeeks.getDate() + 14);
+  return nextTwoWeeks.toISOString().split('T')[0];
+};
+
+const showPhysicalModal = ref(false);
+const selectedDocTypeForPhysical = ref('');
+const physicalConsent = ref(false);
+const isSavingDocMode = ref(false);
+
+const openPhysicalModal = (docType) => {
+  selectedDocTypeForPhysical.value = docType;
+  physicalConsent.value = false;
+  showPhysicalModal.value = true;
+};
+
+const confirmPhysicalSubmission = async () => {
+  if (!selectedDocTypeForPhysical.value) return;
+  isSavingDocMode.value = true;
+  errorMessage.value = '';
+  try {
+    await api.setDocumentSubmissionMode({
+      document_type: selectedDocTypeForPhysical.value,
+      submission_mode: 'Physical Submission'
+    });
+    successMessage.value = `Pledged physical submission for ${selectedDocTypeForPhysical.value}. Please submit at Registrar Counter!`;
+    showPhysicalModal.value = false;
+    await loadData();
+  } catch (err) {
+    errorMessage.value = err.message || 'Failed to set physical submission mode.';
+  } finally {
+    isSavingDocMode.value = false;
+  }
+};
+
+const markAllRemainingPhysical = async () => {
+  if (missingMandatoryDocs.value.length === 0) return;
+  const confirmed = window.confirm(
+    `Do you want to pledge in-person physical submission for all ${missingMandatoryDocs.value.length} remaining required document(s) at the Registrar's Office?`
+  );
+  if (!confirmed) return;
+
+  isSavingDocMode.value = true;
+  errorMessage.value = '';
+  try {
+    await api.setDocumentSubmissionMode({
+      document_type: 'ALL',
+      submission_mode: 'Physical Submission'
+    });
+    successMessage.value = 'All remaining mandatory requirements marked for physical submission on campus!';
+    await loadData();
+  } catch (err) {
+    errorMessage.value = err.message || 'Failed to set physical submissions.';
+  } finally {
+    isSavingDocMode.value = false;
+  }
+};
+
+const showPromissoryModal = ref(false);
+const selectedDocTypeForPromissory = ref('');
+const promissoryForm = ref({
+  target_date: '',
+  reason_preset: '',
+  promissory_note: ''
+});
+
+const promissoryPresets = [
+  'Awaiting release from previous school / PSA office',
+  'Currently being processed / requested from Registrar',
+  'Delayed due to clearance or certificate processing',
+  'Document lost; affidavit of loss / replacement in progress',
+  'Parent/Guardian will bring document upon enrollment schedule'
+];
+
+const openPromissoryModal = (docType, existingDoc = null) => {
+  selectedDocTypeForPromissory.value = docType;
+  promissoryForm.value = {
+    target_date: existingDoc?.target_date || defaultPromissoryTargetDate(),
+    reason_preset: '',
+    promissory_note: existingDoc?.promissory_note || ''
+  };
+  showPromissoryModal.value = true;
+};
+
+const setPromissoryPreset = (preset) => {
+  promissoryForm.value.reason_preset = preset;
+  promissoryForm.value.promissory_note = preset;
+};
+
+const confirmPromissorySubmission = async () => {
+  if (!selectedDocTypeForPromissory.value || !promissoryForm.value.target_date) return;
+  
+  isSavingDocMode.value = true;
+  errorMessage.value = '';
+  try {
+    await api.setDocumentSubmissionMode({
+      document_type: selectedDocTypeForPromissory.value,
+      submission_mode: 'To Follow Up',
+      target_date: promissoryForm.value.target_date,
+      promissory_note: promissoryForm.value.promissory_note || promissoryForm.value.reason_preset || 'To follow up before start of classes.'
+    });
+    successMessage.value = `To follow up commitment saved for ${selectedDocTypeForPromissory.value} (Target Date: ${formatDate(promissoryForm.value.target_date)}).`;
+    showPromissoryModal.value = false;
+    await loadData();
+  } catch (err) {
+    errorMessage.value = err.message || 'Failed to save promissory note.';
+  } finally {
+    isSavingDocMode.value = false;
+  }
+};
+
 const showSubmitReviewConfirm = ref(false);
 
 const openSubmitReviewModal = () => {
@@ -3095,7 +3567,8 @@ const isPdf = (filePath) => {
 const handleDeleteDocument = async (doc) => {
   if (!doc || !doc.id) return;
   
-  const confirmed = window.confirm(`Are you sure you want to remove "${doc.original_filename}"? You can upload a new file afterward.`);
+  const label = doc.original_filename || doc.document_type;
+  const confirmed = window.confirm(`Are you sure you want to remove "${label}"? You can upload or select another submission option afterward.`);
   if (!confirmed) return;
 
   errorMessage.value = '';

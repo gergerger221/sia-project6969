@@ -344,6 +344,7 @@ class AdmissionController {
             $docStmt = $db->prepare("
                 UPDATE admission_documents SET
                     file_path = :file_path, original_filename = :orig_name, file_size = :file_size,
+                    submission_mode = 'Digital Upload', target_date = NULL, promissory_note = NULL,
                     status = 'Pending', verification_notes = NULL, uploaded_at = CURRENT_TIMESTAMP
                 WHERE id = :id
             ");
@@ -356,8 +357,8 @@ class AdmissionController {
             $docId = $existing['id'];
         } else {
             $docStmt = $db->prepare("
-                INSERT INTO admission_documents (application_id, document_type, file_path, original_filename, file_size, status)
-                VALUES (:app_id, :doc_type, :file_path, :orig_name, :file_size, 'Pending')
+                INSERT INTO admission_documents (application_id, document_type, file_path, original_filename, file_size, submission_mode, status)
+                VALUES (:app_id, :doc_type, :file_path, :orig_name, :file_size, 'Digital Upload', 'Pending')
             ");
             $docStmt->execute([
                 'app_id'    => $app['id'],
@@ -398,8 +399,20 @@ class AdmissionController {
             Response::error('Invalid submission mode.');
         }
 
+        if ($mode === 'To Follow Up') {
+            if (empty($targetDate)) {
+                Response::error('Please provide a target follow-up date for this requirement.');
+            }
+            if (strtotime($targetDate) < strtotime(date('Y-m-d'))) {
+                Response::error('Target follow-up date must be today or a future date.');
+            }
+        } else {
+            $targetDate = null;
+            $promissoryNote = '';
+        }
+
         $db = Database::getConnection();
-        $appStmt = $db->prepare("SELECT id, status FROM admission_applications WHERE user_id = :user_id LIMIT 1");
+        $appStmt = $db->prepare("SELECT id, status, applicant_type, grade_level_id, voucher_status FROM admission_applications WHERE user_id = :user_id LIMIT 1");
         $appStmt->execute(['user_id' => $user['id']]);
         $app = $appStmt->fetch();
 
@@ -407,12 +420,57 @@ class AdmissionController {
             Response::error('Application not found.');
         }
 
-        // Check if record exists
+        $status = ($mode === 'Physical Submission') ? 'Physical Submission' : 'To Follow Up';
+
+        // Bulk handling if document_type === 'ALL'
+        if ($documentType === 'ALL' && $mode === 'Physical Submission') {
+            $docsToSet = [
+                'PSA Birth Certificate',
+                'SF9 / Form 138 (Report Card)',
+                'Certificate of Good Moral Character',
+                '2x2 ID Picture'
+            ];
+            if ($app['applicant_type'] === 'Transferee') {
+                $docsToSet[] = 'Certificate of Transfer Credential / Honorable Dismissal';
+            }
+            if ((int)$app['grade_level_id'] >= 5 && $app['applicant_type'] !== 'Transferee') {
+                $docsToSet[] = 'Certificate of JHS Completion';
+            }
+            if (!empty($app['voucher_status']) && $app['voucher_status'] !== 'None') {
+                $docsToSet[] = 'ESC Certificate / Voucher Cert';
+            }
+
+            foreach ($docsToSet as $dType) {
+                $chk = $db->prepare("SELECT id, status, file_path FROM admission_documents WHERE application_id = :app_id AND document_type = :d_type");
+                $chk->execute(['app_id' => $app['id'], 'd_type' => $dType]);
+                $existing = $chk->fetch();
+
+                if ($existing) {
+                    if ($existing['status'] !== 'Verified' && empty($existing['file_path'])) {
+                        $db->prepare("
+                            UPDATE admission_documents SET
+                                submission_mode = 'Physical Submission', target_date = NULL, promissory_note = '',
+                                status = 'Physical Submission', verification_notes = NULL, uploaded_at = CURRENT_TIMESTAMP
+                            WHERE id = :id
+                        ")->execute(['id' => $existing['id']]);
+                    }
+                } else {
+                    $db->prepare("
+                        INSERT INTO admission_documents (application_id, document_type, submission_mode, target_date, promissory_note, status, file_path, original_filename, file_name, file_size)
+                        VALUES (:app_id, :doc_type, 'Physical Submission', NULL, '', 'Physical Submission', '', '', '', 0)
+                    ")->execute(['app_id' => $app['id'], 'doc_type' => $dType]);
+                }
+            }
+
+            Auth::logAudit('DOCUMENT_MODE_SET', "Set all remaining documents to Physical Submission for App #{$app['id']}", $user['id']);
+            Response::success('All remaining requirements marked for physical submission on campus.');
+            return;
+        }
+
+        // Single document mode setting
         $checkDoc = $db->prepare("SELECT id, status FROM admission_documents WHERE application_id = :app_id AND document_type = :doc_type");
         $checkDoc->execute(['app_id' => $app['id'], 'doc_type' => $documentType]);
         $existing = $checkDoc->fetch();
-
-        $status = ($mode === 'Physical Submission') ? 'Physical Submission' : 'To Follow Up';
 
         if ($existing) {
             if ($existing['status'] === 'Verified') {

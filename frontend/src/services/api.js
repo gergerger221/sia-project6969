@@ -78,6 +78,7 @@ export default {
   getMyApplication: () => apiRequest('admission/my-application'),
   updateApplication: (data) => apiRequest('admission/update', { method: 'POST', body: data }),
   uploadDocument: (formData) => apiRequest('admission/upload-document', { method: 'POST', body: formData }),
+  setDocumentSubmissionMode: (data) => apiRequest('admission/set-document-mode', { method: 'POST', body: data }),
   deleteDocument: (documentId) => apiRequest('admission/delete-document', { method: 'POST', body: { document_id: documentId } }),
   submitApplication: () => apiRequest('admission/submit', { method: 'POST' }),
   getAcademicOptions: () => apiRequest('admission/academic-options'),

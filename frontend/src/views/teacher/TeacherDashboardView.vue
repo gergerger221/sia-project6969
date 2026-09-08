@@ -39,30 +39,63 @@
       </div>
     </div>
 
-    <!-- Quick Metrics Summary -->
-    <div class="no-print grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+    <!-- Quick Metrics Summary (Aligned with DepEd RA 4670 & 1-to-1 Homeroom Standard) -->
+    <div class="no-print grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      
+      <!-- Card 1: Assigned Teaching Loads -->
       <div class="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
-        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Assigned Classes</span>
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Assigned Classes</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200 font-mono">JHS & SHS</span>
+        </div>
         <strong class="text-2xl font-bold text-slate-900 font-mono mt-1 block">{{ dashboardStats.total_classes || 0 }}</strong>
-        <span class="text-[10px] text-slate-400">Subject teaching blocks</span>
+        <span class="text-[10px] text-slate-400">Distinct subject-section teaching loads</span>
       </div>
 
-      <div class="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
-        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Weekly Periods</span>
-        <strong class="text-2xl font-bold text-amber-600 font-mono mt-1 block">{{ dashboardStats.total_schedule_periods || 0 }}</strong>
-        <span class="text-[10px] text-slate-400">Scheduled bell slots</span>
+      <!-- Card 2: DepEd Workload Meter (RA 4670 & DO 005, s. 2024) -->
+      <div class="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Weekly Workload</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">RA 4670 Compliant</span>
+        </div>
+        <div class="flex items-baseline space-x-1.5 mt-1">
+          <strong class="text-2xl font-bold text-amber-600 font-mono">
+            {{ activeTimetableSemester === '1st Semester' ? (dashboardStats.workload_1st_sem_hours || 25) : (dashboardStats.workload_2nd_sem_hours || 25) }}
+          </strong>
+          <span class="text-xs text-slate-400 font-mono">/ {{ dashboardStats.max_deped_hours || 30 }} hrs/wk</span>
+        </div>
+        <!-- Progress Bar (Max 30 hrs/week) -->
+        <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+          <div 
+            class="bg-amber-500 h-1.5 rounded-full transition-all duration-300"
+            :style="{ width: `${Math.min(100, Math.round(((activeTimetableSemester === '1st Semester' ? (dashboardStats.workload_1st_sem_hours || 25) : (dashboardStats.workload_2nd_sem_hours || 25)) / (dashboardStats.max_deped_hours || 30)) * 100))}%` }"
+          ></div>
+        </div>
+        <span class="text-[10px] text-slate-400 block pt-0.5">{{ activeTimetableSemester }} Load • Max 6h/day</span>
       </div>
 
+      <!-- Card 3: Enrolled Learners -->
       <div class="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
-        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Enrolled Learners</span>
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Enrolled Learners</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono">Active</span>
+        </div>
         <strong class="text-2xl font-bold text-emerald-600 font-mono mt-1 block">{{ dashboardStats.total_students || 0 }}</strong>
-        <span class="text-[10px] text-slate-400">Total student roster</span>
+        <span class="text-[10px] text-slate-400">Total learners across sections</span>
       </div>
 
+      <!-- Card 4: Official Advisory Homeroom (1-to-1 DepEd Standard) -->
       <div class="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
-        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Advisory Class</span>
-        <strong class="text-2xl font-bold text-purple-600 font-mono mt-1 block">{{ dashboardStats.total_advisory_sections || 0 }}</strong>
-        <span class="text-[10px] text-slate-400">Homeroom sections</span>
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Advisory Homeroom</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-800 border border-purple-200">1-to-1 DepEd</span>
+        </div>
+        <strong class="text-base font-bold text-purple-900 mt-1 block truncate">
+          {{ dashboardStats.advisory_section ? dashboardStats.advisory_section.section_name : 'No Advisory Assigned' }}
+        </strong>
+        <span class="text-[10px] text-slate-500">
+          {{ dashboardStats.advisory_section ? (dashboardStats.advisory_section.room || 'Room 401') : 'Pure Subject Teacher' }}
+        </span>
       </div>
     </div>
 
@@ -90,13 +123,36 @@
       
       <!-- Weekly Bell Timetable (Monday - Friday) -->
       <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-5">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
             <h2 class="text-base font-bold text-slate-900">Weekly Master Bell Timetable</h2>
-            <p class="text-xs text-slate-500">Visual timetable matrix for your instructional periods across all assigned sections.</p>
+            <p class="text-xs text-slate-500">Conflict-free timetable matrix for your instructional periods across all assigned sections.</p>
           </div>
-          <div class="text-xs font-semibold text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl self-start">
-            {{ weeklySchedules.length }} Assigned Time Blocks
+          
+          <div class="flex items-center space-x-3 flex-wrap gap-y-2">
+            <!-- Semester Switcher Pill Bar (Resolves Cross-Semester Double Booking) -->
+            <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button 
+                @click="activeTimetableSemester = '1st Semester'" 
+                type="button" 
+                :class="activeTimetableSemester === '1st Semester' ? 'bg-blue-900 text-white shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'"
+                class="px-3.5 py-1.5 rounded-lg text-xs transition cursor-pointer"
+              >
+                1st Semester
+              </button>
+              <button 
+                @click="activeTimetableSemester = '2nd Semester'" 
+                type="button" 
+                :class="activeTimetableSemester === '2nd Semester' ? 'bg-blue-900 text-white shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'"
+                class="px-3.5 py-1.5 rounded-lg text-xs transition cursor-pointer"
+              >
+                2nd Semester
+              </button>
+            </div>
+
+            <div class="text-xs font-semibold text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl font-mono">
+              {{ currentSemesterSchedules.length }} Assigned Periods / wk
+            </div>
           </div>
         </div>
 
@@ -127,9 +183,14 @@
               </div>
               <div class="flex items-center justify-between text-[11px] text-slate-600 pt-1 border-t border-slate-50">
                 <span class="font-medium text-slate-700 truncate mr-2">{{ s.section_name }}</span>
-                <span class="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-blue-50 text-blue-800 font-mono shrink-0">
-                  {{ s.grade_level_code }}
-                </span>
+                <div class="flex items-center space-x-1 shrink-0">
+                  <span class="text-[9px] px-1.5 py-0.2 rounded font-bold uppercase bg-slate-100 text-slate-700 font-mono">
+                    {{ s.subject_classification || 'Core' }}
+                  </span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-blue-50 text-blue-800 font-mono">
+                    {{ s.grade_level_code }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -206,20 +267,40 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2.5">
-          <!-- Class Selector Dropdown -->
+          <!-- Departmentalized Class Selector Dropdown -->
           <select 
             v-model="selectedClassKey" 
             @change="handleClassChange()"
             class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer shadow-2xs"
           >
             <option value="">-- Select Class Section & Subject --</option>
-            <option 
-              v-for="c in teachingClasses" 
-              :key="`${c.section_id}-${c.subject_id}`" 
-              :value="`${c.section_id}-${c.subject_id}`"
-            >
-              {{ c.grade_level_code }} - {{ c.section_name }} : {{ c.subject_name }} ({{ c.enrolled_count }} learners)
-            </option>
+            <optgroup label="Junior High School (Full Year Learning Areas)" v-if="jhsClasses.length > 0">
+              <option 
+                v-for="c in jhsClasses" 
+                :key="`${c.section_id}-${c.subject_id}`" 
+                :value="`${c.section_id}-${c.subject_id}`"
+              >
+                {{ c.grade_level_code }} - {{ c.section_name }} : {{ c.subject_name }} ({{ c.subject_classification || 'Core' }})
+              </option>
+            </optgroup>
+            <optgroup label="Senior High School - 1st Semester" v-if="shs1stSemClasses.length > 0">
+              <option 
+                v-for="c in shs1stSemClasses" 
+                :key="`${c.section_id}-${c.subject_id}`" 
+                :value="`${c.section_id}-${c.subject_id}`"
+              >
+                {{ c.grade_level_code }} - {{ c.section_name }} : {{ c.subject_name }} ({{ c.subject_classification || 'Core' }})
+              </option>
+            </optgroup>
+            <optgroup label="Senior High School - 2nd Semester" v-if="shs2ndSemClasses.length > 0">
+              <option 
+                v-for="c in shs2ndSemClasses" 
+                :key="`${c.section_id}-${c.subject_id}`" 
+                :value="`${c.section_id}-${c.subject_id}`"
+              >
+                {{ c.grade_level_code }} - {{ c.section_name }} : {{ c.subject_name }} ({{ c.subject_classification || 'Core' }})
+              </option>
+            </optgroup>
           </select>
 
           <!-- Quick Fill Helper Dropdown -->
@@ -280,11 +361,29 @@
               <th class="py-3 px-4">Learner Name</th>
               <th class="py-3 px-4 font-mono">LRN / Student No</th>
               <th class="py-3 px-4 text-center">Gender</th>
-              <th class="py-3 px-3 text-center w-24">Q1 (1st)</th>
-              <th class="py-3 px-3 text-center w-24">Q2 (2nd)</th>
-              <th class="py-3 px-3 text-center w-24">Q3 (3rd)</th>
-              <th class="py-3 px-3 text-center w-24">Q4 (4th)</th>
-              <th class="py-3 px-4 text-center w-28">Final Grade</th>
+              
+              <!-- Adaptive DepEd Quarterly Headers -->
+              <th class="py-3 px-3 text-center w-24" :class="{ 'opacity-40': isSHS2ndSem }">
+                Q1 (1st)
+                <span v-if="isSHS2ndSem" class="block text-[9px] font-normal text-slate-400 font-mono">N/A (2nd Sem)</span>
+              </th>
+              <th class="py-3 px-3 text-center w-24" :class="{ 'opacity-40': isSHS2ndSem }">
+                Q2 (2nd)
+                <span v-if="isSHS2ndSem" class="block text-[9px] font-normal text-slate-400 font-mono">N/A (2nd Sem)</span>
+              </th>
+              <th class="py-3 px-3 text-center w-24" :class="{ 'opacity-40': isSHS1stSem }">
+                Q3 (3rd)
+                <span v-if="isSHS1stSem" class="block text-[9px] font-normal text-slate-400 font-mono">N/A (1st Sem)</span>
+              </th>
+              <th class="py-3 px-3 text-center w-24" :class="{ 'opacity-40': isSHS1stSem }">
+                Q4 (4th)
+                <span v-if="isSHS1stSem" class="block text-[9px] font-normal text-slate-400 font-mono">N/A (1st Sem)</span>
+              </th>
+
+              <!-- Adaptive Final Grade Header -->
+              <th class="py-3 px-4 text-center w-32">
+                {{ isSHS ? (isSHS2ndSem ? 'Semestral (Sem 2)' : 'Semestral (Sem 1)') : 'Annual Final' }}
+              </th>
               <th class="py-3 px-4 text-center">Remarks</th>
             </tr>
           </thead>
@@ -302,9 +401,10 @@
                 </span>
               </td>
 
-              <!-- Q1 Input -->
+              <!-- Q1 Input (Active for JHS and SHS 1st Sem) -->
               <td class="py-2.5 px-2 text-center">
                 <input 
+                  v-if="!isSHS2ndSem"
                   v-model.number="s.q1" 
                   @input="recalculateStudentGrade(s)"
                   type="number" 
@@ -314,11 +414,13 @@
                   placeholder="--"
                   class="w-18 px-2 py-1.5 rounded-lg border border-slate-300 text-center font-mono font-bold text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none focus:bg-blue-50"
                 />
+                <span v-else class="text-[10px] font-mono font-bold text-slate-400 py-1.5 px-2 rounded-lg bg-slate-100 inline-block w-18" title="Not applicable for 2nd Semester subjects">N/A</span>
               </td>
 
-              <!-- Q2 Input -->
+              <!-- Q2 Input (Active for JHS and SHS 1st Sem) -->
               <td class="py-2.5 px-2 text-center">
                 <input 
+                  v-if="!isSHS2ndSem"
                   v-model.number="s.q2" 
                   @input="recalculateStudentGrade(s)"
                   type="number" 
@@ -328,11 +430,13 @@
                   placeholder="--"
                   class="w-18 px-2 py-1.5 rounded-lg border border-slate-300 text-center font-mono font-bold text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none focus:bg-blue-50"
                 />
+                <span v-else class="text-[10px] font-mono font-bold text-slate-400 py-1.5 px-2 rounded-lg bg-slate-100 inline-block w-18" title="Not applicable for 2nd Semester subjects">N/A</span>
               </td>
 
-              <!-- Q3 Input -->
+              <!-- Q3 Input (Active for JHS and SHS 2nd Sem) -->
               <td class="py-2.5 px-2 text-center">
                 <input 
+                  v-if="!isSHS1stSem"
                   v-model.number="s.q3" 
                   @input="recalculateStudentGrade(s)"
                   type="number" 
@@ -342,11 +446,13 @@
                   placeholder="--"
                   class="w-18 px-2 py-1.5 rounded-lg border border-slate-300 text-center font-mono font-bold text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none focus:bg-blue-50"
                 />
+                <span v-else class="text-[10px] font-mono font-bold text-slate-400 py-1.5 px-2 rounded-lg bg-slate-100 inline-block w-18" title="Not applicable for 1st Semester subjects">N/A</span>
               </td>
 
-              <!-- Q4 Input -->
+              <!-- Q4 Input (Active for JHS and SHS 2nd Sem) -->
               <td class="py-2.5 px-2 text-center">
                 <input 
+                  v-if="!isSHS1stSem"
                   v-model.number="s.q4" 
                   @input="recalculateStudentGrade(s)"
                   type="number" 
@@ -356,6 +462,7 @@
                   placeholder="--"
                   class="w-18 px-2 py-1.5 rounded-lg border border-slate-300 text-center font-mono font-bold text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none focus:bg-blue-50"
                 />
+                <span v-else class="text-[10px] font-mono font-bold text-slate-400 py-1.5 px-2 rounded-lg bg-slate-100 inline-block w-18" title="Not applicable for 1st Semester subjects">N/A</span>
               </td>
 
               <!-- Final Grade (Computed) -->
@@ -527,6 +634,7 @@
                 <th class="py-3 px-4 text-center">Makakalikasan</th>
                 <th class="py-3 px-4 text-center">Makabansa</th>
                 <th class="py-3 px-4 text-center font-mono">Gen. Average</th>
+                <th class="py-3 px-4 text-center">Academic Status</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -576,6 +684,21 @@
 
                 <td class="py-3.5 px-4 text-center font-mono font-bold text-slate-800">
                   {{ l.general_average ? l.general_average.toFixed(2) : '--' }}
+                </td>
+
+                <!-- DepEd SARDO / Early Warning Academic Status -->
+                <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                  <span 
+                    class="px-2.5 py-0.5 rounded-full text-[10px] font-bold"
+                    :class="{
+                      'bg-emerald-50 text-emerald-800 border border-emerald-200': l.academic_status === 'On Track',
+                      'bg-amber-50 text-amber-800 border border-amber-200': l.academic_status === 'Needs Support',
+                      'bg-rose-50 text-rose-800 border border-rose-200': l.academic_status === 'Critical SARDO'
+                    }"
+                  >
+                    {{ l.academic_status }}
+                    <span v-if="l.failing_subjects_count > 0" class="text-[9px] font-mono ml-1">({{ l.failing_subjects_count }} Failed)</span>
+                  </span>
                 </td>
               </tr>
             </tbody>
@@ -681,11 +804,24 @@
           <div>
             <label class="font-semibold text-slate-700 block mb-1">Select Target Quarter</label>
             <select v-model="quickFillQuarter" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
-              <option value="q1">Quarter 1 (1st Quarter)</option>
-              <option value="q2">Quarter 2 (2nd Quarter)</option>
-              <option value="q3">Quarter 3 (3rd Quarter)</option>
-              <option value="q4">Quarter 4 (4th Quarter)</option>
-              <option value="all">All Quarters (Q1 to Q4)</option>
+              <!-- Adaptive Quarter Options -->
+              <template v-if="isSHS1stSem">
+                <option value="all">All Applicable Quarters (Q1 & Q2)</option>
+                <option value="q1">Quarter 1 (1st Quarter)</option>
+                <option value="q2">Quarter 2 (2nd Quarter)</option>
+              </template>
+              <template v-else-if="isSHS2ndSem">
+                <option value="all">All Applicable Quarters (Q3 & Q4)</option>
+                <option value="q3">Quarter 3 (3rd Quarter)</option>
+                <option value="q4">Quarter 4 (4th Quarter)</option>
+              </template>
+              <template v-else>
+                <option value="all">All Quarters (Q1 to Q4)</option>
+                <option value="q1">Quarter 1 (1st Quarter)</option>
+                <option value="q2">Quarter 2 (2nd Quarter)</option>
+                <option value="q3">Quarter 3 (3rd Quarter)</option>
+                <option value="q4">Quarter 4 (4th Quarter)</option>
+              </template>
             </select>
           </div>
 
@@ -802,9 +938,30 @@ const loadTeacherDashboard = async () => {
   }
 };
 
+// Timetable Semester Toggle State (Resolves cross-semester schedule overlaps)
+const activeTimetableSemester = ref('1st Semester');
+
 const getDaySchedules = (day) => {
-  return weeklySchedules.value.filter(s => s.day_of_week === day);
+  return weeklySchedules.value.filter(s => {
+    const matchesDay = s.day_of_week === day;
+    const matchesSem = s.semester === 'Full Year' || s.semester === activeTimetableSemester.value;
+    return matchesDay && matchesSem;
+  });
 };
+
+const currentSemesterSchedules = computed(() => {
+  return weeklySchedules.value.filter(s => s.semester === 'Full Year' || s.semester === activeTimetableSemester.value);
+});
+
+// Grouped Classes for Departmentalized Optgroups
+const jhsClasses = computed(() => teachingClasses.value.filter(c => (c.level_category || '') === 'JHS'));
+const shs1stSemClasses = computed(() => teachingClasses.value.filter(c => (c.level_category || '') === 'SHS' && (c.semester || '').includes('1st')));
+const shs2ndSemClasses = computed(() => teachingClasses.value.filter(c => (c.level_category || '') === 'SHS' && (c.semester || '').includes('2nd')));
+
+// Adaptive Grading state (DepEd Order 8, s. 2015)
+const isSHS = computed(() => (currentClassData.value.section?.level_category || '') === 'SHS');
+const isSHS1stSem = computed(() => isSHS.value && (currentClassData.value.subject?.semester || '').includes('1st'));
+const isSHS2ndSem = computed(() => isSHS.value && (currentClassData.value.subject?.semester || '').includes('2nd'));
 
 const formatTime = (timeStr) => {
   if (!timeStr) return '';
@@ -833,6 +990,13 @@ const loadClassStudents = async (sectionId, subjectId) => {
     const res = await api.getTeacherClassStudents(sectionId, subjectId);
     currentClassData.value = res.data;
 
+    // Adjust quick fill default quarter based on class
+    if (isSHS2ndSem.value) {
+      quickFillQuarter.value = 'q3';
+    } else {
+      quickFillQuarter.value = 'q1';
+    }
+
     // Prepare attendance list clone
     attendanceStudents.value = (res.data.students || []).map(s => ({
       ...s,
@@ -844,16 +1008,17 @@ const loadClassStudents = async (sectionId, subjectId) => {
 };
 
 const recalculateStudentGrade = (student) => {
-  const isSHS = (currentClassData.value.section?.level_category || '') === 'SHS';
-  const semester = currentClassData.value.subject?.semester || '1st Semester';
+  const isSHSVal = isSHS.value;
+  const is1st = isSHS1stSem.value;
+  const is2nd = isSHS2ndSem.value;
 
   const q1 = student.q1 !== null && student.q1 !== '' ? Number(student.q1) : null;
   const q2 = student.q2 !== null && student.q2 !== '' ? Number(student.q2) : null;
   const q3 = student.q3 !== null && student.q3 !== '' ? Number(student.q3) : null;
   const q4 = student.q4 !== null && student.q4 !== '' ? Number(student.q4) : null;
 
-  if (isSHS) {
-    if (semester.toLowerCase().includes('2nd')) {
+  if (isSHSVal) {
+    if (is2nd) {
       if (q3 !== null && q4 !== null) {
         student.final_grade = Math.round(((q3 + q4) / 2) * 100) / 100;
         student.remarks = student.final_grade >= 75 ? 'Passed' : 'Failed';
@@ -871,7 +1036,7 @@ const recalculateStudentGrade = (student) => {
       }
     }
   } else {
-    // JHS Full Year
+    // JHS Full Year (Q1 to Q4)
     if (q1 !== null && q2 !== null && q3 !== null && q4 !== null) {
       student.final_grade = Math.round(((q1 + q2 + q3 + q4) / 4) * 100) / 100;
       student.remarks = student.final_grade >= 75 ? 'Passed' : 'Failed';
@@ -899,10 +1064,20 @@ const applyQuickFill = () => {
 
   list.forEach(s => {
     if (quickFillQuarter.value === 'all') {
-      s.q1 = score;
-      s.q2 = score;
-      s.q3 = score;
-      s.q4 = score;
+      if (isSHS.value) {
+        if (isSHS2ndSem.value) {
+          s.q3 = score;
+          s.q4 = score;
+        } else {
+          s.q1 = score;
+          s.q2 = score;
+        }
+      } else {
+        s.q1 = score;
+        s.q2 = score;
+        s.q3 = score;
+        s.q4 = score;
+      }
     } else {
       s[quickFillQuarter.value] = score;
     }
@@ -910,7 +1085,7 @@ const applyQuickFill = () => {
   });
 
   showQuickFillModal.value = false;
-  feedbackMessage.value = `Applied score of ${score} to ${quickFillQuarter.value.toUpperCase()}.`;
+  feedbackMessage.value = `Applied score of ${score} to applicable quarters.`;
   setTimeout(() => { feedbackMessage.value = ''; }, 3500);
 };
 

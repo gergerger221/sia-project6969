@@ -93,13 +93,21 @@ class TeacherController {
         $advStmt->execute(['teacher_id' => $teacherId]);
         $advisorySections = $advStmt->fetchAll();
 
-        // Calculate Totals
-        $totalClasses = count($teachingClasses);
-        $totalPeriods = count($weeklySchedules);
-        $totalStudents = 0;
-        foreach ($teachingClasses as $c) {
-            $totalStudents += (int)($c['enrolled_count'] ?? 0);
+        // Calculate Workload Hours per Semester (DepEd Magna Carta RA 4670 & DO 005, s. 2024: max 30 hrs/week)
+        $workload1stSem = 0;
+        $workload2ndSem = 0;
+        foreach ($weeklySchedules as $ws) {
+            $sem = $ws['semester'] ?? 'Full Year';
+            if ($sem === 'Full Year' || $sem === '1st Semester') {
+                $workload1stSem++;
+            }
+            if ($sem === 'Full Year' || $sem === '2nd Semester') {
+                $workload2ndSem++;
+            }
         }
+
+        // Designated Homeroom Advisory Section (DepEd Standard: 1 Section per Teacher)
+        $primaryAdvisory = !empty($advisorySections) ? $advisorySections[0] : null;
 
         Response::success('Teacher dashboard loaded', [
             'teacher' => $teacherProfile,
@@ -107,8 +115,12 @@ class TeacherController {
             'stats' => [
                 'total_classes' => $totalClasses,
                 'total_schedule_periods' => $totalPeriods,
+                'workload_1st_sem_hours' => $workload1stSem,
+                'workload_2nd_sem_hours' => $workload2ndSem,
+                'max_deped_hours' => 30,
                 'total_students' => $totalStudents,
-                'total_advisory_sections' => count($advisorySections)
+                'total_advisory_sections' => count($advisorySections),
+                'advisory_section' => $primaryAdvisory
             ],
             'weekly_schedules' => $weeklySchedules,
             'classes' => $teachingClasses,
@@ -394,11 +406,13 @@ class TeacherController {
         $secStmt->execute(['id' => $sectionId]);
         $section = $secStmt->fetch();
 
-        // Fetch Enrolled Learners
+        // Fetch Enrolled Learners with SARDO Early Warning indicators
         $learnersStmt = $db->prepare("
             SELECT e.id as enrollment_id, e.student_no, e.lrn, e.student_id, e.status as enrollment_status,
                    app.first_name, app.middle_name, app.last_name, app.suffix, app.gender, app.contact_number, app.email,
-                   (SELECT AVG(sg.final_grade) FROM student_grades sg WHERE sg.student_id = e.student_id AND sg.final_grade IS NOT NULL) as general_average
+                   (SELECT AVG(sg.final_grade) FROM student_grades sg WHERE sg.student_id = e.student_id AND sg.final_grade IS NOT NULL) as general_average,
+                   (SELECT COUNT(*) FROM student_grades sg WHERE sg.student_id = e.student_id AND sg.final_grade IS NOT NULL AND sg.final_grade < 75.00) as failing_subjects_count,
+                   (SELECT COUNT(*) FROM student_grades sg WHERE sg.student_id = e.student_id AND sg.final_grade IS NULL) as pending_grades_count
             FROM enrollments e
             LEFT JOIN admission_applications app ON e.application_id = app.id
             WHERE e.section_id = :section_id AND e.status IN ('Officially Enrolled', 'Enrolled')
@@ -412,6 +426,14 @@ class TeacherController {
             $suffix = !empty($l['suffix']) ? ' ' . $l['suffix'] : '';
             $fullName = trim($l['last_name'] . ', ' . $l['first_name'] . $middle . $suffix);
 
+            $failingCount = (int)($l['failing_subjects_count'] ?? 0);
+            $academicStatus = 'On Track';
+            if ($failingCount >= 3) {
+                $academicStatus = 'Critical SARDO';
+            } elseif ($failingCount >= 1) {
+                $academicStatus = 'Needs Support';
+            }
+
             return [
                 'enrollment_id' => $l['enrollment_id'],
                 'student_id' => $l['student_id'],
@@ -420,6 +442,9 @@ class TeacherController {
                 'full_name' => $fullName,
                 'gender' => $l['gender'] ?? 'Male',
                 'general_average' => $l['general_average'] ? round((float)$l['general_average'], 2) : null,
+                'failing_subjects_count' => $failingCount,
+                'pending_grades_count' => (int)($l['pending_grades_count'] ?? 0),
+                'academic_status' => $academicStatus,
                 'values_ratings' => [
                     'maka_diyos_q1' => 'AO',
                     'maka_diyos_q2' => 'AO',

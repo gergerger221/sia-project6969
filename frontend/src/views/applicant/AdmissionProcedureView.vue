@@ -816,7 +816,7 @@
             </div>
             <button 
               type="button" 
-              @click="markAllRemainingPhysical"
+              @click="showBulkPhysicalModal = true"
               :disabled="missingMandatoryDocs.length === 0 || isSavingDocMode"
               class="whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-bold border transition flex items-center space-x-1.5 shrink-0"
               :class="missingMandatoryDocs.length > 0 && !isSavingDocMode ? 'bg-white border-indigo-300 text-indigo-800 hover:bg-indigo-50 shadow-2xs cursor-pointer' : 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'"
@@ -952,7 +952,7 @@
                   <!-- Delete / Remove button -->
                   <button 
                     type="button" 
-                    @click="handleDeleteDocument(getDocUploaded(req.type))" 
+                    @click="openDeleteDocModal(getDocUploaded(req.type))" 
                     class="p-2 rounded-xl text-xs font-bold bg-white text-rose-700 border border-rose-200 hover:bg-rose-50 shadow-2xs transition cursor-pointer"
                     title="Remove requirement commitment"
                   >
@@ -2045,6 +2045,41 @@
       </div>
     </div>
 
+    <!-- MODAL: DELETE DOCUMENT CONFIRMATION -->
+    <div v-if="showDeleteDocModal" class="no-print fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 text-slate-900">
+        <div class="w-12 h-12 rounded-2xl bg-rose-100 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto mb-4 shadow-sm">
+          <Trash2 class="w-6 h-6" />
+        </div>
+        <div class="text-center">
+          <h3 class="text-base font-extrabold text-slate-900">Remove Document?</h3>
+          <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
+            Are you sure you want to remove <strong class="text-slate-800">"{{ deleteDocTarget?.original_filename || deleteDocTarget?.document_type }}"</strong>?
+          </p>
+          <p class="text-[11px] text-slate-400 mt-1">You can upload or select another submission option afterward.</p>
+        </div>
+
+        <div class="flex items-center space-x-2.5 mt-6">
+          <button 
+            type="button" 
+            @click="showDeleteDocModal = false" 
+            class="w-1/2 py-2.5 px-4 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button 
+            type="button" 
+            @click="confirmDeleteDocument" 
+            :disabled="isDeletingDoc"
+            class="w-1/2 py-2.5 px-4 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white shadow-md transition flex items-center justify-center space-x-1.5 cursor-pointer"
+          >
+            <span v-if="isDeletingDoc" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <span v-else>Yes, Remove</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- MODAL: PHYSICAL SUBMISSION COMMITMENT -->
     <div v-if="showPhysicalModal" class="no-print fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 text-slate-900">
@@ -2110,6 +2145,58 @@
           >
             <span v-if="isSavingDocMode" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
             <span v-else>Confirm Physical</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: BULK PHYSICAL SUBMISSION CONFIRMATION -->
+    <div v-if="showBulkPhysicalModal" class="no-print fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 text-slate-900">
+        <div class="w-12 h-12 rounded-2xl bg-indigo-100 border border-indigo-200 text-indigo-700 flex items-center justify-center mx-auto mb-4 shadow-sm">
+          <Building class="w-6 h-6" />
+        </div>
+        <div class="text-center">
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-800 border border-indigo-200 inline-block mb-1.5">
+            Bulk Physical Submission
+          </span>
+          <h3 class="text-base font-extrabold text-slate-900">Submit All Remaining Physically?</h3>
+          <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
+            You are pledging to personally bring <strong class="text-indigo-800">{{ missingMandatoryDocs.length }}</strong> remaining required document(s) to the Registrar's Office on campus.
+          </p>
+        </div>
+
+        <div class="my-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2 max-h-48 overflow-y-auto">
+          <div class="font-bold text-slate-700 uppercase tracking-wider text-[10px]">Documents to be pledged:</div>
+          <div v-for="docName in missingMandatoryDocs" :key="docName" class="flex items-center space-x-2 text-[11px] py-1 border-b border-slate-100 last:border-b-0">
+            <Building class="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+            <span class="text-slate-700 font-medium">{{ docName }}</span>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-indigo-50/70 border border-indigo-200 text-[11px] text-indigo-950 flex items-start space-x-2 mb-4">
+          <MapPin class="w-4 h-4 text-indigo-700 shrink-0 mt-0.5" />
+          <p class="leading-relaxed">
+            Submit at: <strong>Office of the Registrar (Window 3 — Admissions Counter)</strong>, Administration Hall. Monday to Friday, 8:00 AM – 4:30 PM.
+          </p>
+        </div>
+
+        <div class="flex items-center space-x-2.5">
+          <button 
+            type="button" 
+            @click="showBulkPhysicalModal = false" 
+            class="w-1/2 py-2.5 px-4 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button 
+            type="button" 
+            @click="confirmBulkPhysical" 
+            :disabled="isSavingDocMode"
+            class="w-1/2 py-2.5 px-4 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white shadow-md transition flex items-center justify-center space-x-1.5 cursor-pointer"
+          >
+            <span v-if="isSavingDocMode" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <span v-else>Confirm All Physical</span>
           </button>
         </div>
       </div>
@@ -3369,12 +3456,10 @@ const confirmPhysicalSubmission = async () => {
   }
 };
 
-const markAllRemainingPhysical = async () => {
+const showBulkPhysicalModal = ref(false);
+
+const confirmBulkPhysical = async () => {
   if (missingMandatoryDocs.value.length === 0) return;
-  const confirmed = window.confirm(
-    `Do you want to pledge in-person physical submission for all ${missingMandatoryDocs.value.length} remaining required document(s) at the Registrar's Office?`
-  );
-  if (!confirmed) return;
 
   isSavingDocMode.value = true;
   errorMessage.value = '';
@@ -3384,6 +3469,7 @@ const markAllRemainingPhysical = async () => {
       submission_mode: 'Physical Submission'
     });
     successMessage.value = 'All remaining mandatory requirements marked for physical submission on campus!';
+    showBulkPhysicalModal.value = false;
     await loadData();
   } catch (err) {
     errorMessage.value = err.message || 'Failed to set physical submissions.';
@@ -3564,20 +3650,32 @@ const isPdf = (filePath) => {
   return filePath.toLowerCase().endsWith('.pdf');
 };
 
-const handleDeleteDocument = async (doc) => {
-  if (!doc || !doc.id) return;
-  
-  const label = doc.original_filename || doc.document_type;
-  const confirmed = window.confirm(`Are you sure you want to remove "${label}"? You can upload or select another submission option afterward.`);
-  if (!confirmed) return;
+const showDeleteDocModal = ref(false);
+const deleteDocTarget = ref(null);
+const isDeletingDoc = ref(false);
 
+const openDeleteDocModal = (doc) => {
+  if (!doc || !doc.id) return;
+  deleteDocTarget.value = doc;
+  showDeleteDocModal.value = true;
+};
+
+const confirmDeleteDocument = async () => {
+  const doc = deleteDocTarget.value;
+  if (!doc || !doc.id) return;
+
+  isDeletingDoc.value = true;
   errorMessage.value = '';
   try {
     const res = await api.deleteDocument(doc.id);
     successMessage.value = res.message || `${doc.document_type} removed successfully.`;
+    showDeleteDocModal.value = false;
+    deleteDocTarget.value = null;
     await loadData();
   } catch (err) {
     errorMessage.value = err.message || 'Failed to remove document.';
+  } finally {
+    isDeletingDoc.value = false;
   }
 };
 
